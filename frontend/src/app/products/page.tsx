@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth, getToken } from '../../utils/authContext';
 import ProductDetailPanel from '../../components/ProductDetailPanel';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { API_BASE_URL } from '../../utils/api';
 
 interface Product {
   _id: string;
@@ -106,7 +107,7 @@ export default function ProductsPage() {
         const validToken = getToken();
         if (!validToken) return;
 
-        const response = await fetch('http://localhost:5000/api/categories', {
+        const response = await fetch(`${API_BASE_URL}/api/categories`, {
           headers: {
             'Authorization': `Bearer ${validToken}`
           }
@@ -137,7 +138,7 @@ export default function ProductsPage() {
         const validToken = getToken();
         if (!validToken) return;
 
-        const response = await fetch('http://localhost:5000/api/products', {
+        const response = await fetch(`${API_BASE_URL}/api/products`, {
           headers: {
             'Authorization': `Bearer ${validToken}`
           }
@@ -176,8 +177,8 @@ export default function ProductsPage() {
         
         // Construct URL with category filter if selected
         const url = selectedCategory
-          ? `http://localhost:5000/api/products?category=${selectedCategory}`
-          : 'http://localhost:5000/api/products';
+          ? `${API_BASE_URL}/api/products?category=${selectedCategory}`
+          : `${API_BASE_URL}/api/products`;
         
         const response = await fetch(url, {
           headers: {

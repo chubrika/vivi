@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '../../../utils/api';
 
 interface Seller {
   id: string;
@@ -35,7 +36,7 @@ export default function SellersPage() {
       try {
         setLoading(true);
         
-        const response = await fetch('http://localhost:5000/api/sellers', {
+        const response = await fetch(`${API_BASE_URL}/api/sellers`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -80,7 +81,7 @@ export default function SellersPage() {
       setIsSubmitting(true);
       setFormError(null);
       
-      const response = await fetch('http://localhost:5000/api/sellers', {
+      const response = await fetch(`${API_BASE_URL}/api/sellers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

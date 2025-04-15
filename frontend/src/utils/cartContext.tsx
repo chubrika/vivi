@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth, getToken } from './authContext';
+import { API_BASE_URL } from './api';
 
 // Define the CartItem interface
 export interface CartItem {
@@ -69,7 +70,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           }
           
           // Fetch cart from API for logged-in users
-          const response = await fetch('http://localhost:5000/api/cart', {
+          const response = await fetch(`${API_BASE_URL}/api/cart`, {
             headers: {
               'Authorization': `Bearer ${validToken}`
             }
@@ -96,7 +97,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               }
               
               // Retry the fetch with the new token
-              const newResponse = await fetch('http://localhost:5000/api/cart', {
+              const newResponse = await fetch(`${API_BASE_URL}/api/cart`, {
                 headers: {
                   'Authorization': `Bearer ${newToken}`
                 }
@@ -168,7 +169,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               return;
             }
             
-            const response = await fetch('http://localhost:5000/api/cart', {
+            const response = await fetch(`${API_BASE_URL}/api/cart`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
@@ -192,7 +193,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 }
                 
                 // Retry the save with the new token
-                await fetch('http://localhost:5000/api/cart', {
+                await fetch(`${API_BASE_URL}/api/cart`, {
                   method: 'PUT',
                   headers: {
                     'Content-Type': 'application/json',

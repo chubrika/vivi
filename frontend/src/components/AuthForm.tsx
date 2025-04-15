@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../utils/authContext';
+import { API_BASE_URL } from '../utils/api';
 
 interface AuthFormProps {
   type: 'login' | 'register';
@@ -27,7 +28,7 @@ export default function AuthForm({ type }: AuthFormProps) {
 
     try {
       const endpoint = type === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 import { useState, useEffect, createContext, useContext, ReactNode, createElement } from 'react';
+import { API_BASE_URL } from './api';
 
 // Define a proper User type to replace 'any'
 interface User {
@@ -133,7 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = JSON.parse(storedUser) as User;
       
       // Call the login endpoint with the user's email
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { API_BASE_URL } from '../../../utils/api';
 
 interface Component {
   id: string;
@@ -24,7 +25,7 @@ export default function ComponentsPage() {
 
   const fetchComponents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/components', {
+      const response = await fetch(`${API_BASE_URL}/api/components`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -50,7 +51,7 @@ export default function ComponentsPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/components/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/components/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
