@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '../../../../utils/api';
 
 export default function NewComponentPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function NewComponentPage() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:5000/api/components', {
+      const response = await fetch(`${API_BASE_URL}/api/components`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../utils/authContext';
+import { API_BASE_URL } from '../../utils/api';
 
 export default function AdminLayout({
   children,
@@ -18,7 +19,7 @@ export default function AdminLayout({
   useEffect(() => {
     const checkAdminAccess = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/auth/check-admin', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/check-admin`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated, getToken } from '../../utils/authContext';
+import { API_BASE_URL } from '../../utils/api';
 
 interface UserProfile {
   name: string;
@@ -25,7 +26,7 @@ export default function ProfilePage() {
 
       try {
         const token = getToken();
-        const response = await fetch('http://localhost:5000/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

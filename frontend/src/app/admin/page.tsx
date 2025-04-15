@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/authContext';
+import { API_BASE_URL } from '../../utils/api';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/admin/stats', {
+        const response = await fetch(`${API_BASE_URL}/api/admin/stats`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
