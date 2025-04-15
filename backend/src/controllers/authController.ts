@@ -34,22 +34,27 @@ export const register = async (req: Request, res: Response) => {
       return res.status(500).json({ message: 'Server configuration error' });
     }
 
-    // Create token
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      jwtSecret,
-      { expiresIn: '24h' }
-    );
+    try {
+      // Create token
+      const token = jwt.sign(
+        { userId: user._id, role: user.role },
+        jwtSecret,
+        { expiresIn: '24h' }
+      );
 
-    res.status(201).json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      },
-    });
+      res.status(201).json({
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        },
+      });
+    } catch (jwtError) {
+      console.error('JWT Signing Error:', jwtError);
+      return res.status(500).json({ message: 'Error creating authentication token' });
+    }
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error' });
@@ -80,22 +85,27 @@ export const login = async (req: Request, res: Response) => {
       return res.status(500).json({ message: 'Server configuration error' });
     }
 
-    // Create token
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      jwtSecret,
-      { expiresIn: '24h' }
-    );
+    try {
+      // Create token
+      const token = jwt.sign(
+        { userId: user._id, role: user.role },
+        jwtSecret,
+        { expiresIn: '24h' }
+      );
 
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      },
-    });
+      res.json({
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        },
+      });
+    } catch (jwtError) {
+      console.error('JWT Signing Error:', jwtError);
+      return res.status(500).json({ message: 'Error creating authentication token' });
+    }
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
