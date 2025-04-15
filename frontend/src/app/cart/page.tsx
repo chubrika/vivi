@@ -32,15 +32,15 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6 text-gray-600">Your Cart</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-600">შენი კალათა</h1>
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
-          <h2 className="text-xl font-semibold mb-2 text-gray-600">Your cart is empty</h2>
-          <p className="text-gray-500 mb-6">Looks like you haven't added any products to your cart yet.</p>
+          <h2 className="text-xl font-semibold mb-2 text-gray-600">შენი კალათა ცარიელია</h2>
+          <p className="text-gray-500 mb-6">როგორც ჩანს, ჯერ არ დაგიმატებია რაიმე პროდუქტი კალათაში.</p>
           <Link href="/products" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
-            Continue Shopping
+            გაგრძელება
           </Link>
         </div>
       </div>

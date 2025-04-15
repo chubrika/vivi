@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAuth, getToken } from '../../utils/authContext';
 import ProductDetailPanel from '../../components/ProductDetailPanel';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { API_BASE_URL } from '../../utils/api';
+import { api } from '../../utils/api';
 
 interface Product {
   _id: string;
@@ -46,19 +45,18 @@ const ProductSkeleton = () => (
 );
 
 export default function ProductsPage() {
-  const { isAuthenticated, refreshToken } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    searchParams.get('category') || null
+  );
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
   
   // Price range state
   const [minPrice, setMinPrice] = useState<number>(0);
@@ -73,173 +71,58 @@ export default function ProductsPage() {
   const maxThumbRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
 
-  // Check authentication on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const validToken = getToken();
-        if (!validToken && !isRefreshing) {
-          setIsRefreshing(true);
-          const refreshed = await refreshToken();
-          setIsRefreshing(false);
-          
-          if (!refreshed) {
-            router.push('/login');
-            return;
-          }
-        }
-        setAuthChecked(true);
-      } catch (error) {
-        console.error('Auth check error:', error);
-        setError('Authentication error. Please try again.');
-      }
-    };
-
-    checkAuth();
-  }, [refreshToken, router, isRefreshing]);
-
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      if (!authChecked) return;
-      
-      try {
-        const validToken = getToken();
-        if (!validToken) return;
-
-        const response = await fetch(`${API_BASE_URL}/api/categories`, {
-          headers: {
-            'Authorization': `Bearer ${validToken}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch categories');
-        }
-
-        const data = await response.json();
-        setCategories(data);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      }
-    };
-
-    if (isAuthenticated) {
-      fetchCategories();
-    }
-  }, [isAuthenticated, authChecked]);
-
-  // Fetch all products for counting
-  useEffect(() => {
-    const fetchAllProducts = async () => {
-      if (!authChecked) return;
-      
-      try {
-        const validToken = getToken();
-        if (!validToken) return;
-
-        const response = await fetch(`${API_BASE_URL}/api/products`, {
-          headers: {
-            'Authorization': `Bearer ${validToken}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch all products');
-        }
-
-        const data = await response.json();
-        setAllProducts(data);
-      } catch (err) {
-        console.error('Error fetching all products:', err);
-      }
-    };
-
-    if (isAuthenticated) {
-      fetchAllProducts();
-    }
-  }, [isAuthenticated, authChecked]);
-
   // Fetch products based on selected category
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!authChecked) return;
-      
       try {
         setProductsLoading(true);
-        const validToken = getToken();
-        if (!validToken) {
-          console.error('Invalid token detected in products page');
-          setError('Authentication error. Please log in again.');
-          setProductsLoading(false);
-          return;
-        }
         
         // Construct URL with category filter if selected
-        const url = selectedCategory
-          ? `${API_BASE_URL}/api/products?category=${selectedCategory}`
-          : `${API_BASE_URL}/api/products`;
+        const endpoint = selectedCategory
+          ? `/api/products?category=${selectedCategory}`
+          : '/api/products';
         
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${validToken}`
-          }
-        });
-        
-        if (response.status === 401 && !isRefreshing) {
-          setIsRefreshing(true);
-          const refreshed = await refreshToken();
-          setIsRefreshing(false);
-          
-          if (refreshed) {
-            const newToken = getToken();
-            if (!newToken) {
-              console.error('Invalid token received after refresh');
-              setError('Authentication error. Please log in again.');
-              setProductsLoading(false);
-              return;
-            }
-            
-            const newResponse = await fetch(url, {
-              headers: {
-                'Authorization': `Bearer ${newToken}`
-              }
-            });
-            
-            if (!newResponse.ok) {
-              throw new Error('Failed to fetch products');
-            }
-            
-            const data = await newResponse.json();
-            setProducts(data);
-            setProductsLoading(false);
-            return;
-          } else {
-            router.push('/login');
-            return;
-          }
-        }
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
-        }
-        
-        const data = await response.json();
+        const data = await api.get(endpoint, undefined, false);
         setProducts(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Error fetching products:', err);
+        setError('Failed to fetch products');
       } finally {
         setProductsLoading(false);
         setInitialLoading(false);
       }
     };
 
-    if (isAuthenticated) {
-      fetchProducts();
-    } else {
-      setInitialLoading(false);
-    }
-  }, [isAuthenticated, refreshToken, router, isRefreshing, selectedCategory, authChecked]);
+    fetchProducts();
+  }, [selectedCategory]);
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await api.get('/api/categories', undefined, false);
+        setCategories(data);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Fetch all products for counting
+  useEffect(() => {
+    const fetchAllProducts = async () => {
+      try {
+        const data = await api.get('/api/products', undefined, false);
+        setAllProducts(data);
+      } catch (err) {
+        console.error('Error fetching all products:', err);
+      }
+    };
+
+    fetchAllProducts();
+  }, []);
 
   // Calculate product counts for each category using allProducts
   useEffect(() => {
@@ -378,27 +261,10 @@ export default function ProductsPage() {
     setSelectedCategory(categoryId);
   };
 
-  if (initialLoading || isRefreshing || !authChecked) {
+  if (initialLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Please Log In</h2>
-          <p className="text-gray-600 mb-4">You need to be logged in to view products.</p>
-          <button
-            onClick={() => router.push('/login')}
-            className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition-colors"
-          >
-            Go to Login
-          </button>
-        </div>
       </div>
     );
   }

@@ -42,19 +42,23 @@ export default function AuthForm({ type }: AuthFormProps) {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Use the login function from the auth context
-      if (data.token) {
-        login(data.token, data.user);
-        console.log('User logged in successfully');
-        
-        // Redirect to home page or admin dashboard if user is admin
-        if (data.user.role === 'admin') {
-          router.push('/admin');
-        } else {
-          router.push('/');
-        }
+      // Check if we have both token and user data
+      if (!data.token || !data.user) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Clean token before storing
+      const cleanToken = data.token.replace('Bearer ', '');
+      
+      // Store token and user data
+      login(cleanToken, data.user);
+      console.log('User logged in successfully');
+      
+      // Redirect to appropriate page
+      if (data.user.role === 'admin') {
+        router.push('/admin');
       } else {
-        throw new Error('No token received from server');
+        router.push('/');
       }
     } catch (err: Error | unknown) {
       console.error('Authentication error:', err);

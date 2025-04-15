@@ -10,22 +10,14 @@ import {
 
 const router = express.Router();
 
-// Apply authentication middleware to all routes
-router.use(authenticateToken);
-
-// Get all categories
+// Public routes (no authentication required)
 router.get('/', getAllCategories);
-
-// Get category by ID
 router.get('/:id', getCategoryById);
 
-// Create new category
+// Protected routes (authentication required)
+router.use(authenticateToken);
 router.post('/', createCategory);
-
-// Update category
 router.put('/:id', updateCategory);
-
-// Delete category
 router.delete('/:id', deleteCategory);
 
 export default router; 

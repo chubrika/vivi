@@ -8,6 +8,7 @@ import componentRoutes from './routes/components';
 import sellerRoutes from './routes/sellerRoutes';
 import productRoutes from './routes/productRoutes';
 import categoryRoutes from './routes/categoryRoutes';
+import cartRoutes from './routes/cartRoutes';
 
 // Load environment variables based on NODE_ENV
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
@@ -49,6 +50,7 @@ app.use('/api/components', componentRoutes);
 app.use('/api/sellers', sellerRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

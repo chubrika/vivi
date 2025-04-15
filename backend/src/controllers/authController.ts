@@ -22,6 +22,7 @@ export const register = async (req: Request, res: Response) => {
       name,
       email,
       password: hashedPassword,
+      role: 'user' // Explicitly set role
     });
 
     await user.save();
@@ -35,9 +36,12 @@ export const register = async (req: Request, res: Response) => {
     }
 
     try {
-      // Create token
+      // Create token with explicit string conversion
       const token = jwt.sign(
-        { userId: user._id, role: user.role },
+        { 
+          userId: user._id.toString(), 
+          role: user.role || 'user' // Ensure role is defined
+        },
         jwtSecret,
         { expiresIn: '24h' }
       );
@@ -48,7 +52,7 @@ export const register = async (req: Request, res: Response) => {
           id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role
+          role: user.role || 'user'
         },
       });
     } catch (jwtError) {
@@ -86,9 +90,12 @@ export const login = async (req: Request, res: Response) => {
     }
 
     try {
-      // Create token
+      // Create token with explicit string conversion and role check
       const token = jwt.sign(
-        { userId: user._id, role: user.role },
+        { 
+          userId: user._id.toString(), 
+          role: user.role || 'user' // Ensure role is defined
+        },
         jwtSecret,
         { expiresIn: '24h' }
       );
@@ -99,7 +106,7 @@ export const login = async (req: Request, res: Response) => {
           id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role
+          role: user.role || 'user'
         },
       });
     } catch (jwtError) {

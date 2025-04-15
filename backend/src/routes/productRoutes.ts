@@ -12,28 +12,16 @@ import {
 
 const router = express.Router();
 
-// Apply authentication middleware to all routes
-router.use(authenticateToken);
-
-// Get all products
+// Public routes (no authentication required)
 router.get('/', getAllProducts);
-
-// Get product by ID
 router.get('/:id', getProductById);
-
-// Create new product
-router.post('/', createProduct);
-
-// Update product
-router.put('/:id', updateProduct);
-
-// Delete product
-router.delete('/:id', deleteProduct);
-
-// Get products by category
 router.get('/category/:categoryId', getProductsByCategory);
 
-// Get products by seller
+// Protected routes (authentication required)
+router.use(authenticateToken);
+router.post('/', createProduct);
+router.put('/:id', updateProduct);
+router.delete('/:id', deleteProduct);
 router.get('/seller/:sellerId', getProductsBySeller);
 
 export default router; 

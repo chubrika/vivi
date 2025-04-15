@@ -7,7 +7,7 @@ import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { useAuth } from '../utils/authContext';
+import { api } from '../utils/api';
 
 interface Product {
   _id: string;
@@ -22,7 +22,6 @@ interface Product {
 }
 
 const ProductSlider = () => {
-  const { token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -30,17 +29,8 @@ const ProductSlider = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/products', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
-        }
-        
-        const data = await response.json();
+        // Use public API endpoint for products
+        const data = await api.get('/api/products', undefined, false);
         // Filter for featured products or take the first 6 products
         setProducts(data.slice(0, 6));
       } catch (err) {
@@ -52,7 +42,7 @@ const ProductSlider = () => {
     };
 
     fetchProducts();
-  }, [token]);
+  }, []);
 
   if (loading) {
     return (
