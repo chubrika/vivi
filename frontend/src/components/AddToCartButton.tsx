@@ -35,9 +35,9 @@ export default function AddToCartButton({ product, className = '' }: AddToCartBu
     <button
       onClick={handleAddToCart}
       disabled={!product.isActive || product.stock <= 0}
-      className={`bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`w-full border-2 border-purple-500 px-4 py-2 rounded hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 ${className}`}
     >
-      Add to Cart
+       კალათაში დამატება
     </button>
   );
 } 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AddToCartButton from './AddToCartButton';
+import { useRouter } from 'next/navigation';
 
 interface Product {
     _id: string;
@@ -29,6 +30,7 @@ interface ProductDetailPanelProps {
 export default function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const router = useRouter();
 
     // Handle body scroll lock when panel is open
     useEffect(() => {
@@ -60,6 +62,16 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
     // Handle image click to set as main image
     const handleImageClick = (index: number) => {
         setActiveImageIndex(index);
+    };
+
+    // Handle Buy Now click
+    const handleBuyNow = () => {
+        if (product) {
+            // Close the panel
+            onClose();
+            // Navigate to checkout page with product ID
+            router.push(`/checkout?productId=${product._id}`);
+        }
     };
 
     return (
@@ -148,8 +160,19 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                 </div>
 
                                 {/* Add to Cart Button */}
-                                <div className="pt-4">
+                                <div className="w-[200px]">
+                                <div className="pt-4 flex gap-4">
+                                  <button
+                                        onClick={handleBuyNow}
+                                        className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed "
+                                    >
+                                        ყიდვა
+                                    </button>
+                                  </div>
+                                <div className="pt-4 flex gap-4">
                                     <AddToCartButton product={product} />
+                                  
+                                </div>
                                 </div>
                             </div>
                         </div>
