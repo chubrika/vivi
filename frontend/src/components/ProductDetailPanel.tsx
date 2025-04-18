@@ -96,14 +96,14 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
         <>
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'
+                className={`fixed z-[1] inset-0 bg-black bg-opacity-50 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'
                     }`}
                 onClick={onClose}
             />
 
             {/* Panel */}
             <div
-                className={`fixed right-0 top-0 h-full w-full md:w-[75%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed z-[2] right-0 top-[64px]  h-[calc(100vh-64px)] w-full md:w-[75%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
                 <div className="h-full overflow-y-auto">

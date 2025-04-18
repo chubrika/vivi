@@ -211,8 +211,8 @@ export default function CheckoutPage() {
                                     />
                                 </div>
                                 <div>
-                                    <h3 className="font-medium text-lg">{product.name}</h3>
-                                    <p className="text-purple-600 font-semibold text-xl">{product.price.toFixed(2)} ₾</p>
+                                    <p className="text-gray-900 text-md">{product.price.toFixed(2)} ₾</p>
+                                    <h3 className="font-medium text-gray-900 text-lg">{product.name}</h3>
                                 </div>
                             </div>
 

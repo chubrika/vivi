@@ -38,7 +38,6 @@ const ProductSkeleton = () => (
       <div className="h-5 w-20 bg-gray-200 rounded animate-pulse"></div>
       <div className="mt-2 flex items-center justify-between">
         <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
       </div>
     </div>
   </div>
@@ -281,9 +280,9 @@ export default function ProductsPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8 mt-8 text-gray-600">პროდუქტები</h1>
 
-      <div className="flex gap-8">
+      <div className="flex flex-col md:flex-row gap-8">
         {/* Categories Sidebar */}
-        <div className="w-64 flex-shrink-0">
+        <div className="w-full md:w-64 flex-shrink-0 mb-6 md:mb-0">
           <div className="bg-white rounded-lg shadow p-4">
             <h2 className="text-lg font-semibold mb-4 text-gray-800">კატეგორიები</h2>
             <div className="space-y-2">
@@ -374,7 +373,7 @@ export default function ProductsPage() {
 
         {/* Products Grid */}
         <div className="flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {productsLoading ? (
               // Show skeleton loaders while products are loading
               Array(6).fill(0).map((_, index) => (
@@ -385,7 +384,7 @@ export default function ProductsPage() {
               filteredProducts.map((product) => (
                 <div
                   key={product._id}
-                  className="bg-whitecursor-pointer"
+                  className="bg-white rounded-lg shadow overflow-hidden cursor-pointer"
                   onClick={() => handleProductSelect(product)}
                 >
                   <div className="relative aspect-square">
@@ -396,10 +395,9 @@ export default function ProductsPage() {
                     />
                   </div>
                   <div className="p-4">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h2>
-                    <p className="text-purple-600 font-semibold">{product.price.toFixed(2)} ₾</p>
+                    <p className="text-gray-900 font-semibold">{product.price.toFixed(2)} ₾</p>
+                    <h2 className="text-md text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className="text-sm text-gray-500">{product.category.name}</span>
                       <span className="text-sm text-gray-500">{product.seller.name}</span>
                     </div>
                   </div>
