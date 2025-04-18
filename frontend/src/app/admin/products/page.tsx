@@ -247,8 +247,8 @@ const ProductsPage = () => {
                       )}
                       <div>
                         <h3 className="text-lg font-medium text-gray-600">{product.name}</h3>
-                        <p className="text-sm text-gray-500">{product.description}</p>
-                        <div className="mt-1 flex items-center space-x-2">
+                        {/* <p className="text-sm text-gray-500">{product.description}</p> */}
+                        {/* <div className="mt-1 flex items-center space-x-2">
                           <span className="text-sm font-medium">${product.price.toFixed(2)}</span>
                           <span className="text-sm text-gray-500">•</span>
                           <span className="text-sm text-gray-500">მარაგში: {product.stock}</span>
@@ -262,7 +262,7 @@ const ProductsPage = () => {
                           }`}>
                             {product.isActive ? 'Active' : 'Inactive'}
                           </span>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                     <div className="flex space-x-2">

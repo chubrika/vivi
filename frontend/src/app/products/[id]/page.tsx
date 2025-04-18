@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AddToCartButton from '../../../components/AddToCartButton';
@@ -143,7 +143,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Description</h2>
-                <p className="mt-2 text-gray-600">{product.description}</p>
+                <div 
+                  className="mt-2 text-gray-600"
+                  dangerouslySetInnerHTML={{ __html: product.description }} 
+                />
               </div>
 
               <div>

@@ -1,7 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import CloudinaryUploadWidget from './CloudinaryUploadWidget';
+import dynamic from 'next/dynamic';
+import 'react-quill/dist/quill.snow.css';
+
+// Use dynamic import with no SSR to avoid hydration issues
+const ReactQuill = dynamic(() => import('react-quill'), { 
+  ssr: false,
+  loading: () => <p>Loading editor...</p>
+});
 
 interface Category {
   _id: string;
@@ -77,6 +85,88 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     type: 1,
     featureValue: ''
   });
+
+  // Add a state to track if the editor is mounted
+  const [editorMounted, setEditorMounted] = useState(false);
+  
+  // Initialize the editor with proper configuration
+  useEffect(() => {
+    // Set editor as mounted after component mounts
+    setEditorMounted(true);
+    
+    // Add custom CSS for the editor
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .ql-editor {
+        color: #000000 !important;
+      }
+      .ql-editor p {
+        color: #000000 !important;
+      }
+      .ql-color-picker {
+        width: 40px;
+        height: 24px;
+      }
+      .ql-picker.ql-color-picker .ql-picker-label {
+        width: 100%;
+        height: 100%;
+      }
+      .ql-picker.ql-color-picker .ql-picker-options {
+        padding: 3px 5px;
+        width: 152px;
+      }
+      .ql-picker.ql-color-picker .ql-picker-item {
+        border-radius: 2px;
+        margin-right: 1px;
+        margin-bottom: 1px;
+        width: 20px;
+        height: 20px;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // Clean up function
+    return () => {
+      setEditorMounted(false);
+      // Remove the style when component unmounts
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  const modules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'color': [] }, { 'background': [] }],
+        ['link', 'image'],
+        ['clean']
+      ],
+      handlers: {
+        image: () => {
+          // Handle image upload if needed
+          console.log('Image upload clicked');
+        }
+      }
+    },
+    clipboard: {
+      matchVisual: false
+    },
+    keyboard: {
+      bindings: {
+        tab: false
+      }
+    }
+  }), []);
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet',
+    'link', 'image',
+    'color', 'background'
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,14 +346,20 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
           დეტალური აღწერა
         </label>
-        <textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
-          required
-        />
+        <div className="h-64">
+          {editorMounted && (
+            <ReactQuill
+              theme="snow"
+              value={description}
+              onChange={setDescription}
+              modules={modules}
+              formats={formats}
+              className="h-48 text-black"
+              preserveWhitespace
+              placeholder="პროდუქტის დეტალური აღწერა"
+            />
+          )}
+        </div>
       </div>
 
       <div>

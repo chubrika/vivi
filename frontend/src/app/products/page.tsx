@@ -397,7 +397,7 @@ export default function ProductsPage() {
                   </div>
                   <div className="p-4">
                     <h2 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h2>
-                    <p className="text-purple-600 font-semibold">${product.price.toFixed(2)}</p>
+                    <p className="text-purple-600 font-semibold">{product.price.toFixed(2)} ₾</p>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-sm text-gray-500">{product.category.name}</span>
                       <span className="text-sm text-gray-500">{product.seller.name}</span>

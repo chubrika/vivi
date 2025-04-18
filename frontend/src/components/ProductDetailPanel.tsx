@@ -62,7 +62,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
             document.body.style.overflow = 'auto';
         }
 
-        // Cleanup function to ensure body scroll is re-enabled when component unmounts
+        // Clean up function to ensure body scroll is re-enabled when component unmounts
         return () => {
             document.body.style.overflow = 'auto';
         };
@@ -103,7 +103,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
 
             {/* Panel */}
             <div
-                className={`fixed right-0 top-0 h-full w-[75%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed right-0 top-0 h-full w-full md:w-[75%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
                 <div className="h-full overflow-y-auto">
@@ -123,12 +123,12 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                     </div>
 
                     {/* Content */}
-                    <div className="p-8 md:px-[100px] lg:px-[100px] py-12">
+                    <div className="p-4 md:p-8 md:px-[100px] lg:px-[100px] py-12">
                         {/* Main content area with flex layout */}
                         <h1 className="text-xl font-bold text-gray-900 mt-8 mb-8">{product.name}</h1>
                         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
                             {/* Left side - Image Gallery */}
-                            <div className="md:w-1/2">
+                            <div className="w-full md:w-1/2">
                                 <div className="relative aspect-square rounded-lg overflow-hidden">
                                     <img
                                         src={product.images[activeImageIndex] || 'https://via.placeholder.com/400'}
@@ -157,7 +157,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                             </div>
 
                             {/* Right side - Product Details */}
-                            <div className="md:w-1/2 space-y-6 md:space-y-8">
+                            <div className="w-full md:w-1/2 space-y-6 md:space-y-8">
                                 {/* Price */}
                                 <div>
                                     <p className="text-2xl font-semibold text-purple-600">
@@ -167,18 +167,18 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
 
                                 {/* Stock */}
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">Stock</h2>
-                                    <p className="mt-1 text-gray-600">{product.stock} units available</p>
+                                    <h2 className="text-lg font-semibold text-gray-900">მარაგშია</h2>
+                                    <p className="mt-1 text-gray-600">{product.stock} ერთეული</p>
                                 </div>
 
                                 {/* Category */}
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">Category</h2>
+                                    <h2 className="text-lg font-semibold text-gray-900">კატეგორია</h2>
                                     <p className="mt-1 text-gray-600">{product.category.name}</p>
                                 </div>
 
                                 {/* Add to Cart Button */}
-                                <div className="w-[200px]">
+                                <div className="w-full md:w-[200px]">
                                 <div className="pt-4 flex gap-4">
                                   <button
                                         onClick={handleBuyNow}
@@ -200,13 +200,16 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                                 {/* Description */}
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">Description</h2>
-                                    <p className="mt-2 text-gray-600">{product.description}</p>
+                                    <h2 className="text-lg font-semibold text-gray-900">აღწერა</h2>
+                                    <div 
+                                        className="mt-2 text-gray-600"
+                                        dangerouslySetInnerHTML={{ __html: product.description }} 
+                                    />
                                 </div>
 
                                 {/* Seller */}
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">Seller</h2>
+                                    <h2 className="text-lg font-semibold text-gray-900">მაღაზია</h2>
                                     <p className="mt-1 text-gray-600">{product.seller.name}</p>
                                 </div>
                             </div>

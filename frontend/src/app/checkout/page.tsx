@@ -212,7 +212,7 @@ export default function CheckoutPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-medium text-lg">{product.name}</h3>
-                                    <p className="text-purple-600 font-semibold text-xl">${product.price.toFixed(2)}</p>
+                                    <p className="text-purple-600 font-semibold text-xl">{product.price.toFixed(2)} ₾</p>
                                 </div>
                             </div>
 
