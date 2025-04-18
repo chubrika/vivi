@@ -4,6 +4,23 @@ import { useState, useEffect } from 'react';
 import AddToCartButton from './AddToCartButton';
 import { useRouter } from 'next/navigation';
 
+interface FeatureValue {
+    type: number;
+    featureValue: string;
+}
+
+interface Feature {
+    featureId: number;
+    featureCaption: string;
+    featureValues: FeatureValue[];
+}
+
+interface FeatureGroup {
+    featureGroupId: number;
+    featureGroupCaption: string;
+    features: Feature[];
+}
+
 interface Product {
     _id: string;
     name: string;
@@ -20,6 +37,7 @@ interface Product {
     };
     isActive: boolean;
     stock: number;
+    productFeatureValues?: FeatureGroup[];
 }
 
 interface ProductDetailPanelProps {
@@ -105,7 +123,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                     </div>
 
                     {/* Content */}
-                    <div className="p-8 md:px-[180px] lg:px-[180px] py-12">
+                    <div className="p-8 md:px-[100px] lg:px-[100px] py-12">
                         {/* Main content area with flex layout */}
                         <h1 className="text-xl font-bold text-gray-900 mt-8 mb-8">{product.name}</h1>
                         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
@@ -192,6 +210,37 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                     <p className="mt-1 text-gray-600">{product.seller.name}</p>
                                 </div>
                             </div>
+
+                            {/* Product Features Section */}
+                            {product.productFeatureValues && product.productFeatureValues.length > 0 && (
+                                <div className="mt-8 pt-8 border-t border-gray-200">
+                                    <div className="space-y-6">
+                                        {product.productFeatureValues.map((group, groupIndex) => (
+                                            <div key={groupIndex} className="bg-gray-50 rounded-lg">
+                                                <h3 className="text-xl font-bold text-gray-800 mb-4">
+                                                    {group.featureGroupCaption}
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {group.features.map((feature, featureIndex) => (
+                                                        <div key={featureIndex} className="flex justify-between items-start">
+                                                            <h4 className="text-sm font-medium text-gray-700">
+                                                                {feature.featureCaption}
+                                                            </h4>
+                                                            <div className="text-right">
+                                                                {feature.featureValues.map((value, valueIndex) => (
+                                                                    <div key={valueIndex} className="text-sm text-gray-600">
+                                                                        {value.featureValue}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

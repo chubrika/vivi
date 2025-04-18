@@ -40,6 +40,18 @@ export const getProductById = async (req: Request, res: Response) => {
 // Create new product
 export const createProduct = async (req: Request, res: Response) => {
   try {
+    // Validate product features if provided
+    if (req.body.productFeatureValues) {
+      try {
+        validateProductFeatures(req.body.productFeatureValues);
+      } catch (validationError) {
+        return res.status(400).json({ 
+          message: 'Validation error in product features', 
+          error: validationError instanceof Error ? validationError.message : 'Invalid feature data'
+        });
+      }
+    }
+    
     const product = new Product(req.body);
     await product.save();
     const populatedProduct = await Product.findById(product._id)
@@ -47,16 +59,33 @@ export const createProduct = async (req: Request, res: Response) => {
       .populate('category', 'name');
     res.status(201).json(populatedProduct);
   } catch (error) {
-    if (error instanceof Error && error.name === 'ValidationError') {
-      return res.status(400).json({ message: 'Validation error', error: error.message });
+    if (error instanceof Error) {
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({ 
+          message: 'Validation error', 
+          error: error.message 
+        });
+      }
+      return res.status(500).json({ 
+        message: 'Error creating product', 
+        error: error.message 
+      });
     }
-    res.status(500).json({ message: 'Error creating product', error });
+    res.status(500).json({ 
+      message: 'Error creating product', 
+      error: 'An unexpected error occurred' 
+    });
   }
 };
 
 // Update product
 export const updateProduct = async (req: Request, res: Response) => {
   try {
+    // Validate product features if provided
+    if (req.body.productFeatureValues) {
+      validateProductFeatures(req.body.productFeatureValues);
+    }
+    
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -112,4 +141,49 @@ export const getProductsBySeller = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: 'Error fetching products by seller', error });
   }
+};
+
+// Helper function to validate product features
+const validateProductFeatures = (featureGroups: any[]) => {
+  if (!Array.isArray(featureGroups)) {
+    throw new Error('Product features must be an array');
+  }
+
+  featureGroups.forEach((group, groupIndex) => {
+    if (!group.featureGroupId || typeof group.featureGroupId !== 'number') {
+      throw new Error(`Feature group at index ${groupIndex} must have a numeric featureGroupId`);
+    }
+    
+    if (!group.featureGroupCaption || typeof group.featureGroupCaption !== 'string') {
+      throw new Error(`Feature group at index ${groupIndex} must have a string featureGroupCaption`);
+    }
+    
+    if (!Array.isArray(group.features)) {
+      throw new Error(`Feature group at index ${groupIndex} must have an array of features`);
+    }
+    
+    group.features.forEach((feature: any, featureIndex: number) => {
+      if (!feature.featureId || typeof feature.featureId !== 'number') {
+        throw new Error(`Feature at index ${featureIndex} in group ${groupIndex} must have a numeric featureId`);
+      }
+      
+      if (!feature.featureCaption || typeof feature.featureCaption !== 'string') {
+        throw new Error(`Feature at index ${featureIndex} in group ${groupIndex} must have a string featureCaption`);
+      }
+      
+      if (!Array.isArray(feature.featureValues)) {
+        throw new Error(`Feature at index ${featureIndex} in group ${groupIndex} must have an array of featureValues`);
+      }
+      
+      feature.featureValues.forEach((value: any, valueIndex: number) => {
+        if (value.type !== undefined && typeof value.type !== 'number') {
+          throw new Error(`Feature value at index ${valueIndex} in feature ${featureIndex} in group ${groupIndex} must have a numeric type`);
+        }
+        
+        if (!value.featureValue || typeof value.featureValue !== 'string') {
+          throw new Error(`Feature value at index ${valueIndex} in feature ${featureIndex} in group ${groupIndex} must have a string featureValue`);
+        }
+      });
+    });
+  });
 }; 

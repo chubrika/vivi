@@ -2,6 +2,24 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { ISeller } from './Seller';
 import { ICategory } from './Category';
 
+// Define interfaces for product features
+export interface IFeatureValue {
+  type: number;
+  featureValue: string;
+}
+
+export interface IFeature {
+  featureId: number;
+  featureCaption: string;
+  featureValues: IFeatureValue[];
+}
+
+export interface IFeatureGroup {
+  featureGroupId: number;
+  featureGroupCaption: string;
+  features: IFeature[];
+}
+
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -11,9 +29,46 @@ export interface IProduct extends Document {
   category: ICategory['_id'];
   images: string[];
   isActive: boolean;
+  productFeatureValues: IFeatureGroup[];
   createdAt: Date;
   updatedAt: Date;
 }
+
+const featureValueSchema = new Schema({
+  type: {
+    type: Number,
+    required: false,
+    default: 1
+  },
+  featureValue: {
+    type: String,
+    required: true
+  }
+}, { _id: false });
+
+const featureSchema = new Schema({
+  featureId: {
+    type: Number,
+    required: true
+  },
+  featureCaption: {
+    type: String,
+    required: true
+  },
+  featureValues: [featureValueSchema]
+}, { _id: false });
+
+const featureGroupSchema = new Schema({
+  featureGroupId: {
+    type: Number,
+    required: true
+  },
+  featureGroupCaption: {
+    type: String,
+    required: true
+  },
+  features: [featureSchema]
+}, { _id: false });
 
 const productSchema = new Schema({
   name: {
@@ -54,7 +109,8 @@ const productSchema = new Schema({
   isActive: {
     type: Boolean,
     default: true
-  }
+  },
+  productFeatureValues: [featureGroupSchema]
 }, {
   timestamps: true
 });

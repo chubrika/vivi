@@ -5,6 +5,23 @@ import { useAuth } from '../../../utils/authContext';
 import Modal from '../../../components/Modal';
 import ProductForm from '../../../components/ProductForm';
 
+interface FeatureValue {
+  type: number;
+  featureValue: string;
+}
+
+interface Feature {
+  featureId: number;
+  featureCaption: string;
+  featureValues: FeatureValue[];
+}
+
+interface FeatureGroup {
+  featureGroupId: number;
+  featureGroupCaption: string;
+  features: Feature[];
+}
+
 interface Product {
   _id: string;
   name: string;
@@ -21,6 +38,7 @@ interface Product {
   };
   images: string[];
   isActive: boolean;
+  productFeatureValues?: FeatureGroup[];
   createdAt: string;
   updatedAt: string;
 }
@@ -35,6 +53,7 @@ interface ProductFormData {
   category: string;
   images: string[];
   isActive: boolean;
+  productFeatureValues?: FeatureGroup[];
 }
 
 interface Seller {
@@ -56,6 +75,7 @@ const ProductsPage = () => {
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductFormData | undefined>(undefined);
+  const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
 
   const fetchProducts = async () => {
     try {
@@ -135,7 +155,8 @@ const ProductsPage = () => {
         seller: product.seller._id,
         category: product.category._id,
         images: product.images,
-        isActive: product.isActive
+        isActive: product.isActive,
+        productFeatureValues: product.productFeatureValues
       });
     } else {
       setSelectedProduct(undefined);
@@ -175,6 +196,10 @@ const ProductsPage = () => {
     }
   };
 
+  const toggleProductExpansion = (productId: string) => {
+    setExpandedProductId(expandedProductId === productId ? null : productId);
+  };
+
   if (!isAuthenticated) {
     return <div className="p-4">Please log in to access this page.</div>;
   }
@@ -208,51 +233,91 @@ const ProductsPage = () => {
           ) : (
             products.map((product) => (
               <li key={product._id} className="px-4 py-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    {product.images && product.images.length > 0 && (
-                      <div className="flex-shrink-0 h-16 w-16 mr-4">
-                        <img
-                          className="h-16 w-16 rounded-md object-cover"
-                          src={product.images[0]}
-                          alt={product.name}
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-600">{product.name}</h3>
-                      <p className="text-sm text-gray-500">{product.description}</p>
-                      <div className="mt-1 flex items-center space-x-2">
-                        <span className="text-sm font-medium">${product.price.toFixed(2)}</span>
-                        <span className="text-sm text-gray-500">•</span>
-                        <span className="text-sm text-gray-500">მარაგში: {product.stock}</span>
-                        <span className="text-sm text-gray-500">•</span>
-                        <span className="text-sm text-gray-500">მაღაზია: {product.seller.name}</span>
-                        <span className="text-sm text-gray-500">•</span>
-                        <span className="text-sm text-gray-500">კატეგორია: {product.category.name}</span>
-                        <span className="text-sm text-gray-500">•</span>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {product.isActive ? 'Active' : 'Inactive'}
-                        </span>
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      {product.images && product.images.length > 0 && (
+                        <div className="flex-shrink-0 h-16 w-16 mr-4">
+                          <img
+                            className="h-16 w-16 rounded-md object-cover"
+                            src={product.images[0]}
+                            alt={product.name}
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-600">{product.name}</h3>
+                        <p className="text-sm text-gray-500">{product.description}</p>
+                        <div className="mt-1 flex items-center space-x-2">
+                          <span className="text-sm font-medium">${product.price.toFixed(2)}</span>
+                          <span className="text-sm text-gray-500">•</span>
+                          <span className="text-sm text-gray-500">მარაგში: {product.stock}</span>
+                          <span className="text-sm text-gray-500">•</span>
+                          <span className="text-sm text-gray-500">მაღაზია: {product.seller.name}</span>
+                          <span className="text-sm text-gray-500">•</span>
+                          <span className="text-sm text-gray-500">კატეგორია: {product.category.name}</span>
+                          <span className="text-sm text-gray-500">•</span>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {product.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleOpenModal(product)}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product._id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => toggleProductExpansion(product._id)}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        {expandedProductId === product._id ? 'Hide Features' : 'Show Features'}
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleOpenModal(product)}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product._id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  
+                  {/* Product Features Section */}
+                  {expandedProductId === product._id && product.productFeatureValues && product.productFeatureValues.length > 0 && (
+                    <div className="mt-4 pl-4 border-l-2 border-gray-200">
+                      <h4 className="text-md font-medium text-gray-800 mb-2">Product Features</h4>
+                      <div className="space-y-4">
+                        {product.productFeatureValues.map((group, groupIndex) => (
+                          <div key={groupIndex} className="border border-gray-200 rounded-md p-3">
+                            <h5 className="text-sm font-medium text-gray-700 mb-2">
+                              {group.featureGroupCaption} (ID: {group.featureGroupId})
+                            </h5>
+                            <div className="ml-4 space-y-2">
+                              {group.features.map((feature, featureIndex) => (
+                                <div key={featureIndex} className="border-l-2 border-gray-200 pl-3">
+                                  <h6 className="text-sm font-medium text-gray-600">
+                                    {feature.featureCaption} (ID: {feature.featureId})
+                                  </h6>
+                                  <div className="ml-4">
+                                    {feature.featureValues.map((value, valueIndex) => (
+                                      <div key={valueIndex} className="text-sm text-gray-500">
+                                        Type {value.type}: {value.featureValue}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </li>
             ))
@@ -260,19 +325,17 @@ const ProductsPage = () => {
         </ul>
       </div>
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title={selectedProduct ? 'Edit Product' : 'Add Product'}
-      >
-        <ProductForm
-          onClose={handleCloseModal}
-          onSuccess={handleSuccess}
-          product={selectedProduct}
-          sellers={sellers}
-          categories={categories}
-        />
-      </Modal>
+      {isModalOpen && (
+        <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedProduct ? 'Edit Product' : 'Add Product'}>
+          <ProductForm
+            product={selectedProduct}
+            categories={categories}
+            sellers={sellers}
+            onClose={handleCloseModal}
+            onSuccess={handleSuccess}
+          />
+        </Modal>
+      )}
     </div>
   );
 };

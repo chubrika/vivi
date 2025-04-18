@@ -13,6 +13,23 @@ interface Seller {
   name: string;
 }
 
+interface FeatureValue {
+  type: number;
+  featureValue: string;
+}
+
+interface Feature {
+  featureId: number;
+  featureCaption: string;
+  featureValues: FeatureValue[];
+}
+
+interface FeatureGroup {
+  featureGroupId: number;
+  featureGroupCaption: string;
+  features: Feature[];
+}
+
 interface ProductFormProps {
   product?: {
     _id: string;
@@ -24,6 +41,7 @@ interface ProductFormProps {
     category: string;
     images: string[];
     isActive: boolean;
+    productFeatureValues?: FeatureGroup[];
   };
   categories: Category[];
   sellers: Seller[];
@@ -42,6 +60,23 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   const [stock, setStock] = useState(product?.stock || 0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Product features state
+  const [featureGroups, setFeatureGroups] = useState<FeatureGroup[]>(product?.productFeatureValues || []);
+  const [newFeatureGroup, setNewFeatureGroup] = useState<FeatureGroup>({
+    featureGroupId: 0,
+    featureGroupCaption: '',
+    features: []
+  });
+  const [newFeature, setNewFeature] = useState<Feature>({
+    featureId: 0,
+    featureCaption: '',
+    featureValues: []
+  });
+  const [newFeatureValue, setNewFeatureValue] = useState<FeatureValue>({
+    type: 1,
+    featureValue: ''
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +92,8 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         category: categoryId,
         seller: sellerId,
         isActive,
-        stock: Number(stock)
+        stock: Number(stock),
+        productFeatureValues: featureGroups
       };
 
       const url = product ? `/api/products/${product._id}` : '/api/products';
@@ -73,7 +109,8 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save product');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save product');
       }
 
       onSuccess();
@@ -95,6 +132,66 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     }
   };
 
+  // Feature group management functions
+  const handleAddFeatureGroup = () => {
+    if (newFeatureGroup.featureGroupId && newFeatureGroup.featureGroupCaption) {
+      setFeatureGroups([...featureGroups, { ...newFeatureGroup }]);
+      setNewFeatureGroup({
+        featureGroupId: 0,
+        featureGroupCaption: '',
+        features: []
+      });
+    }
+  };
+
+  const handleRemoveFeatureGroup = (index: number) => {
+    const updatedGroups = [...featureGroups];
+    updatedGroups.splice(index, 1);
+    setFeatureGroups(updatedGroups);
+  };
+
+  // Feature management functions
+  const handleAddFeature = (groupIndex: number) => {
+    if (newFeature.featureId && newFeature.featureCaption) {
+      const updatedGroups = [...featureGroups];
+      updatedGroups[groupIndex].features.push({ ...newFeature });
+      setFeatureGroups(updatedGroups);
+      setNewFeature({
+        featureId: 0,
+        featureCaption: '',
+        featureValues: []
+      });
+    }
+  };
+
+  const handleRemoveFeature = (groupIndex: number, featureIndex: number) => {
+    const updatedGroups = [...featureGroups];
+    updatedGroups[groupIndex].features.splice(featureIndex, 1);
+    setFeatureGroups(updatedGroups);
+  };
+
+  // Feature value management functions
+  const handleAddFeatureValue = (groupIndex: number, featureIndex: number) => {
+    if (newFeatureValue.featureValue) {
+      const updatedGroups = [...featureGroups];
+      updatedGroups[groupIndex].features[featureIndex].featureValues.push({ 
+        type: newFeatureValue.type || 1,
+        featureValue: newFeatureValue.featureValue 
+      });
+      setFeatureGroups(updatedGroups);
+      setNewFeatureValue({
+        type: 1,
+        featureValue: ''
+      });
+    }
+  };
+
+  const handleRemoveFeatureValue = (groupIndex: number, featureIndex: number, valueIndex: number) => {
+    const updatedGroups = [...featureGroups];
+    updatedGroups[groupIndex].features[featureIndex].featureValues.splice(valueIndex, 1);
+    setFeatureGroups(updatedGroups);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
@@ -105,7 +202,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          Product Name
+          პროდუქტის სახელი
         </label>
         <input
           type="text"
@@ -119,7 +216,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          Description
+          დეტალური აღწერა
         </label>
         <textarea
           id="description"
@@ -133,11 +230,11 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
       <div>
         <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-          Price
+          ფასი
         </label>
         <div className="mt-1 relative rounded-md shadow-sm">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="text-gray-500 sm:text-sm">$</span>
+            <span className="text-gray-500 sm:text-sm">₾</span>
           </div>
           <input
             type="number"
@@ -154,7 +251,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Images
+            სურათები
         </label>
         <CloudinaryUploadWidget
           onUploadSuccess={handleImageUpload}
@@ -187,7 +284,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-          Category
+            კატეგორია
         </label>
         <select
           id="category"
@@ -207,7 +304,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
       <div>
         <label htmlFor="seller" className="block text-sm font-medium text-gray-700">
-          Seller
+            მაღაზია
         </label>
         <select
           id="seller"
@@ -216,7 +313,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
           className="text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
           required
         >
-          <option value="">Select a seller</option>
+          <option value="">აირჩიე მაღაზია</option>
           {sellers.map((seller) => (
             <option key={seller._id} value={seller._id}>
               {seller.name}
@@ -227,7 +324,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
       <div>
         <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
-          Stock
+            მარაგი
         </label>
         <input
           type="number"
@@ -249,24 +346,169 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
           className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
         />
         <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
-          Active
+          აქტიური
         </label>
       </div>
 
-      <div className="flex justify-end space-x-3">
+      {/* Product Features Section */}
+      <div className="border-t border-gray-200 pt-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">პროდუქტის მახასიათებლები</h3>
+        
+        {/* Feature Groups */}
+        <div className="space-y-6">
+          {featureGroups.map((group, groupIndex) => (
+            <div key={groupIndex} className="border border-gray-200 rounded-md p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-md font-medium text-gray-800">
+                  {group.featureGroupCaption} (ID: {group.featureGroupId})
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFeatureGroup(groupIndex)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  Remove Group
+                </button>
+              </div>
+              
+              {/* Features within this group */}
+              <div className="space-y-4 ml-4">
+                {group.features.map((feature, featureIndex) => (
+                  <div key={featureIndex} className="border-l-2 border-gray-200 pl-4 mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h5 className="text-sm font-medium text-gray-700">
+                        {feature.featureCaption} (ID: {feature.featureId})
+                      </h5>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFeature(groupIndex, featureIndex)}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                      >
+                        Remove Feature
+                      </button>
+                    </div>
+                    
+                    {/* Feature Values */}
+                    <div className="ml-4 space-y-2 mb-4">
+                      {feature.featureValues.map((value, valueIndex) => (
+                        <div key={valueIndex} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                          <span className="text-sm text-gray-600">
+                            Type {value.type}: {value.featureValue}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFeatureValue(groupIndex, featureIndex, valueIndex)}
+                            className="ml-2 text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                      
+                      {/* Add new feature value */}
+                      <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 bg-white p-2 rounded border border-gray-200">
+                        <input
+                          type="number"
+                          placeholder="Type"
+                          value={newFeatureValue.type || ''}
+                          onChange={(e) => setNewFeatureValue({...newFeatureValue, type: Number(e.target.value)})}
+                          className="text-gray-700 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm"
+                          min="1"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Value"
+                          value={newFeatureValue.featureValue}
+                          onChange={(e) => setNewFeatureValue({...newFeatureValue, featureValue: e.target.value})}
+                          className="text-gray-700 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleAddFeatureValue(groupIndex, featureIndex)}
+                          className="px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                        >
+                          Add Value
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Add new feature to this group */}
+                <div className="border-t border-gray-200 pt-2 mt-2">
+                  <h6 className="text-sm font-medium text-gray-700 mb-2">მახასიათებლის დამატება</h6>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <input
+                      type="number"
+                      placeholder="Feature ID"
+                      value={newFeature.featureId || ''}
+                      onChange={(e) => setNewFeature({...newFeature, featureId: Number(e.target.value)})}
+                      className="text-gray-700 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Feature Caption"
+                      value={newFeature.featureCaption}
+                      onChange={(e) => setNewFeature({...newFeature, featureCaption: e.target.value})}
+                      className="text-gray-700 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddFeature(groupIndex)}
+                      className="px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                    >
+                      ჯგუფის დამატება
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {/* Add new feature group */}
+          <div className="border border-gray-200 rounded-md p-4">
+            <h4 className="text-md font-medium text-gray-800 mb-4">მახასიათებლების ჯგუფის დამატება</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <input
+                type="number"
+                placeholder="Group ID"
+                value={newFeatureGroup.featureGroupId || ''}
+                onChange={(e) => setNewFeatureGroup({...newFeatureGroup, featureGroupId: Number(e.target.value)})}
+                className="text-gray-700 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              />
+              <input
+                type="text"
+                placeholder="Group Caption"
+                value={newFeatureGroup.featureGroupCaption}
+                onChange={(e) => setNewFeatureGroup({...newFeatureGroup, featureGroupCaption: e.target.value})}
+                className="text-gray-700 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              />
+              <button
+                type="button"
+                onClick={handleAddFeatureGroup}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+              >
+                ჯგუფის დამატება
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-4">
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
         >
-          Cancel
+          გაუქმება
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          {loading ? 'Saving...' : product ? 'Update Product' : 'Add Product'}
+          {loading ? 'შენახვა...' : product ? 'რედაქტირება' : 'შენახვა'}
         </button>
       </div>
     </form>
