@@ -449,9 +449,25 @@ export default function ProductsPage() {
     router.push('/products', { scroll: false });
   };
 
-  const handleCategorySelect = (categoryId: string | null) => {
+  const handleCategorySelect = async (categoryId: string | null) => {
     setSelectedCategory(categoryId);
     setSelectedFilter(null); // Reset filter when category changes
+    
+    // Load all filters when "ყველა" is clicked
+    if (categoryId === null) {
+      try {
+        setFiltersLoading(true);
+        const data = await filtersService.getActiveFilters();
+        setFilters(data);
+      } catch (err) {
+        console.error('Error fetching all filters:', err);
+        // Create example filters if there's an error
+        const exampleFilters = createExampleFilters();
+        setFilters(exampleFilters);
+      } finally {
+        setFiltersLoading(false);
+      }
+    }
   };
 
   const handleFilterSelect = async (filterId: string | null) => {

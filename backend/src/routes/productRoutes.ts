@@ -7,13 +7,15 @@ import {
   updateProduct,
   deleteProduct,
   getProductsByCategory,
-  getProductsBySeller
+  getProductsBySeller,
+  searchProducts
 } from '../controllers/productController';
 
 const router = express.Router();
 
 // Public routes (no authentication required)
 router.get('/', getAllProducts);
+router.get('/search', searchProducts);
 router.get('/:id', getProductById);
 router.get('/category/:categoryId', getProductsByCategory);
 

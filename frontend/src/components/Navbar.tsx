@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
 import Image from 'next/image';
+import SearchResults from './SearchResults';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -13,7 +14,10 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Check authentication status on component mount and when pathname changes
   useEffect(() => {
@@ -42,6 +46,17 @@ export default function Navbar() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Handle search input changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setShowSearchResults(true);
+  };
+
+  // Close search results
+  const handleCloseSearchResults = () => {
+    setShowSearchResults(false);
+  };
 
   const handleLogout = () => {
     logout();
@@ -79,18 +94,28 @@ export default function Navbar() {
             </div>
             
             {/* Search Input */}
-            <div className="hidden md:flex md:items-center md:ml-6">
-              <div className="relative">
+            <div className="hidden md:flex md:items-center md:ml-6 md:w-[500px]">
+              <div className="relative w-full text-gray-900" ref={searchRef}>
                 <input
                   type="text"
                   placeholder="ძიება..."
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full text-gray-900 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
                 />
                 <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-500">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </button>
+                
+                {/* Search Results Dropdown */}
+                {showSearchResults && (
+                  <SearchResults 
+                    searchTerm={searchTerm} 
+                    onClose={handleCloseSearchResults} 
+                  />
+                )}
               </div>
             </div>
           </div>

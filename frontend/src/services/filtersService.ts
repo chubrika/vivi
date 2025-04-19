@@ -27,6 +27,11 @@ export interface UpdateFilterData {
   isActive?: boolean;
 }
 
+export interface SearchFiltersResponse {
+  filters: Filter[];
+  total: number;
+}
+
 /**
  * Service for managing filters
  */
@@ -251,6 +256,49 @@ export const filtersService = {
 
     if (!response.ok) {
       throw new Error(data.message || 'Failed to toggle filter status');
+    }
+
+    return data;
+  },
+
+  /**
+   * Search filters using regex pattern
+   * @param searchTerm Search term to match against filter name and description
+   * @param categoryId Optional category ID to filter by
+   * @param page Page number for pagination
+   * @param limit Number of items per page
+   * @returns Promise<SearchFiltersResponse> Search results with total count
+   */
+  async searchFilters(
+    searchTerm: string,
+    categoryId?: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<SearchFiltersResponse> {
+    const token = getToken();
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const queryParams = new URLSearchParams({
+      search: searchTerm,
+      page: page.toString(),
+      limit: limit.toString(),
+      ...(categoryId && { category: categoryId }),
+    });
+
+    const response = await fetch(`${API_BASE_URL}/api/filters/search?${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to search filters');
     }
 
     return data;

@@ -181,6 +181,57 @@ export const getProductsBySeller = async (req: Request, res: Response) => {
   }
 };
 
+// Search products with regex
+export const searchProducts = async (req: Request, res: Response) => {
+  try {
+    const { search, category, seller, page = 1, limit = 10 } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    // Build query
+    const query: any = {};
+    
+    // Add search regex if provided
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    // Add category filter if provided
+    if (category) {
+      query.category = category;
+    }
+
+    // Add seller filter if provided
+    if (seller) {
+      query.seller = seller;
+    }
+
+    // Execute query with pagination
+    const [products, total] = await Promise.all([
+      Product.find(query)
+        .populate('seller', 'name email')
+        .populate('category', 'name')
+        .populate('filters', 'name description')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      Product.countDocuments(query)
+    ]);
+
+    res.json({
+      products,
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / Number(limit))
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error searching products', error });
+  }
+};
+
 // Helper function to validate product features
 const validateProductFeatures = (featureGroups: any[]) => {
   if (!Array.isArray(featureGroups)) {
