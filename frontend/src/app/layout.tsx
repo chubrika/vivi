@@ -25,7 +25,7 @@ export default function RootLayout({
           <CartProviderWrapper>
             <div className="flex flex-col min-h-screen">
               <NavbarWrapper />
-              <main className="flex-grow mt-[64px]">
+              <main className="flex-grow">
                 {children}
               </main>
               <Footer />
