@@ -3,13 +3,15 @@ import { API_BASE_URL } from '../utils/api';
 interface AuthCredentials {
   email: string;
   password: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 interface User {
   id: string;
   email: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   role: 'user' | 'admin';
   createdAt?: string;
   updatedAt?: string;

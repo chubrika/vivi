@@ -23,8 +23,8 @@ interface CartItem {
 }
 
 interface CheckoutForm {
-    name: string;
-    surname: string;
+    firstName: string;
+    lastName: string;
     mobile: string;
     personalNumber: string;
     address: string;
@@ -45,8 +45,8 @@ export default function CheckoutPage() {
     const [cartItemsToCheckout, setCartItemsToCheckout] = useState<CartItem[]>([]);
     const [isCartCheckout, setIsCartCheckout] = useState(false);
     const [formData, setFormData] = useState<CheckoutForm>({
-        name: '',
-        surname: '',
+        firstName: '',
+        lastName: '',
         mobile: '',
         personalNumber: '',
         address: '',
@@ -105,13 +105,13 @@ export default function CheckoutPage() {
                 const userData = await response.json();
                 
                 // Split the name into first and last name if it exists
-                let name = userData.name || '';
-                let surname = '';
+                let firstName = userData.firstName || '';
+                let lastName = '';
                 
-                if (name.includes(' ')) {
-                    const nameParts = name.split(' ');
-                    name = nameParts[0];
-                    surname = nameParts.slice(1).join(' ');
+                if (firstName.includes(' ')) {
+                    const nameParts = firstName.split(' ');
+                    firstName = nameParts[0];
+                    lastName = nameParts.slice(1).join(' ');
                 }
 
                 // Fetch user's default address
@@ -133,8 +133,8 @@ export default function CheckoutPage() {
                 // Update form with user data
                 setFormData(prev => ({
                     ...prev,
-                    name: name,
-                    surname: surname,
+                    firstName: firstName,
+                    lastName: lastName,
                     mobile: userData.phone || '',
                     address: address,
                     // Keep other fields as they are
@@ -191,13 +191,13 @@ export default function CheckoutPage() {
             const userData = await response.json();
             
             // Split the name into first and last name if it exists
-            let name = userData.name || '';
-            let surname = '';
+            let firstName = userData.firstName || '';
+            let lastName = '';
             
-            if (name.includes(' ')) {
-                const nameParts = name.split(' ');
-                name = nameParts[0];
-                surname = nameParts.slice(1).join(' ');
+            if (firstName.includes(' ')) {
+                const nameParts = firstName.split(' ');
+                firstName = nameParts[0];
+                lastName = nameParts.slice(1).join(' ');
             }
 
             // Fetch user's default address
@@ -219,8 +219,8 @@ export default function CheckoutPage() {
             // Update form with user data
             setFormData(prev => ({
                 ...prev,
-                name: name,
-                surname: surname,
+                firstName: firstName,
+                lastName: lastName,
                 mobile: userData.phone || '',
                 address: address,
                 // Keep other fields as they are
@@ -272,14 +272,14 @@ export default function CheckoutPage() {
                                     <input
                                         type="text"
                                         name="name"
-                                        value={formData.name}
+                                        value={formData.firstName}
                                         onChange={handleInputChange}
                                         required
                                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                                        formData.name ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                                        formData.firstName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
                                     }`}>
                                         სახელი
                                     </label>
@@ -287,15 +287,15 @@ export default function CheckoutPage() {
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        name="surname"
-                                        value={formData.surname}
+                                        name="lastName"
+                                        value={formData.lastName}
                                         onChange={handleInputChange}
                                         required
                                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                                        formData.surname ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                                        formData.lastName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
                                     }`}>
                                         გვარი
                                     </label>

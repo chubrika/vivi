@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -13,15 +13,12 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create new user
+    // Create new user - password will be hashed by the User model's pre-save middleware
     const user = new User({
-      name,
+      firstName,
+      lastName,
       email,
-      password: hashedPassword,
+      password, // Pass the plain password, let the model hash it
       role: 'user' // Explicitly set role
     });
 
@@ -50,7 +47,8 @@ export const register = async (req: Request, res: Response) => {
         token,
         user: {
           id: user._id,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
           role: user.role || 'user'
         },
@@ -68,16 +66,21 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt for email:', email);
 
-    // Check if user exists - explicitly select the password field
+    // Check if user exists and select password field
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
+    console.log('User found:', { id: user._id, email: user.email, role: user.role });
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    // Check password using the user's comparePassword method
+    const isValidPassword = await user.comparePassword(password);
+    console.log('Password validation result:', isValidPassword);
+    if (!isValidPassword) {
+      console.log('Invalid password for user:', email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -100,11 +103,13 @@ export const login = async (req: Request, res: Response) => {
         { expiresIn: '24h' }
       );
 
+      console.log('Login successful for user:', email);
       res.json({
         token,
         user: {
           id: user._id,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
           role: user.role || 'user'
         },

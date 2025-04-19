@@ -5,7 +5,8 @@ import { API_BASE_URL } from './api';
 interface User {
   id: string;
   email: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   role: 'user' | 'admin';
   createdAt?: string;
   updatedAt?: string;

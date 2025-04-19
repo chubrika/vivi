@@ -14,7 +14,8 @@ export default function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
   });
@@ -76,19 +77,34 @@ export default function AuthForm({ type }: AuthFormProps) {
           )}
           <div className="rounded-md shadow-sm -space-y-px">
             {type === 'register' && (
-              <div>
-                <label htmlFor="name" className="sr-only">Name</label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                  placeholder="Full name"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
+              <>
+                <div>
+                  <label htmlFor="firstName" className="sr-only">First Name</label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    required
+                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                    placeholder="First name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="lastName" className="sr-only">Last Name</label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    required
+                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                    placeholder="Last name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                  />
+                </div>
+              </>
             )}
             <div>
               <label htmlFor="email" className="sr-only">Email address</label>
@@ -97,7 +113,9 @@ export default function AuthForm({ type }: AuthFormProps) {
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm ${
+                  type === 'register' ? '' : 'rounded-t-md'
+                }`}
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
@@ -128,7 +146,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             </button>
           </div>
 
-          <div className="text-sm text-center">
+          <div className="text-center">
             <Link 
               href={type === 'login' ? '/register' : '/login'}
               className="font-medium text-purple-600 hover:text-purple-500"
