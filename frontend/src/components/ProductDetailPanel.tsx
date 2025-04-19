@@ -48,6 +48,7 @@ interface ProductDetailPanelProps {
 export default function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [quantity, setQuantity] = useState(1);
     const router = useRouter();
 
     // Handle body scroll lock when panel is open
@@ -87,8 +88,16 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
         if (product) {
             // Close the panel
             onClose();
-            // Navigate to checkout page with product ID
-            router.push(`/checkout?productId=${product._id}`);
+            // Navigate to checkout page with product ID and quantity
+            router.push(`/checkout?productId=${product._id}&quantity=${quantity}`);
+        }
+    };
+
+    // Handle quantity change
+    const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value);
+        if (value > 0 && value <= (product?.stock || 1)) {
+            setQuantity(value);
         }
     };
 
@@ -171,6 +180,21 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                     <p className="mt-1 text-gray-600">{product.stock} ერთეული</p>
                                 </div>
 
+                                {/* Quantity Input */}
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900">რაოდენობა</h2>
+                                    <div className="mt-2 flex items-center">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max={product.stock}
+                                            value={quantity}
+                                            onChange={handleQuantityChange}
+                                            className="w-24 px-3 py-2 border text-gray-600 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        />
+                                    </div>
+                                </div>
+
                                 {/* Category */}
                                 <div>
                                     <h2 className="text-lg font-semibold text-gray-900">კატეგორია</h2>
@@ -188,7 +212,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                     </button>
                                   </div>
                                 <div className="pt-4 flex gap-4">
-                                    <AddToCartButton product={product} />
+                                    <AddToCartButton product={product} quantity={quantity} />
                                   
                                 </div>
                                 </div>

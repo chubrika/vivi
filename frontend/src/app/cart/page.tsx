@@ -4,19 +4,16 @@ import { useState } from 'react';
 import { useCart } from '../../utils/cartContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, totalPrice, isLoading } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const router = useRouter();
 
   const handleCheckout = () => {
     setIsCheckingOut(true);
-    // Redirect to checkout page or process checkout
-    // This is a placeholder for the actual checkout process
-    setTimeout(() => {
-      setIsCheckingOut(false);
-      alert('Checkout functionality will be implemented soon!');
-    }, 1000);
+    router.push('/checkout');
   };
 
   if (isLoading) {

@@ -14,10 +14,11 @@ interface AddToCartButtonProps {
     isActive: boolean;
     stock: number;
   };
+  quantity?: number;
   className?: string;
 }
 
-export default function AddToCartButton({ product, className = '' }: AddToCartButtonProps) {
+export default function AddToCartButton({ product, quantity = 1, className = '' }: AddToCartButtonProps) {
   const { addItem } = useCart();
 
   const handleAddToCart = () => {
@@ -25,7 +26,7 @@ export default function AddToCartButton({ product, className = '' }: AddToCartBu
       id: product._id,
       name: product.name,
       price: product.price,
-      quantity: 1,
+      quantity: quantity,
       image: product.images[0],
       sellerId: product.seller._id
     });
