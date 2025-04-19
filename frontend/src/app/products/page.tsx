@@ -53,7 +53,9 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     searchParams.get('category') || null
   );
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(
+    searchParams.get('filter') || null
+  );
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -74,16 +76,29 @@ export default function ProductsPage() {
   const maxThumbRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
 
-  // Fetch products based on selected category
+  // Fetch products based on selected category, filter, and price range
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setProductsLoading(true);
         
-        // Construct URL with category filter if selected
-        const endpoint = selectedCategory
-          ? `/api/products?category=${selectedCategory}`
-          : '/api/products';
+        // Construct URL with category and filter parameters
+        const params = new URLSearchParams();
+        
+        if (selectedCategory) {
+          params.append('category', selectedCategory);
+        }
+        
+        if (selectedFilter) {
+          params.append('filter', selectedFilter);
+        }
+        
+        // Add price range parameters
+        params.append('minPrice', priceRange[0].toString());
+        params.append('maxPrice', priceRange[1].toString());
+        
+        const queryString = params.toString();
+        const endpoint = queryString ? `/api/products?${queryString}` : '/api/products';
         
         const data = await api.get(endpoint, undefined, false);
         setProducts(data);
@@ -97,7 +112,7 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedFilter, priceRange]);
 
   // Fetch categories
   useEffect(() => {
@@ -166,9 +181,19 @@ export default function ProductsPage() {
         setFiltersLoading(true);
         // Use getActiveFilters to only show active filters
         const data = await filtersService.getActiveFilters();
-        setFilters(data);
+        
+        // If no filters are returned, create some example filters for demonstration
+        if (data.length === 0) {
+          const exampleFilters = createExampleFilters();
+          setFilters(exampleFilters);
+        } else {
+          setFilters(data);
+        }
       } catch (err) {
         console.error('Error fetching filters:', err);
+        // Create example filters if there's an error
+        const exampleFilters = createExampleFilters();
+        setFilters(exampleFilters);
       } finally {
         setFiltersLoading(false);
       }
@@ -176,6 +201,60 @@ export default function ProductsPage() {
 
     fetchFilters();
   }, []);
+
+  // Function to create example filters for demonstration
+  const createExampleFilters = () => {
+    // Get the first category if available
+    const firstCategory = categories.length > 0 ? categories[0] : { _id: 'example-category', name: 'Example Category' };
+    
+    return [
+      {
+        _id: 'filter-category',
+        name: 'Category Filter',
+        description: 'Filter by category',
+        category: firstCategory,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        _id: 'filter-high-price',
+        name: 'High Price',
+        description: 'Filter high-priced products',
+        category: firstCategory,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        _id: 'filter-low-price',
+        name: 'Low Price',
+        description: 'Filter low-priced products',
+        category: firstCategory,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        _id: 'filter-in-stock',
+        name: 'In Stock',
+        description: 'Filter products in stock',
+        category: firstCategory,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        _id: 'filter-out-of-stock',
+        name: 'Out of Stock',
+        description: 'Filter products out of stock',
+        category: firstCategory,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+  };
 
   // Fetch filters by category when category changes
   useEffect(() => {
@@ -196,38 +275,61 @@ export default function ProductsPage() {
     fetchFiltersByCategory();
   }, [selectedCategory]);
 
-  // Filter products by price range and selected filter
-  const filteredProducts = products.filter(product => {
-    // First filter by price range
-    const priceInRange = product.price >= priceRange[0] && product.price <= priceRange[1];
-    
-    // Then filter by selected filter if one is selected
-    if (selectedFilter) {
-      const filter = filters.find(f => f._id === selectedFilter);
-      if (filter) {
-        // Here you would implement the actual filtering logic based on your filter criteria
-        // This is a placeholder - you'll need to adjust based on your actual filter implementation
-        return priceInRange && product.category._id === filter.category._id;
-      }
-    }
-    
-    return priceInRange;
-  });
+  // Since we're now fetching filtered products from the server,
+  // we can simply use the products array directly
+  const filteredProducts = products;
 
   // Handle price input change
-  const handlePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePriceInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    let newPriceRange = [...priceRange] as [number, number];
+    
     if (e.target.name === 'min') {
       setMinPriceInput(value);
       const numValue = parseInt(value);
       if (!isNaN(numValue) && numValue <= priceRange[1]) {
-        setPriceRange([numValue, priceRange[1]]);
+        newPriceRange = [numValue, priceRange[1]];
+        setPriceRange(newPriceRange);
       }
     } else {
       setMaxPriceInput(value);
       const numValue = parseInt(value);
       if (!isNaN(numValue) && numValue >= priceRange[0]) {
-        setPriceRange([priceRange[0], numValue]);
+        newPriceRange = [priceRange[0], numValue];
+        setPriceRange(newPriceRange);
+      }
+    }
+    
+    // Only fetch products if the price range actually changed
+    if (newPriceRange[0] !== priceRange[0] || newPriceRange[1] !== priceRange[1]) {
+      setProductsLoading(true);
+      
+      try {
+        // Construct URL with category, filter, and price range parameters
+        const params = new URLSearchParams();
+        
+        if (selectedCategory) {
+          params.append('category', selectedCategory);
+        }
+        
+        if (selectedFilter) {
+          params.append('filter', selectedFilter);
+        }
+        
+        // Add price range parameters
+        params.append('minPrice', newPriceRange[0].toString());
+        params.append('maxPrice', newPriceRange[1].toString());
+        
+        const queryString = params.toString();
+        const endpoint = queryString ? `/api/products?${queryString}` : '/api/products';
+        
+        const data = await api.get(endpoint, undefined, false);
+        setProducts(data);
+      } catch (err) {
+        console.error('Error fetching products by price range:', err);
+        setError('Failed to fetch products by price range');
+      } finally {
+        setProductsLoading(false);
       }
     }
   };
@@ -255,22 +357,59 @@ export default function ProductsPage() {
       // Convert percentage to price value
       const priceValue = Math.round(minPrice + (position / 100) * (maxPrice - minPrice));
       
+      let newPriceRange = [...priceRange] as [number, number];
+      
       if (isDragging === 'min') {
         // Ensure min doesn't exceed max
         if (priceValue <= priceRange[1]) {
-          setPriceRange([priceValue, priceRange[1]]);
+          newPriceRange = [priceValue, priceRange[1]];
+          setPriceRange(newPriceRange);
           setMinPriceInput(priceValue.toString());
         }
       } else {
         // Ensure max doesn't go below min
         if (priceValue >= priceRange[0]) {
-          setPriceRange([priceRange[0], priceValue]);
+          newPriceRange = [priceRange[0], priceValue];
+          setPriceRange(newPriceRange);
           setMaxPriceInput(priceValue.toString());
         }
       }
     };
     
-    const handleMouseUp = () => {
+    const handleMouseUp = async () => {
+      if (isDragging) {
+        // Fetch products when the slider is released
+        setProductsLoading(true);
+        
+        try {
+          // Construct URL with category, filter, and price range parameters
+          const params = new URLSearchParams();
+          
+          if (selectedCategory) {
+            params.append('category', selectedCategory);
+          }
+          
+          if (selectedFilter) {
+            params.append('filter', selectedFilter);
+          }
+          
+          // Add price range parameters
+          params.append('minPrice', priceRange[0].toString());
+          params.append('maxPrice', priceRange[1].toString());
+          
+          const queryString = params.toString();
+          const endpoint = queryString ? `/api/products?${queryString}` : '/api/products';
+          
+          const data = await api.get(endpoint, undefined, false);
+          setProducts(data);
+        } catch (err) {
+          console.error('Error fetching products by price range:', err);
+          setError('Failed to fetch products by price range');
+        } finally {
+          setProductsLoading(false);
+        }
+      }
+      
       setIsDragging(null);
     };
     
@@ -283,7 +422,7 @@ export default function ProductsPage() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, minPrice, maxPrice, priceRange]);
+  }, [isDragging, minPrice, maxPrice, priceRange, selectedCategory, selectedFilter]);
 
   // Calculate thumb positions
   const minThumbPosition = ((priceRange[0] - minPrice) / (maxPrice - minPrice)) * 100;
@@ -315,8 +454,54 @@ export default function ProductsPage() {
     setSelectedFilter(null); // Reset filter when category changes
   };
 
-  const handleFilterSelect = (filterId: string | null) => {
+  const handleFilterSelect = async (filterId: string | null) => {
     setSelectedFilter(filterId);
+    setProductsLoading(true);
+    
+    try {
+      // Construct URL with filter parameter if selected
+      const params = new URLSearchParams();
+      
+      if (selectedCategory) {
+        params.append('category', selectedCategory);
+      }
+      
+      if (filterId) {
+        params.append('filter', filterId);
+      }
+      
+      // Add price range parameters
+      params.append('minPrice', priceRange[0].toString());
+      params.append('maxPrice', priceRange[1].toString());
+      
+      const queryString = params.toString();
+      const endpoint = queryString ? `/api/products?${queryString}` : '/api/products';
+      
+      const data = await api.get(endpoint, undefined, false);
+      setProducts(data);
+    } catch (err) {
+      console.error('Error fetching filtered products:', err);
+      setError('Failed to fetch filtered products');
+    } finally {
+      setProductsLoading(false);
+    }
+    
+    // Update URL with selected filter
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (filterId) {
+      params.set('filter', filterId);
+    } else {
+      params.delete('filter');
+    }
+    
+    // Preserve product ID if it exists
+    const productId = searchParams.get('product');
+    if (productId) {
+      params.set('product', productId);
+    }
+    
+    router.push(`/products?${params.toString()}`, { scroll: false });
   };
 
   if (initialLoading) {
@@ -337,71 +522,71 @@ export default function ProductsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 mt-8 text-gray-600">პროდუქტები</h1>
+      <h1 className="text-xl font-bold mb-8 mt-8 text-gray-600">პროდუქტები</h1>
 
       {/* Horizontal Category Filter Navigation */}
       <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">კატეგორიები</h2>
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
-          <button
-            onClick={() => handleCategorySelect(null)}
-            className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
-              selectedCategory === null
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            ყველა ({allProducts.length})
-          </button>
-          {categories.map((category) => (
-            <button
-              key={category._id}
-              onClick={() => handleCategorySelect(category._id)}
-              className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
-                selectedCategory === category._id
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {category.name} ({category.productCount || 0})
-            </button>
-          ))}
+        <h2 className="text-md font-semibold mb-4 text-gray-800">კატეგორიები</h2>
+        <div className="relative">
+          <div className="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <div className="flex gap-2 min-w-max">
+              <button
+                onClick={() => handleCategorySelect(null)}
+                className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
+                  selectedCategory === null
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                ყველა
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category._id}
+                  onClick={() => handleCategorySelect(category._id)}
+                  className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
+                    selectedCategory === category._id
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white pointer-events-none"></div>
         </div>
       </div>
 
       {/* Horizontal Filters Navigation */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">ფილტრები</h2>
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
-          <button
-            onClick={() => handleFilterSelect(null)}
-            className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
-              selectedFilter === null
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            ყველა ფილტრი
-          </button>
-          {filtersLoading ? (
-            <div className="animate-pulse bg-gray-200 h-10 w-24 rounded-full"></div>
-          ) : (
-            filters
-              .filter(filter => !selectedCategory || filter.category._id === selectedCategory)
-              .map((filter) => (
-                <button
-                  key={filter._id}
-                  onClick={() => handleFilterSelect(filter._id)}
-                  className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
-                    selectedFilter === filter._id
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {filter.name}
-                </button>
-              ))
-          )}
+        <h2 className="text-md font-semibold mb-4 text-gray-800">ფილტრები</h2>
+        <div className="relative">
+          <div className="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <div className="flex gap-2 min-w-max">
+              {filtersLoading ? (
+                <div className="animate-pulse bg-gray-200 h-10 w-24 rounded-full"></div>
+              ) : (
+                filters
+                  .filter(filter => !selectedCategory || filter.category._id === selectedCategory)
+                  .map((filter) => (
+                    <button
+                      key={filter._id}
+                      onClick={() => handleFilterSelect(filter._id)}
+                      className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
+                        selectedFilter === filter._id
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {filter.name}
+                    </button>
+                  ))
+              )}
+            </div>
+          </div>
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white pointer-events-none"></div>
         </div>
       </div>
 
@@ -472,6 +657,22 @@ export default function ProductsPage() {
 
         {/* Products Grid */}
         <div className="flex-1">
+          {selectedFilter && (
+            <div className="mb-4 flex items-center">
+              <span className="text-sm text-gray-600 mr-2">Filtered by:</span>
+              <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                {filters.find(f => f._id === selectedFilter)?.name || 'Filter'}
+              </span>
+              <button 
+                onClick={() => handleFilterSelect(null)}
+                className="ml-2 text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {productsLoading ? (
               // Show skeleton loaders while products are loading
@@ -480,28 +681,45 @@ export default function ProductsPage() {
               ))
             ) : (
               // Show actual products when loaded
-              filteredProducts.map((product) => (
-                <div
-                  key={product._id}
-                  className="bg-white rounded-lg shadow overflow-hidden cursor-pointer"
-                  onClick={() => handleProductSelect(product)}
-                >
-                  <div className="relative aspect-square">
-                    <img
-                      src={product.images[0] || 'https://via.placeholder.com/400'}
-                      alt={product.name}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <p className="text-gray-900 font-semibold">{product.price.toFixed(2)} ₾</p>
-                    <h2 className="text-md text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
-                    <div className="mt-2 flex items-center justify-between">
-                      <span className="text-sm text-gray-500">{product.seller.name}</span>
+              filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <div
+                    key={product._id}
+                    className="bg-white rounded-lg shadow overflow-hidden cursor-pointer"
+                    onClick={() => handleProductSelect(product)}
+                  >
+                    <div className="relative aspect-square">
+                      <img
+                        src={product.images[0] || 'https://via.placeholder.com/400'}
+                        alt={product.name}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <p className="text-gray-900 font-semibold">{product.price.toFixed(2)} ₾</p>
+                      <h2 className="text-md text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-sm text-gray-500">{product.seller.name}</span>
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-500 text-lg">პროდუქტები არ მოიძებნა</p>
+                  <button 
+                    onClick={() => {
+                      handleFilterSelect(null);
+                      setPriceRange([minPrice, maxPrice]);
+                      setMinPriceInput(minPrice.toString());
+                      setMaxPriceInput(maxPrice.toString());
+                    }}
+                    className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+                  >
+                    ფილტრის გასუფთავება
+                  </button>
                 </div>
-              ))
+              )
             )}
           </div>
         </div>

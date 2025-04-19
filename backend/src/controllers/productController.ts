@@ -4,7 +4,6 @@ import Product from '../models/Product';
 // Get all products
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    // Create base query
     const query: any = {};
     
     // Add category filter if provided
@@ -12,10 +11,22 @@ export const getAllProducts = async (req: Request, res: Response) => {
       query.category = req.query.category;
     }
     
+    // Add seller filter if provided
+    if (req.query.seller) {
+      query.seller = req.query.seller;
+    }
+    
+    // Add filter filter if provided
+    if (req.query.filter) {
+      query.filters = req.query.filter;
+    }
+    
     const products = await Product.find(query)
       .populate('seller', 'name email')
       .populate('category', 'name')
+      .populate('filters', 'name description')
       .sort({ createdAt: -1 });
+      
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching products', error });
@@ -27,10 +38,13 @@ export const getProductById = async (req: Request, res: Response) => {
   try {
     const product = await Product.findById(req.params.id)
       .populate('seller', 'name email')
-      .populate('category', 'name');
+      .populate('category', 'name')
+      .populate('filters', 'name description');
+      
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
+    
     res.json(product);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching product', error });
@@ -56,7 +70,8 @@ export const createProduct = async (req: Request, res: Response) => {
     await product.save();
     const populatedProduct = await Product.findById(product._id)
       .populate('seller', 'name email')
-      .populate('category', 'name');
+      .populate('category', 'name')
+      .populate('filters', 'name description');
     res.status(201).json(populatedProduct);
   } catch (error) {
     if (error instanceof Error) {
@@ -83,24 +98,47 @@ export const updateProduct = async (req: Request, res: Response) => {
   try {
     // Validate product features if provided
     if (req.body.productFeatureValues) {
-      validateProductFeatures(req.body.productFeatureValues);
+      try {
+        validateProductFeatures(req.body.productFeatureValues);
+      } catch (validationError) {
+        return res.status(400).json({ 
+          message: 'Validation error in product features', 
+          error: validationError instanceof Error ? validationError.message : 'Invalid feature data'
+        });
+      }
     }
     
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
-    ).populate('seller', 'name email').populate('category', 'name');
+    )
+      .populate('seller', 'name email')
+      .populate('category', 'name')
+      .populate('filters', 'name description');
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
+    
     res.json(product);
   } catch (error) {
-    if (error instanceof Error && error.name === 'ValidationError') {
-      return res.status(400).json({ message: 'Validation error', error: error.message });
+    if (error instanceof Error) {
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({ 
+          message: 'Validation error', 
+          error: error.message 
+        });
+      }
+      return res.status(500).json({ 
+        message: 'Error updating product', 
+        error: error.message 
+      });
     }
-    res.status(500).json({ message: 'Error updating product', error });
+    res.status(500).json({ 
+      message: 'Error updating product', 
+      error: 'An unexpected error occurred' 
+    });
   }
 };
 

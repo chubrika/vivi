@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import CloudinaryUploadWidget from './CloudinaryUploadWidget';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
+import { filtersService, Filter } from '../services/filtersService';
 
 // Use dynamic import with no SSR to avoid hydration issues
 const ReactQuill = dynamic(() => import('react-quill'), { 
@@ -69,6 +70,11 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Filters state
+  const [filters, setFilters] = useState<Filter[]>([]);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [filtersLoading, setFiltersLoading] = useState(false);
+  
   // Product features state
   const [featureGroups, setFeatureGroups] = useState<FeatureGroup[]>(product?.productFeatureValues || []);
   const [newFeatureGroup, setNewFeatureGroup] = useState<FeatureGroup>({
@@ -133,6 +139,31 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     };
   }, []);
 
+  // Fetch filters when category changes
+  useEffect(() => {
+    const fetchFilters = async () => {
+      if (categoryId) {
+        try {
+          setFiltersLoading(true);
+          const data = await filtersService.getFiltersByCategory(categoryId);
+          setFilters(data);
+          // Reset selected filters when category changes
+          setSelectedFilters([]);
+        } catch (err) {
+          console.error('Error fetching filters:', err);
+          setFilters([]);
+        } finally {
+          setFiltersLoading(false);
+        }
+      } else {
+        setFilters([]);
+        setSelectedFilters([]);
+      }
+    };
+
+    fetchFilters();
+  }, [categoryId]);
+
   const modules = useMemo(() => ({
     toolbar: {
       container: [
@@ -183,7 +214,8 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         seller: sellerId,
         isActive,
         stock: Number(stock),
-        productFeatureValues: featureGroups
+        productFeatureValues: featureGroups,
+        filters: selectedFilters
       };
 
       const url = product ? `/api/products/${product._id}` : '/api/products';
@@ -416,6 +448,38 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
           </select>
         </div>
 
+        <div>
+          <label htmlFor="filters" className="block text-sm font-medium text-gray-700 mb-1">
+              ფილტრები
+          </label>
+          <select
+            id="filters"
+            multiple
+            value={selectedFilters}
+            onChange={(e) => {
+              const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+              setSelectedFilters(selectedOptions);
+            }}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+            disabled={!categoryId || filtersLoading}
+          >
+            {filtersLoading ? (
+              <option value="" disabled>Loading filters...</option>
+            ) : filters.length > 0 ? (
+              filters.map((filter) => (
+                <option key={filter._id} value={filter._id}>
+                  {filter.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>No filters available for this category</option>
+            )}
+          </select>
+          <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple filters</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="seller" className="block text-sm font-medium text-gray-700 mb-1">
               მაღაზია

@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { sellersService, Seller, CreateSellerData } from '../../../services/sellersService';
+import SellerCreationModal from '../../../components/SellerCreationModal';
 
 export default function SellersPage() {
   const router = useRouter();
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState<CreateSellerData>({
@@ -21,24 +23,21 @@ export default function SellersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Fetch sellers
+  const fetchSellers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await sellersService.getAllSellers();
+      setSellers(data);
+    } catch (err) {
+      console.error('Error fetching sellers:', err);
+      setError('Failed to fetch sellers. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchSellers = async () => {
-      try {
-        setLoading(true);
-        
-        // Use the sellersService to fetch all sellers
-        const sellersData = await sellersService.getAllSellers();
-        setSellers(sellersData);
-        
-      } catch (err) {
-        console.error('Error fetching sellers:', err);
-        setError('Failed to load sellers. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchSellers();
   }, []);
 
@@ -86,239 +85,149 @@ export default function SellersPage() {
     }
   };
 
-  const handleToggleStatus = async (id: string) => {
+  const handleToggleStatus = async (sellerId: string) => {
     try {
-      // Use the sellersService to toggle seller status
-      const updatedSeller = await sellersService.toggleSellerStatus(id);
-      
-      // Update the sellers list with the updated seller
-      setSellers(prev => 
-        prev.map(seller => 
-          seller._id === id ? updatedSeller : seller
+      const seller = sellers.find((s) => s._id === sellerId);
+      if (!seller) return;
+
+      await sellersService.updateSeller(sellerId, { isActive: !seller.isActive });
+      setSellers((prev: Seller[]) =>
+        prev.map((s) =>
+          s._id === sellerId ? { ...s, isActive: !s.isActive } : s
         )
       );
     } catch (err) {
-      console.error('Error toggling seller status:', err);
-      setError('Failed to update seller status. Please try again later.');
+      setError('Failed to update seller status');
+      console.error('Error updating seller status:', err);
     }
   };
 
-  const handleDeleteSeller = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this seller?')) {
+  const handleDeleteSeller = async (sellerId: string) => {
+    if (!window.confirm('Are you sure you want to delete this seller?')) {
       return;
     }
-    
+
     try {
-      // Use the sellersService to delete a seller
-      await sellersService.deleteSeller(id);
-      
-      // Update sellers list by removing the deleted seller
-      setSellers(prev => prev.filter(seller => seller._id !== id));
+      await sellersService.deleteSeller(sellerId);
+      setSellers((prev: Seller[]) => prev.filter((s) => s._id !== sellerId));
     } catch (err) {
+      setError('Failed to delete seller');
       console.error('Error deleting seller:', err);
-      setError('Failed to delete seller. Please try again later.');
+    }
+  };
+
+  const handleCreateSeller = async (data: CreateSellerData) => {
+    try {
+      const newSeller = await sellersService.createSeller(data);
+      setSellers((prev: Seller[]) => [...prev, newSeller]);
+      setIsModalOpen(false);
+    } catch (err) {
+      setError('Failed to create seller');
+      console.error('Error creating seller:', err);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        <p>{error}</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Sellers</h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Sellers Management</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+        >
+          Add New Seller
+        </button>
       </div>
-      
-      {/* Seller Creation Form */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Create New Seller</h2>
-        
-        {formError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-            <p>{formError}</p>
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Seller Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                required
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                required
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-              />
-            </div>
-          </div>
-          
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-              Address
-            </label>
-            <textarea
-              id="address"
-              name="address"
-              rows={3}
-              value={formData.address}
-              onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={3}
-              value={formData.description}
-              onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-            />
-          </div>
-          
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-            >
-              {isSubmitting ? 'Creating...' : 'Create Seller'}
-            </button>
-          </div>
-        </form>
-      </div>
-      
-      {/* Sellers List */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-4 py-5 sm:px-6">
-          <h2 className="text-lg font-medium text-gray-900">All Sellers</h2>
+
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <p>{error}</p>
         </div>
-        
-        {sellers.length === 0 ? (
-          <div className="px-4 py-5 sm:px-6 text-center text-gray-500">
-            No sellers found. Create your first seller above.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Phone
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+      )}
+
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Email
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Phone
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {sellers.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  No sellers found. Click "Add New Seller" to create one.
+                </td>
+              </tr>
+            ) : (
+              sellers.map((seller) => (
+                <tr key={seller._id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{seller.name}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">{seller.email}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">{seller.phone || '-'}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      seller.isActive
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {seller.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <button
+                      onClick={() => handleToggleStatus(seller._id)}
+                      className={`text-${seller.isActive ? 'red' : 'green'}-600 hover:text-${seller.isActive ? 'red' : 'green'}-900`}
+                    >
+                      {seller.isActive ? 'Deactivate' : 'Activate'}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSeller(seller._id)}
+                      className="text-red-600 hover:text-red-900 ml-4"
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {sellers.map(seller => (
-                  <tr key={seller._id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {seller.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {seller.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {seller.phone || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        seller.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {seller.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
-                      <button
-                        onClick={() => router.push(`/admin/sellers/${seller._id}`)}
-                        className="text-primary hover:text-primary-dark"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleToggleStatus(seller._id)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        Toggle Status
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSeller(seller._id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
+
+      <SellerCreationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSellerCreated={handleCreateSeller}
+      />
     </div>
   );
 } 

@@ -39,6 +39,11 @@ interface Product {
   images: string[];
   isActive: boolean;
   productFeatureValues?: FeatureGroup[];
+  filters?: {
+    _id: string;
+    name: string;
+    description: string;
+  }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -54,6 +59,7 @@ interface ProductFormData {
   images: string[];
   isActive: boolean;
   productFeatureValues?: FeatureGroup[];
+  filters?: string[];
 }
 
 interface Seller {
@@ -156,7 +162,8 @@ const ProductsPage = () => {
         category: product.category._id,
         images: product.images,
         isActive: product.isActive,
-        productFeatureValues: product.productFeatureValues
+        productFeatureValues: product.productFeatureValues,
+        filters: product.filters?.map(filter => filter._id) || []
       });
     } else {
       setSelectedProduct(undefined);
@@ -288,34 +295,55 @@ const ProductsPage = () => {
                   </div>
                   
                   {/* Product Features Section */}
-                  {expandedProductId === product._id && product.productFeatureValues && product.productFeatureValues.length > 0 && (
+                  {expandedProductId === product._id && (
                     <div className="mt-4 pl-4 border-l-2 border-gray-200">
-                      <h4 className="text-md font-medium text-gray-800 mb-2">Product Features</h4>
-                      <div className="space-y-4">
-                        {product.productFeatureValues.map((group, groupIndex) => (
-                          <div key={groupIndex} className="border border-gray-200 rounded-md p-3">
-                            <h5 className="text-sm font-medium text-gray-700 mb-2">
-                              {group.featureGroupCaption} (ID: {group.featureGroupId})
-                            </h5>
-                            <div className="ml-4 space-y-2">
-                              {group.features.map((feature, featureIndex) => (
-                                <div key={featureIndex} className="border-l-2 border-gray-200 pl-3">
-                                  <h6 className="text-sm font-medium text-gray-600">
-                                    {feature.featureCaption} (ID: {feature.featureId})
-                                  </h6>
-                                  <div className="ml-4">
-                                    {feature.featureValues.map((value, valueIndex) => (
-                                      <div key={valueIndex} className="text-sm text-gray-500">
-                                        Type {value.type}: {value.featureValue}
+                      {product.productFeatureValues && product.productFeatureValues.length > 0 && (
+                        <>
+                          <h4 className="text-md font-medium text-gray-800 mb-2">Product Features</h4>
+                          <div className="space-y-4">
+                            {product.productFeatureValues.map((group, groupIndex) => (
+                              <div key={groupIndex} className="border border-gray-200 rounded-md p-3">
+                                <h5 className="text-sm font-medium text-gray-700 mb-2">
+                                  {group.featureGroupCaption} (ID: {group.featureGroupId})
+                                </h5>
+                                <div className="ml-4 space-y-2">
+                                  {group.features.map((feature, featureIndex) => (
+                                    <div key={featureIndex} className="border-l-2 border-gray-200 pl-3">
+                                      <h6 className="text-sm font-medium text-gray-600">
+                                        {feature.featureCaption} (ID: {feature.featureId})
+                                      </h6>
+                                      <div className="ml-4">
+                                        {feature.featureValues.map((value, valueIndex) => (
+                                          <div key={valueIndex} className="text-sm text-gray-500">
+                                            Type {value.type}: {value.featureValue}
+                                          </div>
+                                        ))}
                                       </div>
-                                    ))}
-                                  </div>
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
-                            </div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </>
+                      )}
+                      
+                      {/* Filters Section */}
+                      {product.filters && product.filters.length > 0 && (
+                        <>
+                          <h4 className="text-md font-medium text-gray-800 mb-2 mt-4">Filters</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {product.filters.map((filter) => (
+                              <span 
+                                key={filter._id} 
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                              >
+                                {filter.name}
+                              </span>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

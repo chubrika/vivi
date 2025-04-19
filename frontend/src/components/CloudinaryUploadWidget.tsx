@@ -66,8 +66,12 @@ export default function CloudinaryUploadWidget({
 
   // Open the uploader
   const handleOpenUploader = (open: () => void) => {
-    setIsUploading(true);
-    open();
+    if (open) {
+      setIsUploading(true);
+      open();
+    } else {
+      console.error('Cloudinary upload widget open function is undefined');
+    }
   };
 
   return (
