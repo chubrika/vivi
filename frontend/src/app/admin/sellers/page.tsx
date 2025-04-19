@@ -2,16 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { API_BASE_URL } from '../../../utils/api';
-
-interface Seller {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  status: 'active' | 'inactive';
-}
+import { sellersService, Seller, CreateSellerData } from '../../../services/sellersService';
 
 export default function SellersPage() {
   const router = useRouter();
@@ -20,12 +11,12 @@ export default function SellersPage() {
   const [error, setError] = useState<string | null>(null);
   
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateSellerData>({
     name: '',
     email: '',
     phone: '',
     address: '',
-    status: 'active' as 'active' | 'inactive'
+    description: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -36,18 +27,9 @@ export default function SellersPage() {
       try {
         setLoading(true);
         
-        const response = await fetch(`${API_BASE_URL}/api/sellers`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch sellers');
-        }
-        
-        const data = await response.json();
-        setSellers(data);
+        // Use the sellersService to fetch all sellers
+        const sellersData = await sellersService.getAllSellers();
+        setSellers(sellersData);
         
       } catch (err) {
         console.error('Error fetching sellers:', err);
@@ -81,21 +63,8 @@ export default function SellersPage() {
       setIsSubmitting(true);
       setFormError(null);
       
-      const response = await fetch(`${API_BASE_URL}/api/sellers`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create seller');
-      }
-      
-      const newSeller = await response.json();
+      // Use the sellersService to create a new seller
+      const newSeller = await sellersService.createSeller(formData);
       
       // Update sellers list
       setSellers(prev => [...prev, newSeller]);
@@ -106,7 +75,7 @@ export default function SellersPage() {
         email: '',
         phone: '',
         address: '',
-        status: 'active'
+        description: ''
       });
       
     } catch (err) {
@@ -114,6 +83,40 @@ export default function SellersPage() {
       setFormError(err instanceof Error ? err.message : 'Failed to create seller');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleStatus = async (id: string) => {
+    try {
+      // Use the sellersService to toggle seller status
+      const updatedSeller = await sellersService.toggleSellerStatus(id);
+      
+      // Update the sellers list with the updated seller
+      setSellers(prev => 
+        prev.map(seller => 
+          seller._id === id ? updatedSeller : seller
+        )
+      );
+    } catch (err) {
+      console.error('Error toggling seller status:', err);
+      setError('Failed to update seller status. Please try again later.');
+    }
+  };
+
+  const handleDeleteSeller = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this seller?')) {
+      return;
+    }
+    
+    try {
+      // Use the sellersService to delete a seller
+      await sellersService.deleteSeller(id);
+      
+      // Update sellers list by removing the deleted seller
+      setSellers(prev => prev.filter(seller => seller._id !== id));
+    } catch (err) {
+      console.error('Error deleting seller:', err);
+      setError('Failed to delete seller. Please try again later.');
     }
   };
 
@@ -196,22 +199,6 @@ export default function SellersPage() {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
               />
             </div>
-            
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                Status
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
           </div>
           
           <div>
@@ -223,6 +210,20 @@ export default function SellersPage() {
               name="address"
               rows={3}
               value={formData.address}
+              onChange={handleInputChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              rows={3}
+              value={formData.description}
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
             />
@@ -274,7 +275,7 @@ export default function SellersPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {sellers.map(seller => (
-                  <tr key={seller.id}>
+                  <tr key={seller._id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {seller.name}
                     </td>
@@ -286,17 +287,29 @@ export default function SellersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        seller.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        seller.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {seller.status}
+                        {seller.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
                       <button
-                        onClick={() => router.push(`/admin/sellers/${seller.id}`)}
+                        onClick={() => router.push(`/admin/sellers/${seller._id}`)}
                         className="text-primary hover:text-primary-dark"
                       >
                         Edit
+                      </button>
+                      <button
+                        onClick={() => handleToggleStatus(seller._id)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        Toggle Status
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSeller(seller._id)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>

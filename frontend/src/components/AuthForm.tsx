@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../utils/authContext';
-import { API_BASE_URL } from '../utils/api';
+import { authService } from '../services/authService';
 
 interface AuthFormProps {
   type: 'login' | 'register';
@@ -27,25 +27,10 @@ export default function AuthForm({ type }: AuthFormProps) {
     setLoading(true);
 
     try {
-      const endpoint = type === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
-      }
-
-      // Check if we have both token and user data
-      if (!data.token || !data.user) {
-        throw new Error('Invalid response from server');
-      }
+      // Use the auth service instead of direct fetch calls
+      const data = type === 'login' 
+        ? await authService.login(formData)
+        : await authService.register(formData);
 
       // Clean token before storing
       const cleanToken = data.token.replace('Bearer ', '');

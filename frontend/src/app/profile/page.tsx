@@ -4,24 +4,23 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated, getToken } from '../../utils/authContext';
 import { API_BASE_URL } from '../../utils/api';
+import { userService } from '../../services/userService';
+import { addressService, Address } from '../../services/addressService';
 import Link from 'next/link';
 import GoogleMap from '../../components/GoogleMap';
 import Modal from '../../components/Modal';
 import AddressForm from '../../components/AddressForm';
+import PasswordChangeModal from '../../components/PasswordChangeModal';
 
 interface UserProfile {
-  name: string;
+  id: string;
+  name?: string;
   email: string;
-  // Add more fields as needed
-}
-
-interface Address {
-  id?: string;
-  title: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  isDefault: boolean;
+  role: 'user' | 'admin';
+  phone?: string;
+  bio?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export default function ProfilePage() {
@@ -32,6 +31,7 @@ export default function ProfilePage() {
   const [activeSection, setActiveSection] = useState('personal');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [showAddAddress, setShowAddAddress] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newAddress, setNewAddress] = useState<Partial<Address>>({
     title: '',
     address: '',
@@ -40,31 +40,25 @@ export default function ProfilePage() {
     isDefault: false
   });
   const [formData, setFormData] = useState({
-    name: profile?.name || '',
-    email: profile?.email || '',
+    name: '',
+    email: '',
     phone: '',
     bio: ''
   });
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [updateError, setUpdateError] = useState('');
+  const [addressError, setAddressError] = useState('');
 
   // Function to fetch addresses
   const fetchAddresses = async () => {
     try {
-      const token = getToken();
-      const response = await fetch(`${API_BASE_URL}/api/addresses`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch addresses');
-      }
-
-      const data = await response.json();
-      setAddresses(data);
+      // Use the addressService to fetch addresses
+      const addressData = await addressService.getAddresses();
+      setAddresses(addressData);
+      setAddressError('');
     } catch (err) {
       console.error('Error fetching addresses:', err);
-      setError('Failed to load addresses');
+      setAddressError('Failed to load addresses');
     }
   };
 
@@ -83,24 +77,14 @@ export default function ProfilePage() {
       }
 
       try {
-        const token = getToken();
-        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch profile');
-        }
-
-        const data = await response.json();
-        setProfile(data);
+        // Use the userService to fetch the profile
+        const userData = await userService.getCurrentUser();
+        setProfile(userData);
         setFormData({
-          name: data.name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          bio: data.bio || ''
+          name: userData.name || '',
+          email: userData.email || '',
+          phone: userData.phone || '',
+          bio: userData.bio || ''
         });
       } catch (err) {
         setError('Failed to load profile');
@@ -132,53 +116,69 @@ export default function ProfilePage() {
 
   const handleAddAddress = async (addressData: Address) => {
     try {
-      console.log('Adding address with data:', addressData);
-      const token = getToken();
-      console.log('Using token:', token ? 'Token exists' : 'No token');
-
-      const response = await fetch(`${API_BASE_URL}/api/addresses`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          title: addressData.title,
-          address: addressData.address,
-          latitude: addressData.latitude,
-          longitude: addressData.longitude,
-          isDefault: addressData.isDefault
-        })
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Non-JSON response:', text);
-        throw new Error('Server returned an invalid response');
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error response:', errorData);
-        throw new Error(errorData.message || `Failed to add address: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Address added successfully:', data);
+      // Use the addressService to add an address
+      await addressService.addAddress(addressData);
       
-      // Refresh the addresses list instead of manually adding the new address
+      // Refresh the addresses list
       fetchAddresses();
       
       setShowAddAddress(false);
     } catch (err) {
       console.error('Error adding address:', err);
-      setError(err instanceof Error ? err.message : 'Failed to add address');
+      setAddressError(err instanceof Error ? err.message : 'Failed to add address');
     }
+  };
+
+  const handleDeleteAddress = async (id: string) => {
+    try {
+      // Use the addressService to delete an address
+      await addressService.deleteAddress(id);
+      
+      // Refresh the addresses list
+      fetchAddresses();
+    } catch (err) {
+      console.error('Error deleting address:', err);
+      setAddressError(err instanceof Error ? err.message : 'Failed to delete address');
+    }
+  };
+
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      // Use the addressService to set an address as default
+      await addressService.setDefaultAddress(id);
+      
+      // Refresh the addresses list
+      fetchAddresses();
+    } catch (err) {
+      console.error('Error setting default address:', err);
+      setAddressError(err instanceof Error ? err.message : 'Failed to set default address');
+    }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdateSuccess(false);
+    setUpdateError('');
+    
+    try {
+      // Use the userService to update the profile
+      const updatedUser = await userService.updateProfile({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        bio: formData.bio
+      });
+      
+      setProfile(updatedUser);
+      setUpdateSuccess(true);
+    } catch (err) {
+      console.error('Profile update error:', err);
+      setUpdateError(err instanceof Error ? err.message : 'Failed to update profile');
+    }
+  };
+
+  const handleChangePassword = () => {
+    setShowPasswordModal(true);
   };
 
   if (loading) {
@@ -204,7 +204,17 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div>
               <h2 className="text-lg font-medium text-gray-900 mb-6">პირადი ინფორმაცია</h2>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleUpdateProfile}>
+                {updateSuccess && (
+                  <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span className="block sm:inline">Profile updated successfully!</span>
+                  </div>
+                )}
+                {updateError && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span className="block sm:inline">{updateError}</span>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="relative">
                     <input
@@ -270,30 +280,31 @@ export default function ProfilePage() {
                     Bio
                   </label>
                 </div>
-              </form>
-            </div>
 
-            <div className="pt-6 border-t border-gray-200">
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                >
-                  გაუქმება
-                </button>
-                <button
-                  type="submit"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                >
-                  პროფილის განახლება
-                </button>
-              </div>
+                <div className="pt-6 border-t border-gray-200">
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      type="button"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                    >
+                      გაუქმება
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                    >
+                      პროფილის განახლება
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
 
             <div className="pt-6 border-t border-gray-200">
               <h3 className="text-lg font-medium text-gray-900 mb-4">უსაფრთხოება</h3>
               <button
                 type="button"
+                onClick={handleChangePassword}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
               >
                 პაროლის ცვლილება
@@ -314,6 +325,12 @@ export default function ProfilePage() {
               </button>
             </div>
 
+            {addressError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span className="block sm:inline">{addressError}</span>
+              </div>
+            )}
+
             <div className="space-y-4">
               {addresses.map((address) => (
                 <div key={address.id} className="bg-white p-6 rounded-lg shadow-lg">
@@ -322,11 +339,29 @@ export default function ProfilePage() {
                       <h3 className="text-lg font-medium text-gray-900">{address.title}</h3>
                       <p className="mt-1 text-gray-600">{address.address}</p>
                     </div>
-                    {address.isDefault && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-md font-medium bg-purple-100 text-purple-800">
-                        ძირითადი მისამართი
-                      </span>
-                    )}
+                    <div className="flex flex-col items-end space-y-2">
+                      {address.isDefault && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-md font-medium bg-purple-100 text-purple-800">
+                          ძირითადი მისამართი
+                        </span>
+                      )}
+                      <div className="flex space-x-2">
+                        {!address.isDefault && (
+                          <button
+                            onClick={() => address.id && handleSetDefaultAddress(address.id)}
+                            className="text-sm text-purple-600 hover:text-purple-800"
+                          >
+                            Set as Default
+                          </button>
+                        )}
+                        <button
+                          onClick={() => address.id && handleDeleteAddress(address.id)}
+                          className="text-sm text-red-600 hover:text-red-800"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -432,6 +467,12 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal 
+        isOpen={showPasswordModal} 
+        onClose={() => setShowPasswordModal(false)} 
+      />
     </div>
   );
 } 
