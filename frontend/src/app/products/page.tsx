@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import ProductDetailPanel from '../../components/ProductDetailPanel';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../utils/api';
+import { filtersService, Filter } from '../../services/filtersService';
 
 interface Product {
   _id: string;
@@ -48,14 +49,17 @@ export default function ProductsPage() {
   const searchParams = useSearchParams() ?? new URLSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [filters, setFilters] = useState<Filter[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     searchParams.get('category') || null
   );
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [filtersLoading, setFiltersLoading] = useState(false);
   
   // Price range state
   const [minPrice, setMinPrice] = useState<number>(0);
@@ -155,9 +159,59 @@ export default function ProductsPage() {
     }
   }, [allProducts]);
 
-  // Filter products by price range
+  // Fetch filters
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        setFiltersLoading(true);
+        // Use getActiveFilters to only show active filters
+        const data = await filtersService.getActiveFilters();
+        setFilters(data);
+      } catch (err) {
+        console.error('Error fetching filters:', err);
+      } finally {
+        setFiltersLoading(false);
+      }
+    };
+
+    fetchFilters();
+  }, []);
+
+  // Fetch filters by category when category changes
+  useEffect(() => {
+    const fetchFiltersByCategory = async () => {
+      if (selectedCategory) {
+        try {
+          setFiltersLoading(true);
+          const data = await filtersService.getFiltersByCategory(selectedCategory);
+          setFilters(data);
+        } catch (err) {
+          console.error('Error fetching filters by category:', err);
+        } finally {
+          setFiltersLoading(false);
+        }
+      }
+    };
+
+    fetchFiltersByCategory();
+  }, [selectedCategory]);
+
+  // Filter products by price range and selected filter
   const filteredProducts = products.filter(product => {
-    return product.price >= priceRange[0] && product.price <= priceRange[1];
+    // First filter by price range
+    const priceInRange = product.price >= priceRange[0] && product.price <= priceRange[1];
+    
+    // Then filter by selected filter if one is selected
+    if (selectedFilter) {
+      const filter = filters.find(f => f._id === selectedFilter);
+      if (filter) {
+        // Here you would implement the actual filtering logic based on your filter criteria
+        // This is a placeholder - you'll need to adjust based on your actual filter implementation
+        return priceInRange && product.category._id === filter.category._id;
+      }
+    }
+    
+    return priceInRange;
   });
 
   // Handle price input change
@@ -258,6 +312,11 @@ export default function ProductsPage() {
 
   const handleCategorySelect = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
+    setSelectedFilter(null); // Reset filter when category changes
+  };
+
+  const handleFilterSelect = (filterId: string | null) => {
+    setSelectedFilter(filterId);
   };
 
   if (initialLoading) {
@@ -280,36 +339,76 @@ export default function ProductsPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8 mt-8 text-gray-600">პროდუქტები</h1>
 
+      {/* Horizontal Category Filter Navigation */}
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">კატეგორიები</h2>
+        <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
+          <button
+            onClick={() => handleCategorySelect(null)}
+            className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
+              selectedCategory === null
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            ყველა ({allProducts.length})
+          </button>
+          {categories.map((category) => (
+            <button
+              key={category._id}
+              onClick={() => handleCategorySelect(category._id)}
+              className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
+                selectedCategory === category._id
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {category.name} ({category.productCount || 0})
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Horizontal Filters Navigation */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">ფილტრები</h2>
+        <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
+          <button
+            onClick={() => handleFilterSelect(null)}
+            className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
+              selectedFilter === null
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            ყველა ფილტრი
+          </button>
+          {filtersLoading ? (
+            <div className="animate-pulse bg-gray-200 h-10 w-24 rounded-full"></div>
+          ) : (
+            filters
+              .filter(filter => !selectedCategory || filter.category._id === selectedCategory)
+              .map((filter) => (
+                <button
+                  key={filter._id}
+                  onClick={() => handleFilterSelect(filter._id)}
+                  className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
+                    selectedFilter === filter._id
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {filter.name}
+                </button>
+              ))
+          )}
+        </div>
+      </div>
+
       <div className="flex flex-col md:flex-row gap-8">
         {/* Categories Sidebar */}
         <div className="w-full md:w-64 flex-shrink-0 mb-6 md:mb-0">
           <div className="bg-white rounded-lg shadow p-4">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">კატეგორიები</h2>
-            <div className="space-y-2">
-              <button
-                onClick={() => handleCategorySelect(null)}
-                className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                  selectedCategory === null
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'hover:bg-gray-100 text-gray-700'
-                }`}
-              >
-                ყველა ({allProducts.length})
-              </button>
-              {categories.map((category) => (
-                <button
-                  key={category._id}
-                  onClick={() => handleCategorySelect(category._id)}
-                  className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                    selectedCategory === category._id
-                      ? 'bg-purple-100 text-purple-700'
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {category.name} ({category.productCount || 0})
-                </button>
-              ))}
-            </div>
             
             {/* Price Range Filter */}
             <div className="mt-8 pt-4 border-t border-gray-200">

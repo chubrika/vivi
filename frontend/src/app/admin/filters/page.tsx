@@ -4,19 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../utils/authContext';
 import Modal from '../../../components/Modal';
 import { API_BASE_URL } from '../../../utils/api';
-
-interface Filter {
-  _id: string;
-  name: string;
-  description: string;
-  category: {
-    _id: string;
-    name: string;
-  };
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import { filtersService, Filter, CreateFilterData, UpdateFilterData } from '../../../services/filtersService';
 
 interface Category {
   _id: string;
@@ -39,17 +27,7 @@ const FiltersPage = () => {
 
   const fetchFilters = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/filters`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch filters');
-      }
-      
-      const data = await response.json();
+      const data = await filtersService.getAllFilters();
       setFilters(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -116,23 +94,22 @@ const FiltersPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const url = selectedFilter
-        ? `${API_BASE_URL}/api/filters/${selectedFilter._id}`
-        : `${API_BASE_URL}/api/filters`;
-      
-      const method = selectedFilter ? 'PATCH' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save filter');
+      if (selectedFilter) {
+        // Update existing filter
+        const updateData: UpdateFilterData = {
+          name: formData.name,
+          description: formData.description,
+          category: formData.category,
+        };
+        await filtersService.updateFilter(selectedFilter._id, updateData);
+      } else {
+        // Create new filter
+        const createData: CreateFilterData = {
+          name: formData.name,
+          description: formData.description,
+          category: formData.category,
+        };
+        await filtersService.createFilter(createData);
       }
 
       handleCloseModal();
@@ -148,17 +125,7 @@ const FiltersPage = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/filters/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete filter');
-      }
-
+      await filtersService.deleteFilter(id);
       fetchFilters();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
