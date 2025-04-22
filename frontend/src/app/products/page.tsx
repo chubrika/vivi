@@ -537,12 +537,10 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-xl font-bold mb-8 mt-8 text-gray-600">პროდუქტები</h1>
-
+    <div className="container mx-auto px-4 py-4">
       {/* Horizontal Category Filter Navigation */}
       <div className="mb-4">
-        <h2 className="text-md font-semibold mb-4 text-gray-800">კატეგორიები</h2>
+        <h2 className="text-sm font-semibold mb-4 text-gray-500">კატეგორიები</h2>
         <div className="relative">
           <div className="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <div className="flex gap-2 min-w-max">
@@ -563,7 +561,7 @@ export default function ProductsPage() {
                   className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
                     selectedCategory === category._id
                       ? 'bg-purple-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {category.name}
@@ -577,7 +575,7 @@ export default function ProductsPage() {
 
       {/* Horizontal Filters Navigation */}
       <div className="mb-8">
-        <h2 className="text-md font-semibold mb-4 text-gray-800">ფილტრები</h2>
+        <h2 className="text-sm font-semibold mb-4 text-gray-500">ფილტრები</h2>
         <div className="relative">
           <div className="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <div className="flex gap-2 min-w-max">
@@ -593,7 +591,7 @@ export default function ProductsPage() {
                       className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
                         selectedFilter === filter._id
                           ? 'bg-purple-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
                       {filter.name}
@@ -612,7 +610,7 @@ export default function ProductsPage() {
           <div className="bg-white rounded-lg shadow p-4">
             
             {/* Price Range Filter */}
-            <div className="mt-8 pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-gray-200">
               <h2 className="text-lg font-semibold mb-4 text-gray-800">ფასი ₾</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
