@@ -1,13 +1,26 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { auth } from '../middleware/auth';
 import { Cart } from '../models/Cart';
+
+interface JwtPayload {
+  userId: string;
+  role: string;
+}
+
+interface AuthRequest extends Request {
+  user?: JwtPayload;
+}
 
 const router = express.Router();
 
 // Get user's cart
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user.id;
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    const userId = req.user.userId;
     
     // Find or create cart for the user
     let cart = await Cart.findOne({ user: userId });
@@ -29,9 +42,13 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Update user's cart
-router.put('/', auth, async (req, res) => {
+router.put('/', auth, async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user.id;
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    const userId = req.user.userId;
     const { items } = req.body;
     
     if (!items || !Array.isArray(items)) {
@@ -62,9 +79,13 @@ router.put('/', auth, async (req, res) => {
 });
 
 // Clear user's cart
-router.delete('/', auth, async (req, res) => {
+router.delete('/', auth, async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user.id;
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    const userId = req.user.userId;
     
     // Find cart for the user
     const cart = await Cart.findOne({ user: userId });

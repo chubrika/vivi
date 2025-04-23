@@ -10,7 +10,7 @@ interface JwtPayload {
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: JwtPayload;
     }
   }
 }
@@ -33,7 +33,15 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     }
 
     try {
+      // Verify token with explicit error handling
       const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+      
+      // Validate decoded token has required fields
+      if (!decoded.userId || !decoded.role) {
+        console.error('Invalid token payload:', decoded);
+        return res.status(401).json({ message: 'Invalid token format' });
+      }
+      
       const user = await User.findById(decoded.userId);
 
       if (!user) {
@@ -48,32 +56,31 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     }
   } catch (error) {
     console.error('Auth Middleware Error:', error);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const authorize = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Authentication required' });
+      return res.status(401).json({ message: 'Not authorized to access this route' });
     }
-    
+
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        message: `User role ${req.user.role} is not authorized to access this route`
-      });
+      return res.status(403).json({ message: 'Not authorized to access this route' });
     }
+
     next();
   };
 };
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({ message: 'Authentication required' });
+      return res.status(401).json({ message: 'No token provided' });
     }
 
     if (!process.env.JWT_SECRET) {
@@ -87,51 +94,69 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
       next();
     } catch (jwtError) {
       console.error('JWT Verification Error:', jwtError);
-      return res.status(403).json({ message: 'Invalid or expired token' });
+      return res.status(401).json({ message: 'Invalid token' });
     }
   } catch (error) {
-    console.error('Token verification error:', error);
-    return res.status(403).json({ message: 'Invalid or expired token' });
+    console.error('Auth Middleware Error:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!req.user || req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Admin access required' });
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authorized to access this route' });
     }
+
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to access this route' });
+    }
+
     next();
   } catch (error) {
-    console.error('Admin verification error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error('Admin Middleware Error:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Get token from header
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({ message: 'No authentication token, access denied' });
+      return res.status(401).json({ message: 'No token provided' });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret') as any;
-    
-    // Find user by id
-    const user = await User.findById(decoded.id).select('-password');
-    
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not defined in environment variables');
+      return res.status(500).json({ message: 'Server configuration error' });
     }
 
-    // Add user to request object
-    req.user = user;
-    
-    next();
+    try {
+      // Verify token with explicit error handling
+      const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+      
+      // Validate decoded token has required fields
+      if (!decoded.userId || !decoded.role) {
+        console.error('Invalid token payload:', decoded);
+        return res.status(401).json({ message: 'Invalid token format' });
+      }
+      
+      const user = await User.findById(decoded.userId);
+
+      if (!user) {
+        return res.status(401).json({ message: 'User not found' });
+      }
+
+      req.user = decoded;
+      next();
+    } catch (jwtError) {
+      console.error('JWT Verification Error:', jwtError);
+      return res.status(401).json({ message: 'Invalid token' });
+    }
   } catch (error) {
-    console.error('Auth middleware error:', error);
-    res.status(401).json({ message: 'Token is not valid' });
+    console.error('Auth Middleware Error:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 }; 

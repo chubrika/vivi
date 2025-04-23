@@ -1,14 +1,21 @@
 // API base URL from environment variables
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+// Helper function to clean token format
+const cleanToken = (token: string): string => {
+  return token.replace('Bearer ', '');
+};
+
 // Helper function to get headers with authentication
-const getHeaders = (token?: string) => {
+const getHeaders = (token?: string, requireAuth: boolean = true) => {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (requireAuth && token) {
+    // Clean token and add Bearer prefix
+    const cleanTokenValue = cleanToken(token);
+    headers['Authorization'] = `Bearer ${cleanTokenValue}`;
   }
 
   return headers;
@@ -18,11 +25,12 @@ const getHeaders = (token?: string) => {
 export const fetchApi = async (
   endpoint: string,
   options: RequestInit = {},
-  token?: string
+  token?: string,
+  requireAuth: boolean = true
 ) => {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
-    const headers = getHeaders(token);
+    const headers = getHeaders(token, requireAuth);
 
     const response = await fetch(url, {
       ...options,
@@ -46,21 +54,21 @@ export const fetchApi = async (
 
 // Common API methods
 export const api = {
-  get: (endpoint: string, token?: string) => 
-    fetchApi(endpoint, { method: 'GET' }, token),
+  get: (endpoint: string, token?: string, requireAuth: boolean = true) => 
+    fetchApi(endpoint, { method: 'GET' }, token, requireAuth),
 
-  post: (endpoint: string, data: any, token?: string) =>
+  post: (endpoint: string, data: any, token?: string, requireAuth: boolean = true) =>
     fetchApi(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
-    }, token),
+    }, token, requireAuth),
 
-  put: (endpoint: string, data: any, token?: string) =>
+  put: (endpoint: string, data: any, token?: string, requireAuth: boolean = true) =>
     fetchApi(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
-    }, token),
+    }, token, requireAuth),
 
-  delete: (endpoint: string, token?: string) =>
-    fetchApi(endpoint, { method: 'DELETE' }, token),
+  delete: (endpoint: string, token?: string, requireAuth: boolean = true) =>
+    fetchApi(endpoint, { method: 'DELETE' }, token, requireAuth),
 }; 

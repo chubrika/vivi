@@ -1,7 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import AddToCartButton from './AddToCartButton';
+import { useRouter } from 'next/navigation';
+
+interface FeatureValue {
+    type: number;
+    featureValue: string;
+}
+
+interface Feature {
+    featureId: number;
+    featureCaption: string;
+    featureValues: FeatureValue[];
+}
+
+interface FeatureGroup {
+    featureGroupId: number;
+    featureGroupCaption: string;
+    features: Feature[];
+}
 
 interface Product {
     _id: string;
@@ -14,11 +32,13 @@ interface Product {
         name: string;
     };
     seller: {
+        businessName: string;
         _id: string;
         name: string;
     };
     isActive: boolean;
     stock: number;
+    productFeatureValues?: FeatureGroup[];
 }
 
 interface ProductDetailPanelProps {
@@ -29,6 +49,8 @@ interface ProductDetailPanelProps {
 export default function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [quantity, setQuantity] = useState(1);
+    const router = useRouter();
 
     // Handle body scroll lock when panel is open
     useEffect(() => {
@@ -42,7 +64,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
             document.body.style.overflow = 'auto';
         }
 
-        // Cleanup function to ensure body scroll is re-enabled when component unmounts
+        // Clean up function to ensure body scroll is re-enabled when component unmounts
         return () => {
             document.body.style.overflow = 'auto';
         };
@@ -62,18 +84,36 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
         setActiveImageIndex(index);
     };
 
+    // Handle Buy Now click
+    const handleBuyNow = () => {
+        if (product) {
+            // Close the panel
+            onClose();
+            // Navigate to checkout page with product ID and quantity
+            router.push(`/checkout?productId=${product._id}&quantity=${quantity}`);
+        }
+    };
+
+    // Handle quantity change
+    const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value);
+        if (value > 0 && value <= (product?.stock || 1)) {
+            setQuantity(value);
+        }
+    };
+
     return (
         <>
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'
+                className={`fixed z-[1] inset-0 bg-black bg-opacity-50 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'
                     }`}
                 onClick={onClose}
             />
 
             {/* Panel */}
             <div
-                className={`fixed right-0 top-0 h-full w-[75%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed z-[2] right-0 top-[64px]  h-[calc(100vh-64px)] w-full md:w-[75%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
                 <div className="h-full overflow-y-auto">
@@ -93,12 +133,12 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                     </div>
 
                     {/* Content */}
-                    <div className="p-8 md:px-[180px] lg:px-[180px] py-12">
+                    <div className="p-4 md:p-8 md:px-[100px] lg:px-[100px] py-12">
                         {/* Main content area with flex layout */}
                         <h1 className="text-xl font-bold text-gray-900 mt-8 mb-8">{product.name}</h1>
                         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
                             {/* Left side - Image Gallery */}
-                            <div className="md:w-1/2">
+                            <div className="w-full md:w-1/2">
                                 <div className="relative aspect-square rounded-lg overflow-hidden">
                                     <img
                                         src={product.images[activeImageIndex] || 'https://via.placeholder.com/400'}
@@ -127,7 +167,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                             </div>
 
                             {/* Right side - Product Details */}
-                            <div className="md:w-1/2 space-y-6 md:space-y-8">
+                            <div className="w-full md:w-1/2 space-y-6 md:space-y-8">
                                 {/* Price */}
                                 <div>
                                     <p className="text-2xl font-semibold text-purple-600">
@@ -137,19 +177,45 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
 
                                 {/* Stock */}
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">Stock</h2>
-                                    <p className="mt-1 text-gray-600">{product.stock} units available</p>
+                                    <h2 className="text-lg font-semibold text-gray-900">მარაგშია</h2>
+                                    <p className="mt-1 text-gray-600">{product.stock} ერთეული</p>
+                                </div>
+
+                                {/* Quantity Input */}
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900">რაოდენობა</h2>
+                                    <div className="mt-2 flex items-center">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max={product.stock}
+                                            value={quantity}
+                                            onChange={handleQuantityChange}
+                                            className="w-24 px-3 py-2 border text-gray-600 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Category */}
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">Category</h2>
+                                    <h2 className="text-lg font-semibold text-gray-900">კატეგორია</h2>
                                     <p className="mt-1 text-gray-600">{product.category.name}</p>
                                 </div>
 
                                 {/* Add to Cart Button */}
-                                <div className="pt-4">
-                                    <AddToCartButton product={product} />
+                                <div className="w-full md:w-[210px]">
+                                <div className="pt-4 flex gap-4">
+                                  <button
+                                        onClick={handleBuyNow}
+                                        className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed "
+                                    >
+                                        ყიდვა
+                                    </button>
+                                  </div>
+                                <div className="pt-4 flex gap-4">
+                                    <AddToCartButton product={product} quantity={quantity} />
+                                  
+                                </div>
                                 </div>
                             </div>
                         </div>
@@ -159,16 +225,50 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                                 {/* Description */}
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">Description</h2>
-                                    <p className="mt-2 text-gray-600">{product.description}</p>
+                                    <h2 className="text-lg font-semibold text-gray-900">აღწერა</h2>
+                                    <div 
+                                        className="mt-2 text-gray-600"
+                                        dangerouslySetInnerHTML={{ __html: product.description }} 
+                                    />
                                 </div>
 
                                 {/* Seller */}
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">Seller</h2>
-                                    <p className="mt-1 text-gray-600">{product.seller.name}</p>
+                                    <h2 className="text-lg font-semibold text-gray-900">მაღაზია</h2>
+                                    <p className="mt-1 text-gray-600">{product.seller?.businessName}</p>
                                 </div>
                             </div>
+
+                            {/* Product Features Section */}
+                            {product.productFeatureValues && product.productFeatureValues.length > 0 && (
+                                <div className="mt-8 pt-8 border-t border-gray-200">
+                                    <div className="space-y-6">
+                                        {product.productFeatureValues.map((group, groupIndex) => (
+                                            <div key={groupIndex} className="bg-gray-50 rounded-lg p-3">
+                                                <h3 className="text-xl font-bold text-gray-800 mb-4">
+                                                    {group.featureGroupCaption}
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {group.features.map((feature, featureIndex) => (
+                                                        <div key={featureIndex} className="flex justify-between items-start">
+                                                            <h4 className="text-sm font-medium text-gray-700">
+                                                                {feature.featureCaption}
+                                                            </h4>
+                                                            <div className="text-right">
+                                                                {feature.featureValues.map((value, valueIndex) => (
+                                                                    <div key={valueIndex} className="text-sm text-gray-600">
+                                                                        {value.featureValue}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

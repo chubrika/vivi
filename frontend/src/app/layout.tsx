@@ -4,6 +4,7 @@ import './globals.css';
 import NavbarWrapper from '../components/NavbarWrapper';
 import AuthProviderWrapper from '../components/AuthProviderWrapper';
 import CartProviderWrapper from '../components/CartProviderWrapper';
+import Footer from '../components/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,11 +20,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} font-sans`}>
         <AuthProviderWrapper>
           <CartProviderWrapper>
-            <NavbarWrapper />
-            {children}
+            <div className="flex flex-col min-h-screen">
+              <NavbarWrapper />
+              <main className="flex-grow">
+                {children}
+              </main>
+              <Footer />
+            </div>
           </CartProviderWrapper>
         </AuthProviderWrapper>
       </body>

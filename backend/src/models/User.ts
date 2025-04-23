@@ -2,18 +2,26 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
 interface IUser {
-  name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   password: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'customer' | 'seller';
+  businessName?: string;
+  businessAddress?: string;
+  phoneNumber?: string;
+  isActive: boolean;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
-  name: {
+  firstName: {
     type: String,
-    required: [true, 'Please provide a name'],
+    trim: true,
+  },
+  lastName: {
+    type: String,
     trim: true,
   },
   email: {
@@ -29,8 +37,24 @@ const userSchema = new mongoose.Schema<IUser>({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'customer', 'seller'],
     default: 'user',
+  },
+  businessName: {
+    type: String,
+    trim: true,
+  },
+  businessAddress: {
+    type: String,
+    trim: true,
+  },
+  phoneNumber: {
+    type: String,
+    trim: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   },
   createdAt: {
     type: Date,

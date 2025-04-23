@@ -2,11 +2,15 @@ import { useState, useEffect, createContext, useContext, ReactNode, createElemen
 import { API_BASE_URL } from './api';
 
 // Define a proper User type to replace 'any'
-interface User {
-  id: string;
+export interface User {
+  _id: string;
   email: string;
-  name?: string;
-  role: 'user' | 'admin';
+  firstName?: string;
+  lastName?: string;
+  role: 'customer' | 'seller' | 'admin';
+  businessName?: string;
+  businessAddress?: string;
+  phoneNumber?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -33,21 +37,32 @@ const AuthContext = createContext<AuthContextType>({
 
 // Helper function to validate JWT token format
 const isValidJWT = (token: string): boolean => {
-  // Basic JWT format validation (header.payload.signature)
-  const parts = token.split('.');
-  if (parts.length !== 3) return false;
+  if (!token) return false;
   
   try {
+    // Basic JWT format validation (header.payload.signature)
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    
     // Check if each part is valid base64
     parts.forEach(part => {
-      // Replace URL-safe characters
-      const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
-      // Add padding if needed
-      const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
-      atob(padded);
+      if (!part) return false;
+      // Replace URL-safe characters and add padding
+      const base64 = part
+        .replace(/-/g, '+')
+        .replace(/_/g, '/')
+        .padEnd(part.length + ((4 - (part.length % 4)) % 4), '=');
+      
+      try {
+        atob(base64);
+      } catch {
+        return false;
+      }
     });
+    
     return true;
   } catch (e) {
+    console.error('Token validation error:', e);
     return false;
   }
 };
@@ -90,21 +105,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (newToken: string, userData: User) => {
-    // Validate token format before storing
-    if (!isValidJWT(newToken)) {
-      console.error('Invalid token format provided to login function');
+    if (!newToken || !userData) {
+      console.error('Invalid login data');
       return;
     }
-    
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setToken(newToken);
-    setUser(userData);
-    setIsAuthenticated(true);
-    setIsAdmin(userData.role === 'admin');
-    
-    // Dispatch storage event to notify other tabs
-    window.dispatchEvent(new Event('storage'));
+
+    try {
+      // Remove any existing Bearer prefix
+      const cleanToken = newToken.replace('Bearer ', '');
+      
+      // Validate token format
+      if (!isValidJWT(cleanToken)) {
+        console.error('Invalid token format provided to login function');
+        return;
+      }
+      
+      // Store token without Bearer prefix
+      localStorage.setItem('token', cleanToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setToken(cleanToken);
+      setUser(userData);
+      setIsAuthenticated(true);
+      setIsAdmin(userData.role === 'admin');
+      
+      // Dispatch storage event to notify other tabs
+      window.dispatchEvent(new Event('storage'));
+    } catch (error) {
+      console.error('Error during login:', error);
+      logout();
+    }
   };
 
   const logout = () => {
@@ -195,20 +224,27 @@ export const useAuth = () => useContext(AuthContext);
 // Token management utility functions
 export const getToken = (): string | null => {
   const token = localStorage.getItem('token');
-  if (token && !isValidJWT(token)) {
+  if (!token) return null;
+  
+  if (!isValidJWT(token)) {
     console.error('Invalid token format detected in getToken');
     localStorage.removeItem('token');
     return null;
   }
+  
   return token;
 };
 
 export const setToken = (token: string): void => {
-  if (!isValidJWT(token)) {
+  // Remove any existing Bearer prefix
+  const cleanToken = token.replace('Bearer ', '');
+  
+  if (!isValidJWT(cleanToken)) {
     console.error('Invalid token format provided to setToken');
     return;
   }
-  localStorage.setItem('token', token);
+  
+  localStorage.setItem('token', cleanToken);
 };
 
 export const removeToken = (): void => {

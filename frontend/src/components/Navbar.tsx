@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
 import Image from 'next/image';
+import SearchResults from './SearchResults';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -13,7 +14,10 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Check authentication status on component mount and when pathname changes
   useEffect(() => {
@@ -43,6 +47,17 @@ export default function Navbar() {
     };
   }, []);
 
+  // Handle search input changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setShowSearchResults(true);
+  };
+
+  // Close search results
+  const handleCloseSearchResults = () => {
+    setShowSearchResults(false);
+  };
+
   const handleLogout = () => {
     logout();
     // Redirect to home page
@@ -60,8 +75,9 @@ export default function Navbar() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <nav className="bg-white shadow-lg ">
+    <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Top row with logo, search, and user controls */}
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
@@ -76,37 +92,31 @@ export default function Navbar() {
                 {/* <span className="text-xl font-bold text-primary">vivi.ge</span> */}
               </Link>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link
-                href="/products"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  isActive('/products')
-                    ? 'border-purple-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
-              >
-                პროდუქტები
-              </Link>
-              <Link
-                href="/sellers"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  isActive('/sellers')
-                    ? 'border-purple-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
-              >
-                მაღაზიები
-              </Link>
-              <Link
-                href="/contact"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  isActive('/contact')
-                    ? 'border-purple-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
-              >
-                კონტაქტი
-              </Link>
+            
+            {/* Search Input */}
+            <div className="hidden md:flex md:items-center md:ml-6 md:w-[500px]">
+              <div className="relative w-full text-gray-900" ref={searchRef}>
+                <input
+                  type="text"
+                  placeholder="ძიება..."
+                  className="w-full text-gray-900 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+                <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+                
+                {/* Search Results Dropdown */}
+                {showSearchResults && (
+                  <SearchResults 
+                    searchTerm={searchTerm} 
+                    onClose={handleCloseSearchResults} 
+                  />
+                )}
+              </div>
             </div>
           </div>
           
@@ -204,6 +214,32 @@ export default function Navbar() {
             </button>
           </div>
         </div>
+        
+        {/* Bottom row with navigation items */}
+        <div className="hidden md:flex md:border-t md:border-gray-200">
+          <div className="flex space-x-8 py-2">
+            <Link
+              href="/products"
+              className={`inline-flex items-center px-2 py-1 text-sm font-medium ${
+                isActive('/products')
+                  ? 'text-purple-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              პროდუქტები
+            </Link>
+            <Link
+              href="/shops"
+              className={`inline-flex items-center px-2 py-1 text-sm font-medium ${
+                isActive('/shops')
+                  ? 'text-purple-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              მაღაზიები
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -221,26 +257,15 @@ export default function Navbar() {
             პროდუქტები
           </Link>
           <Link
-            href="/sellers"
+            href="/shops"
             className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-              isActive('/sellers')
+              isActive('/shops')
                 ? 'bg-purple-50 border-purple-500 text-purple-700'
                 : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
             }`}
             onClick={() => setMobileMenuOpen(false)}
           >
             მაღაზიები
-          </Link>
-          <Link
-            href="/contact"
-            className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-              isActive('/contact')
-                ? 'bg-purple-50 border-purple-500 text-purple-700'
-                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
-            }`}
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            კონტაქტი
           </Link>
         </div>
       </div>

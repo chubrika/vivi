@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, ReactNode } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { useAuth } from '../utils/authContext';
+import { api } from '../utils/api';
+import ProductDetailPanel from './ProductDetailPanel';
 
 interface Product {
   _id: string;
@@ -15,32 +15,30 @@ interface Product {
   description: string;
   price: number;
   images: string[];
+  seller: {
+    businessName: string;
+    _id: string;
+    name: string;
+  };
   category: {
     _id: string;
     name: string;
   };
+  isActive: boolean;
+  stock: number;
 }
 
 const ProductSlider = () => {
-  const { token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/products', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
-        }
-        
-        const data = await response.json();
+        // Use public API endpoint for products
+        const data = await api.get('/api/products', undefined, false);
         // Filter for featured products or take the first 6 products
         setProducts(data.slice(0, 6));
       } catch (err) {
@@ -52,7 +50,15 @@ const ProductSlider = () => {
     };
 
     fetchProducts();
-  }, [token]);
+  }, []);
+
+  const handleProductSelect = (product: Product) => {
+    setSelectedProduct(product);
+  };
+
+  const handlePanelClose = () => {
+    setSelectedProduct(null);
+  };
 
   if (loading) {
     return (
@@ -95,12 +101,15 @@ const ProductSlider = () => {
       >
         {products.map((product) => (
           <SwiperSlide key={product._id}>
-            <div className="bg-white p-10 shadow-md overflow-hidden h-full flex flex-col">
+            <div
+              className="bg-white p-10 shadow-md overflow-hidden h-full flex flex-col cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => handleProductSelect(product)}
+            >
               <div className="h-48 overflow-hidden">
                 {product.images && product.images.length > 0 ? (
-                  <img 
-                    src={product.images[0]} 
-                    alt={product.name} 
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -110,22 +119,22 @@ const ProductSlider = () => {
                 )}
               </div>
               <div className="pt-5 flex-grow flex flex-col">
-                <h3 className="text-lg font-semibold mb-2 text-gray-600">{product.name}</h3>
-                <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
+                <span className="text-gray-900 font-bold">${product.price.toFixed(2)}</span>
+                <h3 className="text-md mb-2 text-gray-900 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h3>
+                <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product?.seller?.businessName}</p>
                 <div className="mt-auto flex justify-between items-center">
-                  <span className="text-purple-600 font-bold">${product.price.toFixed(2)}</span>
-                  <Link 
-                    href={`/products/${product._id}`}
-                    className="text-sm bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition"
-                  >
-                    დეტალურად
-                  </Link>
                 </div>
               </div>
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
+
+      {/* Product Detail Panel */}
+      <ProductDetailPanel
+        product={selectedProduct}
+        onClose={handlePanelClose}
+      />
     </div>
   );
 };
