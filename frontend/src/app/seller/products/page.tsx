@@ -300,9 +300,6 @@ export default function SellerProducts() {
                               )}
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                                <div className="text-sm text-gray-500 truncate max-w-xs">
-                                  {product.description}
-                                </div>
                               </div>
                             </div>
                           </td>
@@ -362,7 +359,7 @@ export default function SellerProducts() {
       </div>
 
       {isModalOpen && (
-        <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedProduct ? 'Edit Product' : 'Add Product'}>
+        <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedProduct ? 'პროდუქტის რედაქტირება' : 'პროდუქტის დამატება'}>
           <ProductForm
             product={selectedProduct || undefined}
             categories={categories}
