@@ -1,27 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth, getToken } from '../../utils/authContext';
 import Link from 'next/link';
 
 interface Seller {
     _id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
-    phone: string;
-    address: string;
-    description: string;
+    phoneNumber: string;
+    businessName: string;
+    businessAddress: string;
     isActive: boolean;
 }
 
 export default function SellersPage() {
-    const { isAuthenticated, refreshToken } = useAuth();
     const [sellers, setSellers] = useState<Seller[]>([]);
     const [filteredSellers, setFilteredSellers] = useState<Seller[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
-    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Generate alphabet array for filtering
     const alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
@@ -30,59 +28,7 @@ export default function SellersPage() {
     useEffect(() => {
         const fetchSellers = async () => {
             try {
-                // Get a validated token
-                const validToken = getToken();
-                if (!validToken) {
-                    console.error('Invalid token detected in sellers page');
-                    setError('Authentication error. Please log in again.');
-                    setLoading(false);
-                    return;
-                }
-                
-                const response = await fetch('/api/sellers', {
-                    headers: {
-                        'Authorization': `Bearer ${validToken}`
-                    }
-                });
-                
-                if (response.status === 401 && !isRefreshing) {
-                    // Token expired, try to refresh
-                    setIsRefreshing(true);
-                    const refreshed = await refreshToken();
-                    setIsRefreshing(false);
-                    
-                    if (refreshed) {
-                        // Get the new token after refresh
-                        const newToken = getToken();
-                        if (!newToken) {
-                            console.error('Invalid token received after refresh');
-                            setError('Authentication error. Please log in again.');
-                            setLoading(false);
-                            return;
-                        }
-                        
-                        // Retry the fetch with the new token
-                        const newResponse = await fetch('/api/sellers', {
-                            headers: {
-                                'Authorization': `Bearer ${newToken}`
-                            }
-                        });
-                        
-                        if (!newResponse.ok) {
-                            throw new Error('Failed to fetch sellers');
-                        }
-                        
-                        const data = await newResponse.json();
-                        setSellers(data);
-                        setFilteredSellers(data);
-                        return;
-                    } else {
-                        // If refresh failed, show error
-                        setError('Authentication error. Please log in again.');
-                        setLoading(false);
-                        return;
-                    }
-                }
+                const response = await fetch('/api/sellers/public');
                 
                 if (!response.ok) {
                     throw new Error('Failed to fetch sellers');
@@ -98,25 +44,20 @@ export default function SellersPage() {
             }
         };
 
-        if (isAuthenticated) {
-            fetchSellers();
-        } else {
-            setLoading(false);
-            setError('Please log in to view sellers');
-        }
-    }, [isAuthenticated, refreshToken, isRefreshing]);
+        fetchSellers();
+    }, []);
 
     const handleFilterClick = (filter: string) => {
         setActiveFilter(filter);
 
         if (filter === '0-9') {
             // Filter sellers whose names start with a number
-            const filtered = sellers.filter(seller => /^[0-9]/.test(seller.name));
+            const filtered = sellers.filter(seller => /^[0-9]/.test(seller.businessName));
             setFilteredSellers(filtered);
         } else {
             // Filter sellers whose names start with the selected letter
             const filtered = sellers.filter(seller =>
-                seller.name.toUpperCase().startsWith(filter)
+                seller.businessName.toUpperCase().startsWith(filter)
             );
             setFilteredSellers(filtered);
         }
@@ -127,7 +68,7 @@ export default function SellersPage() {
         setFilteredSellers(sellers);
     };
 
-    if (loading || isRefreshing) {
+    if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
@@ -154,10 +95,11 @@ export default function SellersPage() {
                         <button
                             key={num}
                             onClick={() => handleFilterClick(num)}
-                            className={`px-3 py-1 rounded-md text-sm font-medium ${activeFilter === num
+                            className={`px-3 py-1 rounded-md text-sm font-medium ${
+                                activeFilter === num
                                     ? 'bg-purple-600 text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
+                            }`}
                         >
                             {num}
                         </button>
@@ -166,10 +108,11 @@ export default function SellersPage() {
                         <button
                             key={letter}
                             onClick={() => handleFilterClick(letter)}
-                            className={`px-3 py-1 rounded-md text-sm font-medium ${activeFilter === letter
+                            className={`px-3 py-1 rounded-md text-sm font-medium ${
+                                activeFilter === letter
                                     ? 'bg-purple-600 text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
+                            }`}
                         >
                             {letter}
                         </button>
@@ -193,13 +136,13 @@ export default function SellersPage() {
                     </div>
                 ) : (
                     filteredSellers.map((seller) => (
-                        <div key={seller._id} >
-                            <div>
+                        <div key={seller._id}>
+                            <div className="mb-4">
                                 <Link
                                     href={`/shops/${seller._id}`}
-                                    className="text-md font-semibold mb-2 text-purple-600 hover:text-purple-800 block"
+                                    className="text-xl font-semibold text-purple-600 hover:text-purple-800 block mb-2"
                                 >
-                                    {seller.name}
+                                    {seller.businessName}
                                 </Link>
                             </div>
                         </div>
