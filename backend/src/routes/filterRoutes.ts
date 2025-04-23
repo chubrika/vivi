@@ -5,8 +5,7 @@ import {
   getAllFilters,
   getFilterById,
   updateFilter,
-  deleteFilter,
-  searchFilters
+  deleteFilter
 } from '../controllers/filterController';
 
 const router = express.Router();
@@ -23,7 +22,7 @@ router
   .get(getAllFilters);
 
 // Search route
-router.get('/search', searchFilters);
+router.get('/search', getAllFilters);
 
 router
   .route('/:id')

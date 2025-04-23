@@ -539,7 +539,7 @@ export default function ProductsPage() {
   return (
     <div className="container mx-auto px-4 py-4">
       {/* Horizontal Category Filter Navigation */}
-      <div className="mb-4">
+      <div className="mb-8">
         <h2 className="text-sm font-semibold mb-4 text-gray-500">კატეგორიები</h2>
         <div className="relative">
           <div className="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
@@ -573,41 +573,44 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Horizontal Filters Navigation */}
-      <div className="mb-8">
-        <h2 className="text-sm font-semibold mb-4 text-gray-500">ფილტრები</h2>
-        <div className="relative">
-          <div className="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            <div className="flex gap-2 min-w-max">
-              {filtersLoading ? (
-                <div className="animate-pulse bg-gray-200 h-10 w-24 rounded-full"></div>
-              ) : (
-                filters
-                  .filter(filter => !selectedCategory || filter.category._id === selectedCategory)
-                  .map((filter) => (
-                    <button
-                      key={filter._id}
-                      onClick={() => handleFilterSelect(filter._id)}
-                      className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
-                        selectedFilter === filter._id
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      {filter.name}
-                    </button>
-                  ))
-              )}
-            </div>
-          </div>
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white pointer-events-none"></div>
-        </div>
-      </div>
-
       <div className="flex flex-col md:flex-row gap-8">
         {/* Categories Sidebar */}
         <div className="w-full md:w-64 flex-shrink-0 mb-6 md:mb-0">
           <div className="bg-white rounded-lg shadow p-4">
+            
+            {/* Filters Section - Moved from horizontal navigation to sidebar */}
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-4 text-gray-800">ფილტრები</h2>
+              <div className="space-y-2">
+                {filtersLoading ? (
+                  <div className="animate-pulse space-y-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="h-6 bg-gray-200 rounded"></div>
+                    ))}
+                  </div>
+                ) : (
+                  filters
+                    .filter(filter => !selectedCategory || filter.category._id === selectedCategory)
+                    .map((filter) => (
+                      <div key={filter._id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`filter-${filter._id}`}
+                          checked={selectedFilter === filter._id}
+                          onChange={() => handleFilterSelect(selectedFilter === filter._id ? null : filter._id)}
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                        />
+                        <label
+                          htmlFor={`filter-${filter._id}`}
+                          className="ml-2 block text-sm text-gray-700 cursor-pointer"
+                        >
+                          {filter.name}
+                        </label>
+                      </div>
+                    ))
+                )}
+              </div>
+            </div>
             
             {/* Price Range Filter */}
             <div className="pt-4 border-t border-gray-200">

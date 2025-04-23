@@ -202,7 +202,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                 </div>
 
                                 {/* Add to Cart Button */}
-                                <div className="w-full md:w-[200px]">
+                                <div className="w-full md:w-[210px]">
                                 <div className="pt-4 flex gap-4">
                                   <button
                                         onClick={handleBuyNow}
