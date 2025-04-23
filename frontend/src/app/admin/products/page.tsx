@@ -30,7 +30,10 @@ interface Product {
   stock: number;
   seller: {
     _id: string;
-    name: string;
+    firstName?: string;
+    lastName?: string;
+    businessName?: string;
+    email: string;
   };
   category: {
     _id: string;
@@ -62,20 +65,24 @@ interface ProductFormData {
   filters?: string[];
 }
 
-interface Seller {
-  _id: string;
-  name: string;
-}
-
 interface Category {
   _id: string;
   name: string;
 }
 
+interface User {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  businessName?: string;
+  email: string;
+  role: string;
+}
+
 const ProductsPage = () => {
   const { token, isAuthenticated } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
-  const [sellers, setSellers] = useState<Seller[]>([]);
+  const [sellers, setSellers] = useState<User[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -106,7 +113,7 @@ const ProductsPage = () => {
 
   const fetchSellers = async () => {
     try {
-      const response = await fetch('/api/sellers', {
+      const response = await fetch('/api/admin/users?role=seller', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -254,13 +261,12 @@ const ProductsPage = () => {
                       )}
                       <div>
                         <h3 className="text-lg font-medium text-gray-600">{product.name}</h3>
-                        {/* <p className="text-sm text-gray-500">{product.description}</p> */}
-                        {/* <div className="mt-1 flex items-center space-x-2">
-                          <span className="text-sm font-medium">${product.price.toFixed(2)}</span>
+                        <div className="mt-1 flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-900">₾{product.price.toFixed(2)}</span>
                           <span className="text-sm text-gray-500">•</span>
                           <span className="text-sm text-gray-500">მარაგში: {product.stock}</span>
                           <span className="text-sm text-gray-500">•</span>
-                          <span className="text-sm text-gray-500">მაღაზია: {product.seller.name}</span>
+                          <span className="text-sm text-gray-500">მაღაზია: {product.seller?.businessName || `${product.seller?.firstName} ${product.seller?.lastName}`.trim()}</span>
                           <span className="text-sm text-gray-500">•</span>
                           <span className="text-sm text-gray-500">კატეგორია: {product.category.name}</span>
                           <span className="text-sm text-gray-500">•</span>
@@ -269,7 +275,7 @@ const ProductsPage = () => {
                           }`}>
                             {product.isActive ? 'Active' : 'Inactive'}
                           </span>
-                        </div> */}
+                        </div>
                       </div>
                     </div>
                     <div className="flex space-x-2">

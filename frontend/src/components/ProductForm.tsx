@@ -5,6 +5,7 @@ import CloudinaryUploadWidget from './CloudinaryUploadWidget';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
 import { filtersService, Filter } from '../services/filtersService';
+import { useAuth } from '../utils/authContext';
 
 // Use dynamic import with no SSR to avoid hydration issues
 const ReactQuill = dynamic(() => import('react-quill'), { 
@@ -17,9 +18,13 @@ interface Category {
   name: string;
 }
 
-interface Seller {
+interface User {
   _id: string;
-  name: string;
+  firstName?: string;
+  lastName?: string;
+  businessName?: string;
+  email: string;
+  role: string;
 }
 
 interface FeatureValue {
@@ -47,26 +52,36 @@ interface ProductFormProps {
     price: number;
     stock: number;
     seller: string;
-    category: string;
+    category: string | { _id: string; name: string };
     images: string[];
     isActive: boolean;
     productFeatureValues?: FeatureGroup[];
   };
   categories: Category[];
-  sellers: Seller[];
+  sellers: User[];
   onClose: () => void;
   onSuccess: () => void;
+  isSellerContext?: boolean;
 }
 
-export default function ProductForm({ product, categories, sellers, onClose, onSuccess }: ProductFormProps) {
+export default function ProductForm({ product, categories, sellers, onClose, onSuccess, isSellerContext = false }: ProductFormProps) {
+  const { user } = useAuth();
   const [name, setName] = useState(product?.name || '');
   const [description, setDescription] = useState(product?.description || '');
-  const [price, setPrice] = useState(product?.price || 0);
+  const [price, setPrice] = useState<number>(product?.price || 0);
   const [images, setImages] = useState<string[]>(product?.images || []);
-  const [categoryId, setCategoryId] = useState(product?.category || '');
-  const [sellerId, setSellerId] = useState(product?.seller || '');
+  const [category, setCategory] = useState(typeof product?.category === 'string' ? product.category : product?.category._id || '');
+  const [sellerId, setSellerId] = useState(() => {
+    if (product?.seller) {
+      return product.seller;
+    }
+    if (isSellerContext && user) {
+      return user._id || '';
+    }
+    return '';
+  });
   const [isActive, setIsActive] = useState(product?.isActive ?? true);
-  const [stock, setStock] = useState(product?.stock || 0);
+  const [stock, setStock] = useState<number>(product?.stock || 0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -142,10 +157,10 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   // Fetch filters when category changes
   useEffect(() => {
     const fetchFilters = async () => {
-      if (categoryId) {
+      if (category) {
         try {
           setFiltersLoading(true);
-          const data = await filtersService.getFiltersByCategory(categoryId);
+          const data = await filtersService.getFiltersByCategory(category);
           setFilters(data);
           // Reset selected filters when category changes
           setSelectedFilters([]);
@@ -162,7 +177,33 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     };
 
     fetchFilters();
-  }, [categoryId]);
+  }, [category]);
+
+  // Update sellerId when user changes
+  useEffect(() => {
+    if (isSellerContext && user) {
+      const currentUserId = user._id;
+      if (currentUserId) {
+        setSellerId(currentUserId);
+      }
+    }
+  }, [isSellerContext, user]);
+
+  useEffect(() => {
+    if (product) {
+      setName(product.name);
+      setDescription(product.description);
+      setPrice(product.price);
+      setStock(product.stock);
+      setCategory(typeof product.category === 'string' ? product.category : product.category._id);
+      setImages(product.images);
+      setIsActive(product.isActive);
+      setSellerId(product.seller);
+      if (product.productFeatureValues) {
+        setFeatureGroups(product.productFeatureValues);
+      }
+    }
+  }, [product]);
 
   const modules = useMemo(() => ({
     toolbar: {
@@ -205,18 +246,25 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     setError(null);
 
     try {
+      // Validate seller ID
+      if (!sellerId) {
+        throw new Error('Seller information is required');
+      }
+      
       const productData = {
         name,
         description,
-        price: Number(price),
+        price,
+        stock,
+        category,
         images,
-        category: categoryId,
-        seller: sellerId,
-        isActive,
-        stock: Number(stock),
+        filters: selectedFilters,
         productFeatureValues: featureGroups,
-        filters: selectedFilters
+        isActive,
+        seller: sellerId,
       };
+
+      console.log('Submitting product with seller ID:', sellerId);
 
       const url = product ? `/api/products/${product._id}` : '/api/products';
       const method = product ? 'PUT' : 'POST';
@@ -429,20 +477,19 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-              კატეგორია
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            კატეგორია
           </label>
           <select
             id="category"
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
-            required
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
-            <option value="">აირჩიე კატეგორია</option>
-            {categories.map((category) => (
-              <option key={category._id} value={category._id}>
-                {category.name}
+            <option value="">Select a category</option>
+            {categories.map((cat) => (
+              <option key={cat._id} value={cat._id}>
+                {cat.name}
               </option>
             ))}
           </select>
@@ -461,7 +508,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
               setSelectedFilters(selectedOptions);
             }}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
-            disabled={!categoryId || filtersLoading}
+            disabled={!category || filtersLoading}
           >
             {filtersLoading ? (
               <option value="" disabled>Loading filters...</option>
@@ -479,27 +526,26 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="seller" className="block text-sm font-medium text-gray-700 mb-1">
-              მაღაზია
+      {!isSellerContext && (
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            მაღაზია
           </label>
           <select
-            id="seller"
             value={sellerId}
             onChange={(e) => setSellerId(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             required
           >
             <option value="">აირჩიე მაღაზია</option>
             {sellers.map((seller) => (
               <option key={seller._id} value={seller._id}>
-                {seller.name}
+                {seller.businessName || `${seller.firstName} ${seller.lastName}`.trim()}
               </option>
             ))}
           </select>
         </div>
-      </div>
+      )}
 
       <div className="flex items-center">
         <input

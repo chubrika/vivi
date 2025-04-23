@@ -185,7 +185,7 @@ export default function AdminDashboard() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
                           <p className="text-sm text-gray-500">
-                            {product.category.name} • {product.seller.name}
+                            {product.category.name}
                           </p>
                         </div>
                         <div className="ml-4 flex-shrink-0">
@@ -211,7 +211,7 @@ export default function AdminDashboard() {
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                          <p className="text-sm text-gray-500">{product.seller.name}</p>
+                          {/* <p className="text-sm text-gray-500">{product.seller.name}</p> */}
                         </div>
                         <div className="ml-4 flex-shrink-0">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">

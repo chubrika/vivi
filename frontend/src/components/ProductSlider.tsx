@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -16,6 +16,7 @@ interface Product {
   price: number;
   images: string[];
   seller: {
+    businessName: string;
     _id: string;
     name: string;
   };
@@ -120,7 +121,7 @@ const ProductSlider = () => {
               <div className="pt-5 flex-grow flex flex-col">
                 <span className="text-gray-900 font-bold">${product.price.toFixed(2)}</span>
                 <h3 className="text-md mb-2 text-gray-900 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h3>
-                <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.seller.name}</p>
+                <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product?.seller?.businessName}</p>
                 <div className="mt-auto flex justify-between items-center">
                 </div>
               </div>

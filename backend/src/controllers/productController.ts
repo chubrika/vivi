@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Product from '../models/Product';
+import User from '../models/User';
 
 // Get all products
 export const getAllProducts = async (req: Request, res: Response) => {
@@ -22,7 +23,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
     }
     
     const products = await Product.find(query)
-      .populate('seller', 'name email')
+      .populate('seller', 'firstName lastName businessName email')
       .populate('category', 'name')
       .populate('filters', 'name description')
       .sort({ createdAt: -1 });
@@ -37,7 +38,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 export const getProductById = async (req: Request, res: Response) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate('seller', 'name email')
+      .populate('seller', 'firstName lastName businessName email')
       .populate('category', 'name')
       .populate('filters', 'name description');
       
@@ -66,10 +67,20 @@ export const createProduct = async (req: Request, res: Response) => {
       }
     }
     
+    // Verify that the seller exists and is a seller
+    const seller = await User.findById(req.body.seller);
+    if (!seller) {
+      return res.status(400).json({ message: 'Seller not found' });
+    }
+    
+    if (seller.role !== 'seller') {
+      return res.status(400).json({ message: 'The specified user is not a seller' });
+    }
+    
     const product = new Product(req.body);
     await product.save();
     const populatedProduct = await Product.findById(product._id)
-      .populate('seller', 'name email')
+      .populate('seller', 'firstName lastName businessName email')
       .populate('category', 'name')
       .populate('filters', 'name description');
     res.status(201).json(populatedProduct);
@@ -108,12 +119,24 @@ export const updateProduct = async (req: Request, res: Response) => {
       }
     }
     
+    // If seller is being updated, verify that the new seller exists and is a seller
+    if (req.body.seller) {
+      const seller = await User.findById(req.body.seller);
+      if (!seller) {
+        return res.status(400).json({ message: 'Seller not found' });
+      }
+      
+      if (seller.role !== 'seller') {
+        return res.status(400).json({ message: 'The specified user is not a seller' });
+      }
+    }
+    
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     )
-      .populate('seller', 'name email')
+      .populate('seller', 'firstName lastName businessName email')
       .populate('category', 'name')
       .populate('filters', 'name description');
     

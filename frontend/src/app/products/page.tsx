@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, ReactNode } from 'react';
 import ProductDetailPanel from '../../components/ProductDetailPanel';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../utils/api';
@@ -17,6 +17,7 @@ interface Product {
     name: string;
   };
   seller: {
+    businessName: string;
     _id: string;
     name: string;
   };
@@ -716,7 +717,7 @@ export default function ProductsPage() {
                       <p className="text-gray-900 font-semibold">{product.price.toFixed(2)} ₾</p>
                       <h2 className="text-md text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="text-sm text-gray-500">{product.seller.name}</span>
+                        <span className="text-sm text-gray-500">{product.seller?.businessName}</span>
                       </div>
                     </div>
                   </div>

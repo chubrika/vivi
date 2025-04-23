@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import AddToCartButton from './AddToCartButton';
 import { useRouter } from 'next/navigation';
 
@@ -32,6 +32,7 @@ interface Product {
         name: string;
     };
     seller: {
+        businessName: string;
         _id: string;
         name: string;
     };
@@ -234,7 +235,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                 {/* Seller */}
                                 <div>
                                     <h2 className="text-lg font-semibold text-gray-900">მაღაზია</h2>
-                                    <p className="mt-1 text-gray-600">{product.seller.name}</p>
+                                    <p className="mt-1 text-gray-600">{product.seller?.businessName}</p>
                                 </div>
                             </div>
 
@@ -243,7 +244,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                 <div className="mt-8 pt-8 border-t border-gray-200">
                                     <div className="space-y-6">
                                         {product.productFeatureValues.map((group, groupIndex) => (
-                                            <div key={groupIndex} className="bg-gray-50 rounded-lg">
+                                            <div key={groupIndex} className="bg-gray-50 rounded-lg p-3">
                                                 <h3 className="text-xl font-bold text-gray-800 mb-4">
                                                     {group.featureGroupCaption}
                                                 </h3>

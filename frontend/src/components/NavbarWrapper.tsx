@@ -7,7 +7,7 @@ export default function NavbarWrapper() {
   const pathname = usePathname();
   
   // Hide Navbar on admin routes
-  if (pathname?.startsWith('/admin')) {
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/seller')) {
     return null;
   }
   

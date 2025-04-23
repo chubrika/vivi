@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { ISeller } from './Seller';
 import { ICategory } from './Category';
 import { IFilter } from './Filter';
 
@@ -26,7 +25,7 @@ export interface IProduct extends Document {
   description: string;
   price: number;
   stock: number;
-  seller: ISeller['_id'];
+  seller: mongoose.Types.ObjectId;
   category: ICategory['_id'];
   images: string[];
   isActive: boolean;
@@ -96,7 +95,7 @@ const productSchema = new Schema({
   },
   seller: {
     type: Schema.Types.ObjectId,
-    ref: 'Seller',
+    ref: 'User',
     required: [true, 'Product must belong to a seller']
   },
   category: {

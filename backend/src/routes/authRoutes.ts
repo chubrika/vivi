@@ -41,4 +41,23 @@ router.get('/check-admin', authenticateToken, async (req: Request, res: Response
   }
 });
 
+router.get('/check-seller', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    // The role is already in the JWT token, no need to query the database
+    const isSeller = req.user.role === 'seller';
+    
+    return res.json({ 
+      isSeller,
+      role: req.user.role 
+    });
+  } catch (error) {
+    console.error('Error checking seller status:', error);
+    return res.status(500).json({ message: 'Error checking seller status' });
+  }
+});
+
 export default router; 

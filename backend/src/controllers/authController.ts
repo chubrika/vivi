@@ -2,10 +2,11 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+const { JWT_SECRET } = require('../config');
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { email, password, role, firstName, lastName, businessName, businessAddress, phoneNumber } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -13,53 +14,57 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create new user - password will be hashed by the User model's pre-save middleware
+    // Validate seller-specific fields
+    if (role === 'seller') {
+      if (!businessName || !businessAddress || !phoneNumber) {
+        return res.status(400).json({ 
+          message: 'Business name, address, and phone number are required for seller registration' 
+        });
+      }
+    }
+
+    // Create new user
     const user = new User({
+      email,
+      password,
+      role,
       firstName,
       lastName,
-      email,
-      password, // Pass the plain password, let the model hash it
-      role: 'user' // Explicitly set role
+      ...(role === 'seller' && {
+        businessName,
+        businessAddress,
+        phoneNumber
+      })
     });
 
     await user.save();
 
-    // Get JWT_SECRET from environment variables
-    const jwtSecret = process.env.JWT_SECRET;
-    
-    if (!jwtSecret) {
-      console.error('JWT_SECRET is not defined in environment variables');
-      return res.status(500).json({ message: 'Server configuration error' });
-    }
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
-    try {
-      // Create token with explicit string conversion
-      const token = jwt.sign(
-        { 
-          userId: user._id.toString(), 
-          role: user.role || 'user' // Ensure role is defined
-        },
-        jwtSecret,
-        { expiresIn: '24h' }
-      );
-
-      res.status(201).json({
-        token,
-        user: {
-          id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          role: user.role || 'user'
-        },
-      });
-    } catch (jwtError) {
-      console.error('JWT Signing Error:', jwtError);
-      return res.status(500).json({ message: 'Error creating authentication token' });
-    }
+    // Return user data and token
+    res.status(201).json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        ...(role === 'seller' && {
+          businessName: user.businessName,
+          businessAddress: user.businessAddress,
+          phoneNumber: user.phoneNumber
+        })
+      }
+    });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Error registering user' });
   }
 };
 
@@ -107,7 +112,7 @@ export const login = async (req: Request, res: Response) => {
       res.json({
         token,
         user: {
-          id: user._id,
+          _id: user._id,
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,

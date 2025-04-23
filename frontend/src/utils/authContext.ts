@@ -2,12 +2,15 @@ import { useState, useEffect, createContext, useContext, ReactNode, createElemen
 import { API_BASE_URL } from './api';
 
 // Define a proper User type to replace 'any'
-interface User {
-  id: string;
+export interface User {
+  _id: string;
   email: string;
   firstName?: string;
   lastName?: string;
-  role: 'user' | 'admin';
+  role: 'customer' | 'seller' | 'admin';
+  businessName?: string;
+  businessAddress?: string;
+  phoneNumber?: string;
   createdAt?: string;
   updatedAt?: string;
 }

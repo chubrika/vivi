@@ -5,21 +5,24 @@ interface AuthCredentials {
   password: string;
   firstName?: string;
   lastName?: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role: 'user' | 'admin';
-  createdAt?: string;
-  updatedAt?: string;
+  role?: 'customer' | 'seller';
+  businessName?: string;
+  businessAddress?: string;
+  phoneNumber?: string;
 }
 
 interface AuthResponse {
   token: string;
-  user: User;
+  user: {
+    _id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: 'customer' | 'seller' | 'admin';
+    businessName?: string;
+    businessAddress?: string;
+    phoneNumber?: string;
+  };
 }
 
 export const authService = {

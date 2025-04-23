@@ -6,11 +6,12 @@ import { useAuth } from '../../../utils/authContext';
 import { API_BASE_URL } from '../../../utils/api';
 
 interface User {
+  businessName?: string;
   _id: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'seller' | 'admin';
   isActive: boolean;
   createdAt: string;
 }
@@ -161,11 +162,13 @@ export default function UsersManagement() {
           <tbody className="bg-white divide-y divide-gray-200 text-gray-800">
             {users.map((user) => (
               <tr key={user._id}>
-                <td className="px-6 py-4 whitespace-nowrap">{user.firstName}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.firstName || user.businessName}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                    user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 
+                    user.role === 'seller' ? 'bg-orange-100 text-orange-800' :
+                    'bg-green-100 text-green-800'
                   }`}>
                     {user.role}
                   </span>
@@ -223,7 +226,7 @@ export default function UsersManagement() {
                   </label>
                   <input
                     type="text"
-                    value={editingUser.firstName}
+                    value={editingUser.firstName || editingUser.businessName}
                     onChange={(e) => setEditingUser({ ...editingUser, firstName: e.target.value })}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   />
@@ -245,11 +248,12 @@ export default function UsersManagement() {
                   </label>
                   <select
                     value={editingUser.role}
-                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as 'user' | 'admin' })}
+                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as 'user' | 'admin' | 'seller' })}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
+                    <option value="seller">Seller</option>
                   </select>
                 </div>
                 <div className="flex justify-end gap-4">
