@@ -103,7 +103,7 @@ export default function SellerDetailPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <Link 
-          href="/sellers"
+          href="/shops"
           className="text-purple-600 hover:text-purple-800 flex items-center gap-2"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

@@ -196,7 +196,7 @@ export default function SellersPage() {
                         <div key={seller._id} >
                             <div>
                                 <Link
-                                    href={`/sellers/${seller._id}`}
+                                    href={`/shops/${seller._id}`}
                                     className="text-md font-semibold mb-2 text-purple-600 hover:text-purple-800 block"
                                 >
                                     {seller.name}
