@@ -49,6 +49,9 @@ export default function ProfilePage() {
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [updateError, setUpdateError] = useState('');
   const [addressError, setAddressError] = useState('');
+  const [balanceAmount, setBalanceAmount] = useState('');
+  const [balanceError, setBalanceError] = useState('');
+  const [balanceSuccess, setBalanceSuccess] = useState(false);
 
   // Function to fetch addresses
   const fetchAddresses = async () => {
@@ -180,6 +183,38 @@ export default function ProfilePage() {
 
   const handleChangePassword = () => {
     setShowPasswordModal(true);
+  };
+
+  const handleAddFunds = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBalanceError('');
+    setBalanceSuccess(false);
+    
+    if (!balanceAmount || isNaN(Number(balanceAmount)) || Number(balanceAmount) <= 0) {
+      setBalanceError('გთხოვთ შეიყვანოთ სწორი თანხა');
+      return;
+    }
+    
+    try {
+      // Here you would call your API to add funds to the user's balance
+      // For now, we'll just simulate a successful response
+      console.log(`Adding ${balanceAmount} to balance`);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setBalanceSuccess(true);
+      setBalanceAmount('');
+      
+      // Reset success message after 3 seconds
+      setTimeout(() => {
+        setBalanceSuccess(false);
+        setActiveSection('personal');
+      }, 3000);
+    } catch (err) {
+      console.error('Error adding funds:', err);
+      setBalanceError('თანხის დამატება ვერ მოხერხდა');
+    }
   };
 
   if (loading) {
@@ -412,6 +447,54 @@ export default function ProfilePage() {
             </div>
           </div>
         );
+      case 'balance':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 mb-6">ბალანსის შევსება</h2>
+              <form className="space-y-6" onSubmit={handleAddFunds}>
+                {balanceSuccess && (
+                  <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span className="block sm:inline">თანხა წარმატებით დაემატა!</span>
+                  </div>
+                )}
+                {balanceError && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span className="block sm:inline">{balanceError}</span>
+                  </div>
+                )}
+                <div className="relative max-w-[180px]">
+                  <input
+                    type="number"
+                    name="balanceAmount"
+                    value={balanceAmount}
+                    onChange={(e) => setBalanceAmount(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                    placeholder=" "
+                    min="0"
+                    step="0.01"
+                  />
+                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
+                    balanceAmount ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                  }`}>
+                    თანხა (₾)
+                  </label>
+                </div>
+
+                <div className="pt-6 border-t border-gray-200">
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      type="submit"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                    >
+                      შენახვა
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -435,13 +518,16 @@ export default function ProfilePage() {
                   <h2 className="text-lg font-semibold text-gray-800 text-center">{profile?.firstName || 'მომხმარებელი'}</h2>
                 </div>
                 
-                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4">
+                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4 border border-gray-200 mx-auto" style={{ maxWidth: '180px' }}>
                   <div className="flex items-center">
                     <span className="font-medium text-gray-700">ბალანსი</span>
                   </div>
                   <div className="flex items-center">
                     <span className="font-semibold text-gray-800 mr-2">₾0.00</span>
-                    <button className="text-purple-600 hover:text-purple-800">
+                    <button 
+                      className="text-purple-600 hover:text-purple-800"
+                      onClick={() => setActiveSection('balance')}
+                    >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
