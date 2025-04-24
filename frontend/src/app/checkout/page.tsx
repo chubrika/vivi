@@ -62,6 +62,7 @@ export default function CheckoutPage() {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
     const [showAddressFormModal, setShowAddressFormModal] = useState(false);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     // Determine if we're doing a cart checkout or direct product checkout
     useEffect(() => {
@@ -218,6 +219,44 @@ export default function CheckoutPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Validate required fields
+        const errors: Record<string, string> = {};
+        
+        if (!formData.firstName.trim()) {
+            errors.firstName = 'სახელი სავალდებულოა';
+        }
+        
+        if (!formData.lastName.trim()) {
+            errors.lastName = 'გვარი სავალდებულოა';
+        }
+        
+        if (!formData.mobile.trim()) {
+            errors.mobile = 'ტელეფონის ნომერი სავალდებულოა';
+        }
+        
+        if (!formData.personalNumber.trim()) {
+            errors.personalNumber = 'პირადი ნომერი სავალდებულოა';
+        }
+        
+        if (!formData.address.trim()) {
+            errors.address = 'მისამართი სავალდებულოა';
+        }
+        
+        // If there are errors, display them and stop form submission
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            // Scroll to the first error
+            const firstErrorField = document.querySelector(`[name="${Object.keys(errors)[0]}"]`);
+            if (firstErrorField) {
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+        
+        // Clear any previous errors
+        setFormErrors({});
+        
         // Handle order submission
         if (isCartCheckout) {
             console.log('Order submitted from cart:', { cartItems: cartItemsToCheckout, formData });
@@ -360,11 +399,11 @@ export default function CheckoutPage() {
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        name="name"
+                                        name="firstName"
                                         value={formData.firstName}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.firstName ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -372,6 +411,9 @@ export default function CheckoutPage() {
                                     }`}>
                                         სახელი
                                     </label>
+                                    {formErrors.firstName && (
+                                        <p className="mt-1 text-sm text-red-500">{formErrors.firstName}</p>
+                                    )}
                                 </div>
                                 <div className="relative">
                                     <input
@@ -380,7 +422,7 @@ export default function CheckoutPage() {
                                         value={formData.lastName}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.lastName ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -388,6 +430,9 @@ export default function CheckoutPage() {
                                     }`}>
                                         გვარი
                                     </label>
+                                    {formErrors.lastName && (
+                                        <p className="mt-1 text-sm text-red-500">{formErrors.lastName}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -399,7 +444,7 @@ export default function CheckoutPage() {
                                         value={formData.mobile}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.mobile ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -407,6 +452,9 @@ export default function CheckoutPage() {
                                     }`}>
                                        ტელეფონის ნომერი
                                     </label>
+                                    {formErrors.mobile && (
+                                        <p className="mt-1 text-sm text-red-500">{formErrors.mobile}</p>
+                                    )}
                                 </div>
                                 <div className="relative">
                                     <input
@@ -415,7 +463,7 @@ export default function CheckoutPage() {
                                         value={formData.personalNumber}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.personalNumber ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -423,6 +471,9 @@ export default function CheckoutPage() {
                                     }`}>
                                         პირადი ნომერი
                                     </label>
+                                    {formErrors.personalNumber && (
+                                        <p className="mt-1 text-sm text-red-500">{formErrors.personalNumber}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -433,7 +484,7 @@ export default function CheckoutPage() {
                                     value={formData.address}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                                    className={`w-full px-4 py-3 rounded-lg border ${formErrors.address ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
                                     placeholder=" "
                                 />
                                 <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -447,6 +498,9 @@ export default function CheckoutPage() {
                                 >
                                     მისამართის შეცვლა
                                 </label>
+                                {formErrors.address && (
+                                    <p className="mt-1 text-sm text-red-500">{formErrors.address}</p>
+                                )}
                             </div>
 
                             <div className="relative">
@@ -608,9 +662,9 @@ export default function CheckoutPage() {
 
                             <button
                                 onClick={handleSubmit}
-                                className="w-full bg-purple-600 text-white py-4 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium text-lg shadow-md hover:shadow-lg"
+                                className="w-full bg-purple-600 text-white py-4 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium text-sm shadow-md hover:shadow-lg"
                             >
-                                Finish Order
+                                შეკვეთის დასრულება
                             </button>
                         </div>
                     </div>

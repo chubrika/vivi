@@ -351,11 +351,11 @@ export default function ProfilePage() {
       case 'addresses':
         return (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-lg font-medium text-gray-900">ჩემი მისამართები</h2>
               <button
                 onClick={() => setShowAddAddress(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
               >
                 მისამართის დამატება
               </button>
@@ -369,19 +369,19 @@ export default function ProfilePage() {
 
             <div className="space-y-4">
               {addresses.map((address) => (
-                <div key={address.id} className="bg-white p-6 rounded-lg shadow-lg">
-                  <div className="flex justify-between items-start">
+                <div key={address.id} className="bg-white p-4 md:p-6 rounded-lg border border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">{address.title}</h3>
-                      <p className="mt-1 text-gray-600">{address.address}</p>
+                      <h3 className="text-md font-medium text-gray-900">{address.address}</h3>
+                      {/* <p className="mt-1 text-gray-600">{address.address}</p> */}
                     </div>
-                    <div className="flex flex-col items-end space-y-2">
+                    <div className="flex flex-col items-start sm:items-end space-y-2 w-full sm:w-auto">
                       {address.isDefault && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-md font-medium bg-purple-100 text-purple-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                           ძირითადი მისამართი
                         </span>
                       )}
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-2 w-full sm:w-auto justify-start sm:justify-end">
                         {!address.isDefault && (
                           <button
                             onClick={() => address.id && handleSetDefaultAddress(address.id)}
@@ -420,10 +420,10 @@ export default function ProfilePage() {
         );
       case 'cards':
         return (
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Side */}
             <div className="space-y-6">
-              <div className="bg-white shadow rounded-lg p-6">
+              <div className="bg-white shadow rounded-lg p-4 md:p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">ჩემი ბარათები</h2>
                 <div className="space-y-4">
                   <button className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
@@ -438,7 +438,7 @@ export default function ProfilePage() {
 
             {/* Right Side */}
             <div className="space-y-6">
-              <div className="bg-white shadow rounded-lg p-6">
+              <div className="bg-white shadow rounded-lg p-4 md:p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">Default Payment Method</h2>
                 <div className="space-y-4">
                   <p className="text-gray-500">No default payment method set.</p>
@@ -503,10 +503,10 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-8">
+        <div className="flex flex-col md:flex-row gap-8">
           {/* Left Sidebar */}
-          <div className="w-64 flex-shrink-0">
-            <div className="bg-white shadow rounded-lg p-6">
+          <div className="w-full md:w-64 flex-shrink-0">
+            <div className="bg-white shadow rounded-lg p-4 md:p-6">
               {/* User Profile Summary */}
               <div className="mb-6 pb-6 border-b border-gray-200">
                 <div className="flex flex-col items-center mb-4">
@@ -573,7 +573,7 @@ export default function ProfilePage() {
 
           {/* Main Content */}
           <div className="flex-1">
-            <div className="bg-white shadow rounded-lg p-6">
+            <div className="bg-white shadow rounded-lg p-4 md:p-6">
               {renderContent()}
             </div>
           </div>
