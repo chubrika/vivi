@@ -14,7 +14,8 @@ import PasswordChangeModal from '../../components/PasswordChangeModal';
 
 interface UserProfile {
   id: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   role: 'user' | 'admin';
   phone?: string;
@@ -423,7 +424,32 @@ export default function ProfilePage() {
           {/* Left Sidebar */}
           <div className="w-64 flex-shrink-0">
             <div className="bg-white shadow rounded-lg p-6">
-              <h1 className="text-xl font-bold text-gray-900 mb-6">ჩემი პროფილი</h1>
+              {/* User Profile Summary */}
+              <div className="mb-6 pb-6 border-b border-gray-200">
+                <div className="flex flex-col items-center mb-4">
+                  <div className="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-white mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                   </div>
+                  <h2 className="text-lg font-semibold text-gray-800 text-center">{profile?.firstName || 'მომხმარებელი'}</h2>
+                </div>
+                
+                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4">
+                  <div className="flex items-center">
+                    <span className="font-medium text-gray-700">ბალანსი</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="font-semibold text-gray-800 mr-2">₾0.00</span>
+                    <button className="text-purple-600 hover:text-purple-800">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
               <nav className="space-y-2">
                 <button
                   onClick={() => setActiveSection('personal')}
