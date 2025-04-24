@@ -2,6 +2,7 @@ import { API_BASE_URL } from '../utils/api';
 import { getToken } from '../utils/authContext';
 
 export interface Address {
+  _id?: string;
   id?: string;
   title: string;
   address: string;
