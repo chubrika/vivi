@@ -5,9 +5,9 @@ import { useEffect, useRef } from 'react';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full';
 }
 
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
@@ -39,8 +39,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
     };
   }, [isOpen, onClose]);
 
-  // Get the appropriate max-width class based on the size prop
-  const getSizeClass = () => {
+  const getMaxWidthClass = () => {
     switch (size) {
       case 'sm':
         return 'sm:max-w-sm';
@@ -50,6 +49,10 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
         return 'sm:max-w-lg';
       case 'xl':
         return 'sm:max-w-xl';
+      case '2xl':
+        return 'sm:max-w-2xl';
+      case '3xl':
+        return 'sm:max-w-3xl';
       case 'full':
         return 'sm:max-w-full';
       default:
@@ -68,7 +71,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
         
         <div 
           ref={modalRef}
-          className={`inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle ${getSizeClass()} sm:w-full`}
+          className={`inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle ${getMaxWidthClass()} sm:w-full`}
         >
           <div className="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">

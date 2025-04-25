@@ -6,6 +6,7 @@ import { isAuthenticated, getToken } from '../../utils/authContext';
 import { API_BASE_URL } from '../../utils/api';
 import { userService } from '../../services/userService';
 import { addressService, Address } from '../../services/addressService';
+import { orderService, Order } from '../../services/orderService';
 import Link from 'next/link';
 import GoogleMap from '../../components/GoogleMap';
 import Modal from '../../components/Modal';
@@ -20,6 +21,7 @@ interface UserProfile {
   role: 'user' | 'admin';
   phone?: string;
   bio?: string;
+  balance: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -41,7 +43,8 @@ export default function ProfilePage() {
     isDefault: false
   });
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     bio: ''
@@ -52,6 +55,9 @@ export default function ProfilePage() {
   const [balanceAmount, setBalanceAmount] = useState('');
   const [balanceError, setBalanceError] = useState('');
   const [balanceSuccess, setBalanceSuccess] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState('');
 
   // Function to fetch addresses
   const fetchAddresses = async () => {
@@ -66,10 +72,32 @@ export default function ProfilePage() {
     }
   };
 
+  // Function to fetch orders
+  const fetchOrders = async () => {
+    setOrdersLoading(true);
+    setOrdersError('');
+    try {
+      const orderData = await orderService.getUserOrders();
+      setOrders(orderData);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      setOrdersError('Failed to load orders');
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
   // Fetch addresses when the addresses section is selected
   useEffect(() => {
     if (activeSection === 'addresses') {
       fetchAddresses();
+    }
+  }, [activeSection]);
+
+  // Fetch orders when the orders section is selected
+  useEffect(() => {
+    if (activeSection === 'orders') {
+      fetchOrders();
     }
   }, [activeSection]);
 
@@ -83,9 +111,13 @@ export default function ProfilePage() {
       try {
         // Use the userService to fetch the profile
         const userData = await userService.getCurrentUser();
-        setProfile(userData);
+        setProfile({
+          ...userData,
+          balance: userData.balance || 0
+        });
         setFormData({
-          name: userData.name || '',
+          firstName: userData.firstName || '',
+          lastName: userData.lastName || '',
           email: userData.email || '',
           phone: userData.phone || '',
           bio: userData.bio || ''
@@ -167,13 +199,17 @@ export default function ProfilePage() {
     try {
       // Use the userService to update the profile
       const updatedUser = await userService.updateProfile({
-        name: formData.name,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
         bio: formData.bio
       });
       
-      setProfile(updatedUser);
+      setProfile({
+        ...updatedUser,
+        balance: updatedUser.balance || 0
+      });
       setUpdateSuccess(true);
     } catch (err) {
       console.error('Profile update error:', err);
@@ -256,13 +292,13 @@ export default function ProfilePage() {
                     <input
                       type="text"
                       name="name"
-                      value={formData.name}
+                      value={formData.firstName}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
                       placeholder=" "
                     />
                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                      formData.name ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                      formData.firstName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
                     }`}>
                       სახელი
                     </label>
@@ -495,6 +531,98 @@ export default function ProfilePage() {
             </div>
           </div>
         );
+      case 'orders':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-6">ჩემი შეკვეთები</h2>
+            
+            {ordersError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span className="block sm:inline">{ordersError}</span>
+              </div>
+            )}
+
+            {ordersLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="text-gray-500">Loading orders...</div>
+              </div>
+            ) : orders.length > 0 ? (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div key={order._id} className="bg-white p-4 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between gap-4">
+                      {/* Product Images */}
+                      <div className="flex -space-x-2">
+                        {order.items.slice(0, 3).map((item, index) => (
+                          <div key={item._id} className="relative">
+                            <img
+                              src={item.images[0]}
+                              alt={item.name}
+                              className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                            />
+                            {index === 2 && order.items.length > 3 && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                                <span className="text-white text-xs">+{order.items.length - 3}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Order Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium text-gray-900">
+                              Order #{order.orderId}
+                            </span>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                              order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                              order.paymentStatus === 'paid' ? 'bg-blue-100 text-blue-800' :
+                              order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.paymentStatus === 'paid' ? 'Paid' :
+                               order.paymentStatus === 'failed' ? 'Payment Failed' :
+                               order.status === 'delivered' ? 'Delivered' :
+                               order.status === 'cancelled' ? 'Cancelled' :
+                               order.status === 'pending' ? 'pending' :
+                               'Processing'}
+                            </span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900">
+                            ₾{order.totalAmount.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between mt-1">
+                          <div className="flex items-center space-x-4">
+                            <span className="text-sm text-gray-500">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                            </span>
+                          </div>
+                          <Link 
+                            href={`/order-confirmation/${order._id}`}
+                            className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                          >
+                            View Details →
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No orders found.</p>
+              </div>
+            )}
+          </div>
+        );
       default:
         return null;
     }
@@ -520,10 +648,10 @@ export default function ProfilePage() {
                 
                 <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4 border border-gray-200 mx-auto" style={{ maxWidth: '180px' }}>
                   <div className="flex items-center">
-                    <span className="font-medium text-gray-700">ბალანსი</span>
+                    <span className="font-medium text-gray-700 text-xs">ბალანსი</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="font-semibold text-gray-800 mr-2">₾0.00</span>
+                    <span className="font-semibold text-gray-800 mr-2">{profile?.balance.toFixed(2) || '0.00'} ₾</span>
                     <button 
                       className="text-purple-600 hover:text-purple-800"
                       onClick={() => setActiveSection('balance')}
@@ -537,11 +665,21 @@ export default function ProfilePage() {
               </div>
               
               <nav className="space-y-2">
+              <button
+                  onClick={() => setActiveSection('orders')}
+                  className={`w-full text-left px-4 py-2 rounded-md text-sm ${
+                    activeSection === 'orders'
+                      ? 'bg-purple-100 font-bold text-purple-700'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  ჩემი შეკვეთები
+                </button>
                 <button
                   onClick={() => setActiveSection('personal')}
-                  className={`w-full text-left px-4 py-2 rounded-md ${
+                  className={`w-full text-left px-4 py-2 rounded-md text-sm ${
                     activeSection === 'personal'
-                      ? 'bg-purple-100 text-purple-700'
+                      ? 'bg-purple-100 font-bold text-purple-700'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -549,9 +687,9 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={() => setActiveSection('addresses')}
-                  className={`w-full text-left px-4 py-2 rounded-md ${
+                  className={`w-full text-left px-4 py-2 rounded-md text-sm ${
                     activeSection === 'addresses'
-                      ? 'bg-purple-100 text-purple-700'
+                      ? 'bg-purple-100 font-bold text-purple-700'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -559,9 +697,9 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={() => setActiveSection('cards')}
-                  className={`w-full text-left px-4 py-2 rounded-md ${
+                  className={`w-full text-left px-4 py-2 rounded-md text-sm ${
                     activeSection === 'cards'
-                      ? 'bg-purple-100 text-purple-700'
+                      ? 'bg-purple-100 font-bold text-purple-700'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >

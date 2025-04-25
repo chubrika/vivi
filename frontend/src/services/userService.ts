@@ -10,16 +10,19 @@ interface AuthCredentials {
 interface User {
   id: string;
   email: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   role: 'user' | 'admin';
   phone?: string;
   bio?: string;
+  balance?: number;
   createdAt?: string;
   updatedAt?: string;
 }
 
 interface UpdateUserData {
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   password?: string;
   phone?: string;

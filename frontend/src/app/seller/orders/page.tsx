@@ -19,6 +19,7 @@ interface OrderItem {
 
 interface Order {
   _id: string;
+  orderId: string;
   user: {
     _id: string;
     firstName: string;
@@ -215,7 +216,7 @@ export default function SellerOrders() {
                         <tr key={order._id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                              #{order._id.substring(0, 8)}
+                              #{order.orderId}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">

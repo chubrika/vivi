@@ -10,6 +10,7 @@ interface IUser {
   businessName?: string;
   businessAddress?: string;
   phoneNumber?: string;
+  balance: number;
   isActive: boolean;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -51,6 +52,10 @@ const userSchema = new mongoose.Schema<IUser>({
   phoneNumber: {
     type: String,
     trim: true,
+  },
+  balance: {
+    type: Number,
+    default: 0,
   },
   isActive: {
     type: Boolean,

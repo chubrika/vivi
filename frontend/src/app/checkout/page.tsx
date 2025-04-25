@@ -217,7 +217,7 @@ export default function CheckoutPage() {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
         // Validate required fields
@@ -257,13 +257,40 @@ export default function CheckoutPage() {
         // Clear any previous errors
         setFormErrors({});
         
-        // Handle order submission
-        if (isCartCheckout) {
-            console.log('Order submitted from cart:', { cartItems: cartItemsToCheckout, formData });
-        } else {
-            console.log('Order submitted for single product:', { product, quantity, formData });
+        try {
+            // Create order
+            const response = await fetch(`${API_BASE_URL}/api/orders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    shippingAddress: formData.address,
+                    paymentMethod: formData.paymentMethod
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create order');
+            }
+
+            const data = await response.json();
+            
+            // Check if the order was created successfully
+            if (data.order && data.order._id) {
+                // Redirect to order confirmation page
+                router.push(`/order-confirmation/${data.order._id}`);
+            } else {
+                throw new Error('Invalid order response');
+            }
+        } catch (error) {
+            console.error('Error creating order:', error);
+            // Display more detailed error message if available
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create order. Please try again.';
+            setError(errorMessage);
         }
-        // TODO: Implement order submission logic
     };
 
     // Manual fill function for the button (as a fallback)
