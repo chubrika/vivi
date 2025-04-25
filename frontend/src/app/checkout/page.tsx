@@ -219,44 +219,21 @@ export default function CheckoutPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        // Validate required fields
+        setError('');
+
+        // Validate form data
         const errors: Record<string, string> = {};
-        
-        if (!formData.firstName.trim()) {
-            errors.firstName = 'სახელი სავალდებულოა';
-        }
-        
-        if (!formData.lastName.trim()) {
-            errors.lastName = 'გვარი სავალდებულოა';
-        }
-        
-        if (!formData.mobile.trim()) {
-            errors.mobile = 'ტელეფონის ნომერი სავალდებულოა';
-        }
-        
-        if (!formData.personalNumber.trim()) {
-            errors.personalNumber = 'პირადი ნომერი სავალდებულოა';
-        }
-        
-        if (!formData.address.trim()) {
-            errors.address = 'მისამართი სავალდებულოა';
-        }
-        
-        // If there are errors, display them and stop form submission
+        if (!formData.firstName) errors.firstName = 'სახელი სავალდებულოა';
+        if (!formData.lastName) errors.lastName = 'გვარი სავალდებულოა';
+        if (!formData.mobile) errors.mobile = 'მობილური ნომერი სავალდებულოა';
+        if (!formData.personalNumber) errors.personalNumber = 'პირადი ნომერი სავალდებულოა';
+        if (!formData.address) errors.address = 'მისამართი სავალდებულოა';
+
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);
-            // Scroll to the first error
-            const firstErrorField = document.querySelector(`[name="${Object.keys(errors)[0]}"]`);
-            if (firstErrorField) {
-                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
             return;
         }
-        
-        // Clear any previous errors
-        setFormErrors({});
-        
+
         try {
             // Create order
             const response = await fetch(`${API_BASE_URL}/api/orders`, {
@@ -271,17 +248,22 @@ export default function CheckoutPage() {
                 })
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to create order');
+                throw new Error(data.message || 'Failed to create order');
             }
 
-            const data = await response.json();
-            
             // Check if the order was created successfully
             if (data.order && data.order._id) {
-                // Redirect to order confirmation page
-                router.push(`/order-confirmation/${data.order._id}`);
+                // If payment method is balance and payment is completed, show success message
+                if (formData.paymentMethod === 'balance' && data.order.paymentStatus === 'completed') {
+                    // Redirect to order confirmation page
+                    router.push(`/order-confirmation/${data.order._id}`);
+                } else {
+                    // For other payment methods, handle accordingly
+                    router.push(`/order-confirmation/${data.order._id}`);
+                }
             } else {
                 throw new Error('Invalid order response');
             }

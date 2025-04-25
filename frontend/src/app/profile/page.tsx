@@ -574,7 +574,7 @@ export default function ProfilePage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
                             <span className="text-sm font-medium text-gray-900">
-                              Order #{order.orderId}
+                              შეკვეთა #{order.orderId}
                             </span>
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                               order.status === 'delivered' ? 'bg-green-100 text-green-800' :
@@ -601,14 +601,14 @@ export default function ProfilePage() {
                               {new Date(order.createdAt).toLocaleDateString()}
                             </span>
                             <span className="text-sm text-gray-500">
-                              {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                              {order.items.reduce((sum, item) => sum + item.quantity, 0)} ნივთი
                             </span>
                           </div>
                           <Link 
                             href={`/order-confirmation/${order._id}`}
                             className="text-sm text-purple-600 hover:text-purple-800 font-medium"
                           >
-                            View Details →
+                            დეტალურად →
                           </Link>
                         </div>
                       </div>
@@ -618,7 +618,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500">No orders found.</p>
+                <p className="text-gray-500">შეკვეთა ვერ მოიძებნა.</p>
               </div>
             )}
           </div>

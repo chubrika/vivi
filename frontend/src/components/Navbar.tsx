@@ -75,7 +75,7 @@ export default function Navbar() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-md z-1">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top row with logo, search, and user controls */}
         <div className="flex justify-between h-16">

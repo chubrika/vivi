@@ -53,6 +53,22 @@ router.post('/', auth, async (req, res) => {
     const totalAmount = cartItemsWithDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     console.log('Total amount:', totalAmount);
 
+    // If payment method is balance, check and deduct from user's balance
+    if (paymentMethod === 'balance') {
+      const user = await mongoose.model('User').findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      if (user.balance < totalAmount) {
+        return res.status(400).json({ message: 'Insufficient balance' });
+      }
+
+      // Deduct amount from user's balance
+      user.balance -= totalAmount;
+      await user.save();
+    }
+
     // Create new order with complete product details
     const order = new Order({
       user: userId,
@@ -66,7 +82,9 @@ router.post('/', auth, async (req, res) => {
       })),
       totalAmount,
       shippingAddress,
-      paymentMethod
+      paymentMethod,
+      paymentStatus: paymentMethod === 'balance' ? 'completed' : 'pending',
+      status: paymentMethod === 'balance' ? 'processing' : 'pending'
     });
 
     console.log('Order before save:', order);
