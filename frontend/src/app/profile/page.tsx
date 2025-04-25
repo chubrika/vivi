@@ -19,7 +19,7 @@ interface UserProfile {
   lastName?: string;
   email: string;
   role: 'user' | 'admin';
-  phone?: string;
+  phoneNumber?: string;
   bio?: string;
   balance: number;
   createdAt?: string;
@@ -46,7 +46,7 @@ export default function ProfilePage() {
     firstName: '',
     lastName: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     bio: ''
   });
   const [updateSuccess, setUpdateSuccess] = useState(false);
@@ -119,7 +119,7 @@ export default function ProfilePage() {
           firstName: userData.firstName || '',
           lastName: userData.lastName || '',
           email: userData.email || '',
-          phone: userData.phone || '',
+          phoneNumber: userData.phoneNumber || '',
           bio: userData.bio || ''
         });
       } catch (err) {
@@ -202,7 +202,7 @@ export default function ProfilePage() {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
-        phone: formData.phone,
+        phoneNumber: formData.phoneNumber,
         bio: formData.bio
       });
       
@@ -324,14 +324,14 @@ export default function ProfilePage() {
                 <div className="relative">
                   <input
                     type="tel"
-                    name="phone"
-                    value={formData.phone}
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
                     placeholder=" "
                   />
                   <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                    formData.phone ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                    formData.phoneNumber ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
                   }`}>
                     ტელეფონის ნომერი
                   </label>

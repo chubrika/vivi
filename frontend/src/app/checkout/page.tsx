@@ -9,6 +9,7 @@ import { useCart } from '../../utils/cartContext';
 import Modal from '../../components/Modal';
 import { addressService, Address } from '../../services/addressService';
 import AddressForm from '../../components/AddressForm';
+import { userService } from '../../services/userService';
 
 interface Product {
     _id: string;
@@ -28,7 +29,7 @@ interface CartItem {
 interface CheckoutForm {
     firstName: string;
     lastName: string;
-    mobile: string;
+    phoneNumber: string;
     personalNumber: string;
     address: string;
     comment: string;
@@ -50,7 +51,7 @@ export default function CheckoutPage() {
     const [formData, setFormData] = useState<CheckoutForm>({
         firstName: '',
         lastName: '',
-        mobile: '',
+        phoneNumber: '',
         personalNumber: '',
         address: '',
         comment: '',
@@ -114,7 +115,7 @@ export default function CheckoutPage() {
                 
                 // Split the name into first and last name if it exists
                 let firstName = userData.firstName || '';
-                let lastName = '';
+                let lastName = userData.lastName || '';
                 
                 if (firstName.includes(' ')) {
                     const nameParts = firstName.split(' ');
@@ -147,7 +148,8 @@ export default function CheckoutPage() {
                     ...prev,
                     firstName: firstName,
                     lastName: lastName,
-                    mobile: userData.phone || '',
+                    phoneNumber: userData.phoneNumber || '',
+                    personalNumber: userData.personalNumber || '',
                     address: address,
                     // Keep other fields as they are
                 }));
@@ -225,7 +227,7 @@ export default function CheckoutPage() {
         const errors: Record<string, string> = {};
         if (!formData.firstName) errors.firstName = 'სახელი სავალდებულოა';
         if (!formData.lastName) errors.lastName = 'გვარი სავალდებულოა';
-        if (!formData.mobile) errors.mobile = 'მობილური ნომერი სავალდებულოა';
+        if (!formData.phoneNumber) errors.phoneNumber = 'მობილური ნომერი სავალდებულოა';
         if (!formData.personalNumber) errors.personalNumber = 'პირადი ნომერი სავალდებულოა';
         if (!formData.address) errors.address = 'მისამართი სავალდებულოა';
 
@@ -235,6 +237,14 @@ export default function CheckoutPage() {
         }
 
         try {
+            // Update user profile with the new information
+            await userService.updateProfile({
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phoneNumber: formData.phoneNumber,
+                personalNumber: formData.personalNumber
+            });
+
             // Create order
             const response = await fetch(`${API_BASE_URL}/api/orders`, {
                 method: 'POST',
@@ -327,7 +337,8 @@ export default function CheckoutPage() {
                 ...prev,
                 firstName: firstName,
                 lastName: lastName,
-                mobile: userData.phone || '',
+                phoneNumber: userData.phoneNumber || '',
+                personalNumber: userData.personalNumber || '',
                 address: address,
                 // Keep other fields as they are
             }));
@@ -450,19 +461,19 @@ export default function CheckoutPage() {
                                     <input
                                         type="tel"
                                         name="mobile"
-                                        value={formData.mobile}
+                                        value={formData.phoneNumber}
                                         onChange={handleInputChange}
                                         required
-                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.mobile ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.phoneNumber ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                                        formData.mobile ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                                        formData.phoneNumber ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
                                     }`}>
                                        ტელეფონის ნომერი
                                     </label>
-                                    {formErrors.mobile && (
-                                        <p className="mt-1 text-sm text-red-500">{formErrors.mobile}</p>
+                                    {formErrors.phoneNumber && (
+                                        <p className="mt-1 text-sm text-red-500">{formErrors.phoneNumber}</p>
                                     )}
                                 </div>
                                 <div className="relative">

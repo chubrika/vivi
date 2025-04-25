@@ -1,5 +1,7 @@
 import { API_BASE_URL } from '../utils/api';
 import { getToken } from '../utils/authContext';
+import { api } from '../utils/api';
+import { fetchApi } from '../utils/api';
 
 interface AuthCredentials {
   email: string;
@@ -13,7 +15,8 @@ interface User {
   firstName?: string;
   lastName?: string;
   role: 'user' | 'admin';
-  phone?: string;
+  phoneNumber?: string;
+  personalNumber?: string;
   bio?: string;
   balance?: number;
   createdAt?: string;
@@ -25,7 +28,8 @@ interface UpdateUserData {
   lastName?: string;
   email?: string;
   password?: string;
-  phone?: string;
+  phoneNumber?: string;
+  personalNumber?: string;
   bio?: string;
 }
 
@@ -53,28 +57,15 @@ export const userService = {
     return data;
   },
 
-  async updateProfile(userData: UpdateUserData): Promise<User> {
+  async updateProfile(data: UpdateUserData): Promise<User> {
     const token = getToken();
     if (!token) {
       throw new Error('Authentication required');
     }
-
-    const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+    return fetchApi('/api/auth/users/me', {
       method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to update profile');
-    }
-
-    return data;
+      body: JSON.stringify(data),
+    }, token);
   },
 
   async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getProfile } from '../controllers/authController';
+import { register, login, getProfile, updateProfile } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
 import User from '../models/User';
 import { Request, Response } from 'express';
@@ -59,5 +59,8 @@ router.get('/check-seller', authenticateToken, async (req: Request, res: Respons
     return res.status(500).json({ message: 'Error checking seller status' });
   }
 });
+
+// Update user profile
+router.patch('/users/me', authenticateToken, updateProfile);
 
 export default router; 

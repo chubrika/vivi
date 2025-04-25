@@ -10,6 +10,7 @@ interface IUser {
   businessName?: string;
   businessAddress?: string;
   phoneNumber?: string;
+  personalNumber?: string;
   balance: number;
   isActive: boolean;
   createdAt: Date;
@@ -50,6 +51,10 @@ const userSchema = new mongoose.Schema<IUser>({
     trim: true,
   },
   phoneNumber: {
+    type: String,
+    trim: true,
+  },
+  personalNumber: {
     type: String,
     trim: true,
   },
