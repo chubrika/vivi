@@ -69,7 +69,7 @@ export default function SellerLayout({
     { name: 'Dashboard', href: '/seller/dashboard' },
     { name: 'Products', href: '/seller/products' },
     { name: 'Orders', href: '/seller/orders' },
-    { name: 'Profile', href: '/seller/profile' },
+    { name: 'Profile', href: '/profile' },
   ];
 
   return (
