@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../utils/authContext';
 import { API_BASE_URL } from '../../../utils/api';
+import OrderDetailsPanel from '../../../components/OrderDetailsPanel';
+import { Order } from '../../../types/order';
 
 interface OrderItem {
   id: string;
@@ -12,24 +14,6 @@ interface OrderItem {
   quantity: number;
   images: string[];
   sellerId: string;
-}
-
-interface Order {
-  _id: string;
-  orderId: string;
-  user: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  items: OrderItem[];
-  totalAmount: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  shippingAddress: string;
-  paymentMethod: string;
-  paymentStatus: 'pending' | 'completed' | 'failed';
-  createdAt: string;
 }
 
 interface PaginationData {
@@ -45,6 +29,7 @@ export default function SellerOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -181,6 +166,14 @@ export default function SellerOrders() {
   // Handle page change
   const handlePageChange = (pageNumber: number) => {
     setPagination(prev => ({ ...prev, page: pageNumber }));
+  };
+
+  const handleRowClick = (order: Order) => {
+    setSelectedOrder(order);
+  };
+
+  const handleClosePanel = () => {
+    setSelectedOrder(null);
   };
 
   if (loading) {
@@ -397,7 +390,11 @@ export default function SellerOrders() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {orders.map((order) => (
-                        <tr key={order._id}>
+                        <tr
+                          key={order._id}
+                          onClick={() => handleRowClick(order)}
+                          className="hover:bg-gray-50 cursor-pointer"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
                               #{order.orderId}
@@ -493,6 +490,14 @@ export default function SellerOrders() {
           </div>
         )}
       </div>
+
+      {/* Order Details Panel */}
+      {selectedOrder && (
+        <OrderDetailsPanel
+          order={selectedOrder}
+          onClose={handleClosePanel}
+        />
+      )}
     </div>
   );
 } 
