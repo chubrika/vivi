@@ -2,6 +2,7 @@ import express from 'express';
 import { getStats } from '../controllers/adminController';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 import User from '../models/User';
+import { Order } from '../models/Order';
 
 const router = express.Router();
 
@@ -72,6 +73,40 @@ router.patch('/users/:id/toggle-status', authenticateToken, requireAdmin, async 
   } catch (error) {
     console.error('Error toggling user status:', error);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Get all orders (admin only)
+router.get('/orders', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('user', 'firstName lastName email')
+      .sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ message: 'Error fetching orders' });
+  }
+});
+
+// Update order status (admin only)
+router.patch('/orders/:id/status', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const orderId = req.params.id;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    order.status = status;
+    await order.save();
+
+    res.json(order);
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Error updating order status' });
   }
 });
 
