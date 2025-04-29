@@ -191,14 +191,14 @@ export default function OrderDetailsPanel({
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900">
-              Order Details #{localOrder.orderId}
+              შეკვეთის დეტალები #{localOrder.orderId}
             </h2>
             <button
               type="button"
               className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
               onClick={onClose}
             >
-              <span className="sr-only">Close</span>
+              <span className="sr-only">დახურვა</span>
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -232,7 +232,7 @@ export default function OrderDetailsPanel({
             {/* Courier Assignment (Admin only) */}
             {isAdmin && (
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-500 mb-2">Courier Assignment</h4>
+                <h4 className="text-sm font-medium text-gray-500 mb-2">კურიერის მინიჭება</h4>
                 {localOrder.courier ? (
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-gray-50 p-4 rounded-lg">
@@ -244,7 +244,7 @@ export default function OrderDetailsPanel({
                       onClick={handleRemoveCourier}
                       className="px-3 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
                     >
-                      Remove
+                      წაშლა
                     </button>
                   </div>
                 ) : (
@@ -252,7 +252,7 @@ export default function OrderDetailsPanel({
                     onChange={(e) => handleAssignCourier(e.target.value)}
                     className="block text-gray-600 w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
                   >
-                    <option value="">Select a courier</option>
+                    <option value="">კურიერის მინიჭება</option>
                     {couriers.map((courier) => (
                       <option key={courier._id} value={courier._id}>
                         {courier.firstName} {courier.lastName}
@@ -265,7 +265,7 @@ export default function OrderDetailsPanel({
 
             {/* Customer Information */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-500 mb-2">Customer Information</h4>
+              <h4 className="text-sm font-medium text-gray-500 mb-2">მომხმარებლის ინფორმაცია</h4>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-900">
                   {localOrder.user.firstName} {localOrder.user.lastName}
@@ -276,7 +276,7 @@ export default function OrderDetailsPanel({
 
             {/* Shipping Address */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-500 mb-2">Shipping Address</h4>
+              <h4 className="text-sm font-medium text-gray-500 mb-2">მიტანის მისამართი</h4>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-900">{localOrder.shippingAddress}</p>
               </div>
@@ -284,15 +284,15 @@ export default function OrderDetailsPanel({
 
             {/* Order Items */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-500 mb-2">Order Items</h4>
+              <h4 className="text-sm font-medium text-gray-500 mb-2">პროდუქტები</h4>
               <div className="bg-gray-50 rounded-lg overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Price</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">პროდუქტი</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">ფასი</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">რაოდეობა</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">თანხა</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -328,24 +328,24 @@ export default function OrderDetailsPanel({
 
             {/* Order Summary */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-500 mb-2">Order Summary</h4>
+              <h4 className="text-sm font-medium text-gray-500 mb-2">შეკვეთის დეტალები</h4>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between mb-2">
-                  <span className="text-sm text-gray-500">Subtotal</span>
+                  <span className="text-sm text-gray-500">ჯამური თანხა</span>
                   <span className="text-sm text-gray-900">${localOrder.totalAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-sm text-gray-500">Payment Method</span>
+                  <span className="text-sm text-gray-500">გადახდის მეთოდი</span>
                   <span className="text-sm text-gray-900">{localOrder.paymentMethod}</span>
                 </div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-sm text-gray-500">Payment Status</span>
+                  <span className="text-sm text-gray-500">გადახდის სტატუსი</span>
                   <span className="text-sm text-gray-900">
                     {localOrder.paymentStatus.charAt(0).toUpperCase() + localOrder.paymentStatus.slice(1)}
                   </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-gray-200">
-                  <span className="text-sm font-medium text-gray-900">Total</span>
+                  <span className="text-sm font-medium text-gray-900">სულ</span>
                   <span className="text-sm font-medium text-gray-900">${localOrder.totalAmount.toFixed(2)}</span>
                 </div>
               </div>
