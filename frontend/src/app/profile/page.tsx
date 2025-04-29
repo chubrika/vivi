@@ -155,10 +155,10 @@ export default function ProfilePage() {
     try {
       // Use the addressService to add an address
       await addressService.addAddress(addressData);
-      
+
       // Refresh the addresses list
       fetchAddresses();
-      
+
       setShowAddAddress(false);
     } catch (err) {
       console.error('Error adding address:', err);
@@ -170,7 +170,7 @@ export default function ProfilePage() {
     try {
       // Use the addressService to delete an address
       await addressService.deleteAddress(id);
-      
+
       // Refresh the addresses list
       fetchAddresses();
     } catch (err) {
@@ -183,7 +183,7 @@ export default function ProfilePage() {
     try {
       // Use the addressService to set an address as default
       await addressService.setDefaultAddress(id);
-      
+
       // Refresh the addresses list
       fetchAddresses();
     } catch (err) {
@@ -196,7 +196,7 @@ export default function ProfilePage() {
     e.preventDefault();
     setUpdateSuccess(false);
     setUpdateError('');
-    
+
     try {
       // Use the userService to update the profile
       const updatedUser = await userService.updateProfile({
@@ -206,7 +206,7 @@ export default function ProfilePage() {
         phoneNumber: formData.phoneNumber,
         bio: formData.bio
       });
-      
+
       setProfile({
         ...updatedUser,
         balance: updatedUser.balance || 0
@@ -226,23 +226,23 @@ export default function ProfilePage() {
     e.preventDefault();
     setBalanceError('');
     setBalanceSuccess(false);
-    
+
     if (!balanceAmount || isNaN(Number(balanceAmount)) || Number(balanceAmount) <= 0) {
       setBalanceError('გთხოვთ შეიყვანოთ სწორი თანხა');
       return;
     }
-    
+
     try {
       // Here you would call your API to add funds to the user's balance
       // For now, we'll just simulate a successful response
       console.log(`Adding ${balanceAmount} to balance`);
-      
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setBalanceSuccess(true);
       setBalanceAmount('');
-      
+
       // Reset success message after 3 seconds
       setTimeout(() => {
         setBalanceSuccess(false);
@@ -298,9 +298,8 @@ export default function ProfilePage() {
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
                       placeholder=" "
                     />
-                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                      formData.firstName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
-                    }`}>
+                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.firstName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                      }`}>
                       სახელი
                     </label>
                   </div>
@@ -314,9 +313,8 @@ export default function ProfilePage() {
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
                       placeholder=" "
                     />
-                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                      formData.email ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
-                    }`}>
+                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.email ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                      }`}>
                       ელ-ფოსტა
                     </label>
                   </div>
@@ -331,9 +329,8 @@ export default function ProfilePage() {
                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
                     placeholder=" "
                   />
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                    formData.phoneNumber ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
-                  }`}>
+                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.phoneNumber ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                    }`}>
                     ტელეფონის ნომერი
                   </label>
                 </div>
@@ -347,9 +344,8 @@ export default function ProfilePage() {
                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none resize-none peer text-gray-800"
                     placeholder=" "
                   />
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                    formData.bio ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
-                  }`}>
+                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.bio ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                    }`}>
                     Bio
                   </label>
                 </div>
@@ -443,14 +439,14 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <Modal 
-              isOpen={showAddAddress} 
-              onClose={() => setShowAddAddress(false)} 
+            <Modal
+              isOpen={showAddAddress}
+              onClose={() => setShowAddAddress(false)}
               title="Add New Address"
             >
-              <AddressForm 
-                onSave={handleAddAddress} 
-                onCancel={() => setShowAddAddress(false)} 
+              <AddressForm
+                onSave={handleAddAddress}
+                onCancel={() => setShowAddAddress(false)}
               />
             </Modal>
           </div>
@@ -485,7 +481,7 @@ export default function ProfilePage() {
           </div>
         );
       case 'balance':
-        return (
+        return profile?.role === 'user' ? (
           <div className="space-y-6">
             <div>
               <h2 className="text-lg font-medium text-gray-900 mb-6">ბალანსის შევსება</h2>
@@ -511,9 +507,8 @@ export default function ProfilePage() {
                     min="0"
                     step="0.01"
                   />
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                    balanceAmount ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
-                  }`}>
+                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${balanceAmount ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                    }`}>
                     თანხა (₾)
                   </label>
                 </div>
@@ -531,12 +526,12 @@ export default function ProfilePage() {
               </form>
             </div>
           </div>
-        );
+        ) : null;
       case 'orders':
         return (
           <div className="space-y-6">
             <h2 className="text-lg font-medium text-gray-900 mb-6">ჩემი შეკვეთები</h2>
-            
+
             {ordersError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                 <span className="block sm:inline">{ordersError}</span>
@@ -577,19 +572,18 @@ export default function ProfilePage() {
                             <span className="text-sm font-medium text-gray-900">
                               შეკვეთა #{order.orderId}
                             </span>
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                              order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                              order.paymentStatus === 'paid' ? 'bg-blue-100 text-blue-800' :
-                              order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                  order.paymentStatus === 'paid' ? 'bg-blue-100 text-blue-800' :
+                                    order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                                      'bg-yellow-100 text-yellow-800'
+                              }`}>
                               {order.paymentStatus === 'paid' ? 'Paid' :
-                               order.paymentStatus === 'failed' ? 'Payment Failed' :
-                               order.status === 'delivered' ? 'Delivered' :
-                               order.status === 'cancelled' ? 'Cancelled' :
-                               order.status === 'pending' ? 'pending' :
-                               'Processing'}
+                                order.paymentStatus === 'failed' ? 'Payment Failed' :
+                                  order.status === 'delivered' ? 'Delivered' :
+                                    order.status === 'cancelled' ? 'Cancelled' :
+                                      order.status === 'pending' ? 'pending' :
+                                        'Processing'}
                             </span>
                           </div>
                           <span className="text-sm font-medium text-gray-900">
@@ -605,7 +599,7 @@ export default function ProfilePage() {
                               {order.items.reduce((sum, item) => sum + item.quantity, 0)} ნივთი
                             </span>
                           </div>
-                          <Link 
+                          <Link
                             href={`/order-confirmation/${order._id}`}
                             className="text-sm text-purple-600 hover:text-purple-800 font-medium"
                           >
@@ -643,28 +637,32 @@ export default function ProfilePage() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                   </div>
+                  </div>
                   <h2 className="text-lg font-semibold text-gray-800 text-center">{profile?.firstName || profile?.businessName || 'მომხმარებელი'}</h2>
                 </div>
-                
-                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4 border border-gray-200 mx-auto" style={{ maxWidth: '180px' }}>
-                  <div className="flex items-center">
-                    <span className="font-medium text-gray-700 text-xs">ბალანსი</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="font-semibold text-gray-800 mr-2">{profile?.balance.toFixed(2) || '0.00'} ₾</span>
-                    <button 
-                      className="text-purple-600 hover:text-purple-800"
-                      onClick={() => setActiveSection('balance')}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+
+                {profile?.role === 'user' && (
+                  <>
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4 border border-gray-200 mx-auto" style={{ maxWidth: '180px' }}>
+                      <div className="flex items-center">
+                        <span className="font-medium text-gray-700 text-xs">ბალანსი</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="font-semibold text-gray-800 mr-2">{profile?.balance.toFixed(2) || '0.00'} ₾</span>
+                        <button
+                          className="text-purple-600 hover:text-purple-800"
+                          onClick={() => setActiveSection('balance')}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              
+
               <nav className="space-y-1">
                 {profile?.role === 'seller' && (
                   <Link
@@ -688,14 +686,13 @@ export default function ProfilePage() {
                     კურიერის პანელი
                   </Link>
                 )}
-                {profile?.role !== 'seller' && (
+                {profile?.role !== 'seller' && profile?.role !== 'courier' && (
                   <button
                     onClick={() => setActiveSection('orders')}
-                    className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${
-                      activeSection === 'orders'
+                    className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${activeSection === 'orders'
                         ? 'bg-purple-100 font-bold text-purple-700'
                         : 'text-gray-600 hover:bg-gray-100'
-                    }`}
+                      }`}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -705,11 +702,10 @@ export default function ProfilePage() {
                 )}
                 <button
                   onClick={() => setActiveSection('personal')}
-                  className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${
-                    activeSection === 'personal'
+                  className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${activeSection === 'personal'
                       ? 'bg-purple-100 font-bold text-purple-700'
                       : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -718,11 +714,10 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={() => setActiveSection('addresses')}
-                  className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${
-                    activeSection === 'addresses'
+                  className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${activeSection === 'addresses'
                       ? 'bg-purple-100 font-bold text-purple-700'
                       : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -732,11 +727,10 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={() => setActiveSection('cards')}
-                  className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${
-                    activeSection === 'cards'
+                  className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${activeSection === 'cards'
                       ? 'bg-purple-100 font-bold text-purple-700'
                       : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -757,9 +751,9 @@ export default function ProfilePage() {
       </div>
 
       {/* Password Change Modal */}
-      <PasswordChangeModal 
-        isOpen={showPasswordModal} 
-        onClose={() => setShowPasswordModal(false)} 
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
       />
     </div>
   );

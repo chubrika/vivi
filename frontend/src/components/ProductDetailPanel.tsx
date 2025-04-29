@@ -54,6 +54,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
     const router = useRouter();
     const { user } = useAuth();
     const isSeller = user?.role === 'seller';
+    const isCourier = user?.role === 'courier';
 
     // Handle body scroll lock when panel is open
     useEffect(() => {
@@ -207,7 +208,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
 
                                 {/* Add to Cart Button */}
                                 <div className="w-full md:w-[250px]">
-                                {!isSeller ? (
+                                {!isSeller && !isCourier ? (
                                   <>
                                     <div className="pt-4 flex gap-4">
                                       <button
@@ -232,7 +233,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                         </div>
                                         <div className="ml-3">
                                           <p className="text-sm text-yellow-700">
-                                            გამყიდველს არ შეუძლია პროდუქტის ყიდვა ან კალათაში დამატება
+                                            მხოლოდ ჩვეულებრივ იუზერს შეუძლია პროდუქტის ყიდვა ან კალათაში დამატება
                                           </p>
                                         </div>
                                       </div>

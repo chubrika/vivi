@@ -129,8 +129,8 @@ export default function Navbar() {
           </div>
           
           <div className="flex items-center space-x-4">
-            {/* Cart Icon - Only show for non-sellers */}
-            {!isSeller && (
+            {/* Cart Icon - Only show for non-sellers and non-couriers */}
+            {!isSeller && !isCourier && (
               <Link href="/cart" className="relative">
                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
