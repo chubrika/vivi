@@ -7,6 +7,8 @@ interface OrderDetailsPanelProps {
   order: Order | null;
   onClose: () => void;
   onStatusUpdate?: () => void;
+  showStatusUpdate?: boolean;
+  allowedStatuses?: string[];
 }
 
 interface Courier {
@@ -15,7 +17,13 @@ interface Courier {
   lastName: string;
 }
 
-export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: OrderDetailsPanelProps) {
+export default function OrderDetailsPanel({ 
+  order, 
+  onClose, 
+  onStatusUpdate,
+  showStatusUpdate = false,
+  allowedStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+}: OrderDetailsPanelProps) {
   const { token, user } = useAuth();
   const isCourier = user?.role === 'courier';
   const isAdmin = user?.role === 'admin';
@@ -141,7 +149,11 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
 
   const handleStatusUpdate = async (newStatus: Order['status']) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sellers/orders/${localOrder._id}/status`, {
+      const endpoint = isCourier 
+        ? `${API_BASE_URL}/api/courier/orders/${localOrder._id}/status`
+        : `${API_BASE_URL}/api/sellers/orders/${localOrder._id}/status`;
+
+      const response = await fetch(endpoint, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -155,7 +167,7 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
       }
 
       const updatedOrder = await response.json();
-      setLocalOrder(updatedOrder.order);
+      setLocalOrder(updatedOrder.order || updatedOrder);
       
       if (onStatusUpdate) {
         onStatusUpdate();
@@ -174,7 +186,7 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
       />
 
       {/* Panel */}
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl transform transition-transform duration-300 ease-in-out">
+      <div className="fixed inset-y-0 right-0 pl-10 pb-6 flex flex-col max-w-7xl z-50">
         <div className="h-full bg-white shadow-xl">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -194,24 +206,24 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
           </div>
 
           {/* Content */}
-          <div className="px-6 py-4 overflow-y-auto h-[calc(100vh-4rem)]">
+          <div className="px-6 py-4 overflow-y-auto">
             {/* Order Status */}
             <div className="mb-6">
               <div className="flex items-center justify-between">
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(localOrder.status)}`}>
                   {localOrder.status.charAt(0).toUpperCase() + localOrder.status.slice(1)}
                 </span>
-                {(isCourier || isAdmin) && (
+                {showStatusUpdate && (
                   <select
                     value={localOrder.status}
                     onChange={(e) => handleStatusUpdate(e.target.value as Order['status'])}
-                    className="ml-2 block w-40 px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
+                    className="ml-2 text-black block w-40 px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
                   >
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
+                    {allowedStatuses.map((status) => (
+                      <option key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </option>
+                    ))}
                   </select>
                 )}
               </div>

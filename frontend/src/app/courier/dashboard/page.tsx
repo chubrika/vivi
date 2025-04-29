@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../utils/authContext';
+import { useAuth, fetchWithAuth } from '../../../utils/authContext';
 import { API_BASE_URL } from '../../../utils/api';
 import Link from 'next/link';
 
@@ -10,6 +10,7 @@ interface DashboardStats {
   totalOrders: number;
   pendingOrders: number;
   deliveredOrders: number;
+  shippedOrders: number;
   todayOrders: number;
 }
 
@@ -20,6 +21,7 @@ export default function CourierDashboard() {
     totalOrders: 0,
     pendingOrders: 0,
     deliveredOrders: 0,
+    shippedOrders: 0,
     todayOrders: 0
   });
   const [loading, setLoading] = useState(true);
@@ -36,17 +38,17 @@ export default function CourierDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/courier/stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      console.log('Fetching stats with token:', token);
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/courier/stats`);
 
       if (!response.ok) {
-        throw new Error('Failed to fetch courier stats');
+        const errorData = await response.json();
+        console.error('Stats fetch error:', errorData);
+        throw new Error(errorData.message || 'Failed to fetch courier stats');
       }
 
       const data = await response.json();
+      console.log('Received stats data:', data);
       setStats(data);
     } catch (err) {
       console.error('Error fetching courier stats:', err);
@@ -77,7 +79,7 @@ export default function CourierDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-white overflow-hidden shadow rounded-md">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0 bg-purple-500 rounded-md p-3">
@@ -97,7 +99,7 @@ export default function CourierDashboard() {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-white overflow-hidden shadow rounded-md">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0 bg-yellow-500 rounded-md p-3">
@@ -117,7 +119,28 @@ export default function CourierDashboard() {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          {/* Today's Orders Card */}
+          <div className="bg-white overflow-hidden shadow rounded-md">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+                  <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Today's Orders</dt>
+                    <dd className="flex items-baseline">
+                      <div className="text-2xl font-semibold text-gray-900">{stats.todayOrders}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-md">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
@@ -137,25 +160,27 @@ export default function CourierDashboard() {
             </div>
           </div>
 
+          {/* Shipped Orders Card */}
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
                   <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                   </svg>
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Today's Orders</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Shipped Orders</dt>
                     <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{stats.todayOrders}</div>
+                      <div className="text-2xl font-semibold text-gray-900">{stats.shippedOrders}</div>
                     </dd>
                   </dl>
                 </div>
               </div>
             </div>
           </div>
+
         </div>
 
         {/* Quick Actions */}

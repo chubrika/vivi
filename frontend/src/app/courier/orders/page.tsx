@@ -83,7 +83,7 @@ export default function CourierOrders() {
 
       const data = await response.json();
       console.log('Received orders data:', data);
-      setOrders(data || []);
+      setOrders(data.orders || []);
       setTotalPages(data.pagination?.totalPages || 0);
       console.log('Orders state updated:', data || []);
     } catch (err) {
@@ -341,12 +341,6 @@ export default function CourierOrders() {
                         >
                           Date
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Actions
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -386,20 +380,6 @@ export default function CourierOrders() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {formatDate(order.createdAt)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <select
-                              value={order.status}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleUpdateStatus(order._id, e.target.value as Order['status']);
-                              }}
-                              className="block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
-                            >
-                              <option value="processing">Processing</option>
-                              <option value="shipped">Shipped</option>
-                              <option value="delivered">Delivered</option>
-                            </select>
                           </td>
                         </tr>
                       ))}
@@ -472,6 +452,8 @@ export default function CourierOrders() {
           order={selectedOrder}
           onClose={handleClosePanel}
           onStatusUpdate={fetchOrders}
+          showStatusUpdate={true}
+          allowedStatuses={['processing', 'shipped', 'delivered']}
         />
       )}
     </div>
