@@ -120,6 +120,29 @@ router.post('/orders/:orderId/assign', authenticateToken, requireAdmin, async (r
   }
 });
 
+// Remove courier assignment from order
+router.delete('/orders/:orderId/assign', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    // Find and update the order
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Remove courier assignment and set status back to pending
+    order.courier = undefined;
+    order.status = 'pending';
+    await order.save();
+
+    res.json({ message: 'Courier assignment removed successfully', order });
+  } catch (error) {
+    console.error('Error removing courier assignment:', error);
+    res.status(500).json({ message: 'Error removing courier assignment' });
+  }
+});
+
 // Get all orders with courier assignments
 router.get('/orders', authenticateToken, requireAdmin, async (req, res) => {
   try {

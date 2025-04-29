@@ -20,6 +20,11 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
   const isCourier = user?.role === 'courier';
   const isAdmin = user?.role === 'admin';
   const [couriers, setCouriers] = useState<Courier[]>([]);
+  const [localOrder, setLocalOrder] = useState<Order | null>(order);
+
+  useEffect(() => {
+    setLocalOrder(order);
+  }, [order]);
 
   useEffect(() => {
     // Prevent body scrolling when panel is open
@@ -56,7 +61,7 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
 
   const handleAssignCourier = async (courierId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/orders/${order?._id}/assign`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/orders/${localOrder?._id}/assign`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -69,6 +74,9 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
         throw new Error('Failed to assign courier');
       }
 
+      const updatedOrder = await response.json();
+      setLocalOrder(updatedOrder.order);
+      
       if (onStatusUpdate) {
         onStatusUpdate();
       }
@@ -79,7 +87,7 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
 
   const handleRemoveCourier = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/orders/${order?._id}/assign`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/orders/${localOrder?._id}/assign`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -90,6 +98,9 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
         throw new Error('Failed to remove courier assignment');
       }
 
+      const updatedOrder = await response.json();
+      setLocalOrder(updatedOrder.order);
+      
       if (onStatusUpdate) {
         onStatusUpdate();
       }
@@ -98,7 +109,7 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
     }
   };
 
-  if (!order) return null;
+  if (!localOrder) return null;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -130,7 +141,7 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
 
   const handleStatusUpdate = async (newStatus: Order['status']) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sellers/orders/${order._id}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/sellers/orders/${localOrder._id}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -143,6 +154,9 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
         throw new Error('Failed to update order status');
       }
 
+      const updatedOrder = await response.json();
+      setLocalOrder(updatedOrder.order);
+      
       if (onStatusUpdate) {
         onStatusUpdate();
       }
@@ -165,7 +179,7 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900">
-              Order Details #{order.orderId}
+              Order Details #{localOrder.orderId}
             </h2>
             <button
               type="button"
@@ -184,12 +198,12 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
             {/* Order Status */}
             <div className="mb-6">
               <div className="flex items-center justify-between">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(localOrder.status)}`}>
+                  {localOrder.status.charAt(0).toUpperCase() + localOrder.status.slice(1)}
                 </span>
                 {(isCourier || isAdmin) && (
                   <select
-                    value={order.status}
+                    value={localOrder.status}
                     onChange={(e) => handleStatusUpdate(e.target.value as Order['status'])}
                     className="ml-2 block w-40 px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
                   >
@@ -207,24 +221,24 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
             {isAdmin && (
               <div className="mb-6">
                 <h4 className="text-sm font-medium text-gray-500 mb-2">Courier Assignment</h4>
-                {order.courier ? (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center">
+                {localOrder.courier ? (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-gray-50 p-4 rounded-lg">
                       <span className="text-sm text-gray-900">
-                        {order.courier.firstName} {order.courier.lastName}
+                        {localOrder.courier.firstName} {localOrder.courier.lastName}
                       </span>
-                      <button
-                        onClick={handleRemoveCourier}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Remove
-                      </button>
                     </div>
+                    <button
+                      onClick={handleRemoveCourier}
+                      className="px-3 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                    >
+                      Remove
+                    </button>
                   </div>
                 ) : (
                   <select
                     onChange={(e) => handleAssignCourier(e.target.value)}
-                    className="block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
+                    className="block text-gray-600 w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
                   >
                     <option value="">Select a courier</option>
                     {couriers.map((courier) => (
@@ -242,9 +256,9 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
               <h4 className="text-sm font-medium text-gray-500 mb-2">Customer Information</h4>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-900">
-                  {order.user.firstName} {order.user.lastName}
+                  {localOrder.user.firstName} {localOrder.user.lastName}
                 </p>
-                <p className="text-sm text-gray-500">{order.user.email}</p>
+                <p className="text-sm text-gray-500">{localOrder.user.email}</p>
               </div>
             </div>
 
@@ -252,7 +266,7 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
             <div className="mb-6">
               <h4 className="text-sm font-medium text-gray-500 mb-2">Shipping Address</h4>
               <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-900">{order.shippingAddress}</p>
+                <p className="text-sm text-gray-900">{localOrder.shippingAddress}</p>
               </div>
             </div>
 
@@ -270,7 +284,7 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {order.items.map((item) => (
+                    {localOrder.items.map((item) => (
                       <tr key={item.id}>
                         <td className="px-4 py-3">
                           <div className="flex items-center">
@@ -306,28 +320,28 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between mb-2">
                   <span className="text-sm text-gray-500">Subtotal</span>
-                  <span className="text-sm text-gray-900">${order.totalAmount.toFixed(2)}</span>
+                  <span className="text-sm text-gray-900">${localOrder.totalAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-sm text-gray-500">Payment Method</span>
-                  <span className="text-sm text-gray-900">{order.paymentMethod}</span>
+                  <span className="text-sm text-gray-900">{localOrder.paymentMethod}</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-sm text-gray-500">Payment Status</span>
                   <span className="text-sm text-gray-900">
-                    {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                    {localOrder.paymentStatus.charAt(0).toUpperCase() + localOrder.paymentStatus.slice(1)}
                   </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-gray-200">
                   <span className="text-sm font-medium text-gray-900">Total</span>
-                  <span className="text-sm font-medium text-gray-900">${order.totalAmount.toFixed(2)}</span>
+                  <span className="text-sm font-medium text-gray-900">${localOrder.totalAmount.toFixed(2)}</span>
                 </div>
               </div>
             </div>
 
             {/* Order Date */}
             <div className="text-sm text-gray-500">
-              Ordered on {formatDate(order.createdAt)}
+              Ordered on {formatDate(localOrder.createdAt)}
             </div>
           </div>
         </div>

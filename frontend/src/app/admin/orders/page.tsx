@@ -77,6 +77,14 @@ export default function AdminOrders() {
 
       setOrders(ordersData);
       setCouriers(couriersData);
+      
+      // Update selectedOrder if it exists
+      if (selectedOrder) {
+        const updatedSelectedOrder = ordersData.find((order: Order) => order._id === selectedOrder._id);
+        if (updatedSelectedOrder) {
+          setSelectedOrder(updatedSelectedOrder);
+        }
+      }
     } catch (err) {
       console.error('Error fetching data:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -223,6 +231,11 @@ export default function AdminOrders() {
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {order.orderId}
+                    {order.courier && (
+                      <span className="ml-2 inline-flex items-center text-blue-600" title="Courier assigned">
+                        <img src="/img/cargo.jpg" alt="cargo" className="w-5 h-5" />
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {order.user.firstName} {order.user.lastName}
