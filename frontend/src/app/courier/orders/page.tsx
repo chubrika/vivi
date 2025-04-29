@@ -21,12 +21,8 @@ export default function CourierOrders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [pagination, setPagination] = useState<PaginationData>({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 0
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
   // Filter states
   const [searchOrderId, setSearchOrderId] = useState('');
@@ -43,7 +39,7 @@ export default function CourierOrders() {
     setSelectedStatus('');
     setStartDate('');
     setEndDate('');
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setCurrentPage(1);
   };
 
   // Check if any filter is active
@@ -56,7 +52,7 @@ export default function CourierOrders() {
       return;
     }
     fetchOrders();
-  }, [pagination.page, token]);
+  }, [currentPage, token, searchOrderId, selectedStatus, startDate, endDate]);
 
   const fetchOrders = async () => {
     try {
@@ -64,15 +60,16 @@ export default function CourierOrders() {
       setError('');
       
       const queryParams = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
+        page: currentPage.toString(),
+        limit: '10',
         ...(searchOrderId && { orderId: searchOrderId }),
         ...(selectedStatus && { status: selectedStatus }),
         ...(startDate && { startDate }),
         ...(endDate && { endDate })
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/sellers/orders?${queryParams}`, {
+      console.log('Fetching orders with params:', queryParams.toString());
+      const response = await fetch(`${API_BASE_URL}/api/courier/orders?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -85,15 +82,10 @@ export default function CourierOrders() {
       }
 
       const data = await response.json();
-      // Filter orders to only show those with status processing, shipped, or delivered
-      const filteredOrders = data.orders.filter((order: Order) => 
-        ['processing', 'shipped', 'delivered'].includes(order.status)
-      );
-      setOrders(filteredOrders);
-      setPagination({
-        ...data.pagination,
-        total: filteredOrders.length
-      });
+      console.log('Received orders data:', data);
+      setOrders(data || []);
+      setTotalPages(data.pagination?.totalPages || 0);
+      console.log('Orders state updated:', data || []);
     } catch (err) {
       console.error('Error fetching orders:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -102,9 +94,14 @@ export default function CourierOrders() {
     }
   };
 
+  // Add a useEffect to log orders state changes
+  useEffect(() => {
+    console.log('Current orders state:', orders);
+  }, [orders]);
+
   const handleUpdateStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sellers/orders/${orderId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/courier/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -215,7 +212,7 @@ export default function CourierOrders() {
                 value={searchOrderId}
                 onChange={(e) => {
                   setSearchOrderId(e.target.value);
-                  setPagination(prev => ({ ...prev, page: 1 }));
+                  setCurrentPage(1);
                 }}
                 placeholder="Enter order ID"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
@@ -232,7 +229,7 @@ export default function CourierOrders() {
                 value={selectedStatus}
                 onChange={(e) => {
                   setSelectedStatus(e.target.value);
-                  setPagination(prev => ({ ...prev, page: 1 }));
+                  setCurrentPage(1);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
               >
@@ -257,7 +254,7 @@ export default function CourierOrders() {
                   value={startDate}
                   onChange={(e) => {
                     setStartDate(e.target.value);
-                    setPagination(prev => ({ ...prev, page: 1 }));
+                    setCurrentPage(1);
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
                 />
@@ -272,7 +269,7 @@ export default function CourierOrders() {
                   value={endDate}
                   onChange={(e) => {
                     setEndDate(e.target.value);
-                    setPagination(prev => ({ ...prev, page: 1 }));
+                    setCurrentPage(1);
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
                 />
@@ -281,7 +278,7 @@ export default function CourierOrders() {
           </div>
         </div>
 
-        {orders.length === 0 ? (
+        {orders?.length === 0 ? (
           <div className="text-center py-12">
             <svg
               className="mx-auto h-12 w-12 text-gray-400"
@@ -353,7 +350,7 @@ export default function CourierOrders() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {orders.map((order) => (
+                      {orders?.map((order) => (
                         <tr
                           key={order._id}
                           onClick={() => handleRowClick(order)}
@@ -413,15 +410,15 @@ export default function CourierOrders() {
             </div>
             
             {/* Pagination */}
-            {pagination.totalPages > 1 && (
+            {totalPages > 1 && (
               <div className="flex justify-center mt-6">
                 <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                   {/* Previous button */}
                   <button
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
-                    disabled={pagination.page === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
                     className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                      pagination.page === 1
+                      currentPage === 1
                         ? 'text-gray-300 cursor-not-allowed'
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
@@ -433,12 +430,12 @@ export default function CourierOrders() {
                   </button>
                   
                   {/* Page numbers */}
-                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
                     <button
                       key={pageNumber}
-                      onClick={() => setPagination(prev => ({ ...prev, page: pageNumber }))}
+                      onClick={() => setCurrentPage(pageNumber)}
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        pageNumber === pagination.page
+                        pageNumber === currentPage
                           ? 'z-10 bg-purple-50 border-purple-500 text-purple-600'
                           : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                       }`}
@@ -449,10 +446,10 @@ export default function CourierOrders() {
                   
                   {/* Next button */}
                   <button
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
-                    disabled={pagination.page === pagination.totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
                     className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                      pagination.page === pagination.totalPages
+                      currentPage === totalPages
                         ? 'text-gray-300 cursor-not-allowed'
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
