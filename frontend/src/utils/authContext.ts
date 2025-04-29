@@ -7,7 +7,7 @@ export interface User {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: 'customer' | 'seller' | 'admin';
+  role: 'customer' | 'seller' | 'admin' | 'courier';
   businessName?: string;
   businessAddress?: string;
   phoneNumber?: string;

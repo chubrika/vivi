@@ -19,6 +19,8 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const isSeller = user?.role === 'seller';
+  const isCourier = user?.role === 'courier';
+  const isCourierRoute = pathname?.includes('courier');
 
   // Check authentication status on component mount and when pathname changes
   useEffect(() => {
@@ -74,6 +76,11 @@ export default function Navbar() {
   };
 
   const isActive = (path: string) => pathname === path;
+
+  // If URL contains 'courier', don't render the navbar
+  if (isCourierRoute) {
+    return null;
+  }
 
   return (
     <nav className="bg-white shadow-md z-1">

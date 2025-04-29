@@ -1,12 +1,18 @@
 import { Order } from '../types/order';
 import { useEffect } from 'react';
+import { useAuth } from '../utils/authContext';
+import { API_BASE_URL } from '../utils/api';
 
 interface OrderDetailsPanelProps {
   order: Order | null;
   onClose: () => void;
+  onStatusUpdate?: () => void;
 }
 
-export default function OrderDetailsPanel({ order, onClose }: OrderDetailsPanelProps) {
+export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: OrderDetailsPanelProps) {
+  const { token, user } = useAuth();
+  const isCourier = user?.role === 'courier';
+
   useEffect(() => {
     // Prevent body scrolling when panel is open
     document.body.style.overflow = 'hidden';
@@ -45,6 +51,29 @@ export default function OrderDetailsPanel({ order, onClose }: OrderDetailsPanelP
     }
   };
 
+  const handleStatusUpdate = async (newStatus: Order['status']) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sellers/orders/${order._id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update order status');
+      }
+
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+    }
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -77,9 +106,22 @@ export default function OrderDetailsPanel({ order, onClose }: OrderDetailsPanelP
           <div className="h-[calc(100vh-4rem)] overflow-y-auto px-6 py-4">
             {/* Order Status */}
             <div className="mb-6">
-              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-              </span>
+              <div className="flex items-center justify-between">
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </span>
+                {isCourier && (
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleStatusUpdate(e.target.value as Order['status'])}
+                    className="ml-2 block w-40 px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
+                  >
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                  </select>
+                )}
+              </div>
             </div>
 
             {/* Customer Information */}
