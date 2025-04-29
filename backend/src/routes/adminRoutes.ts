@@ -76,12 +76,58 @@ router.patch('/users/:id/toggle-status', authenticateToken, requireAdmin, async 
   }
 });
 
-// Get all orders (admin only)
+// Get all couriers
+router.get('/couriers', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const couriers = await User.find({ role: 'courier' })
+      .select('firstName lastName email phoneNumber')
+      .sort({ createdAt: -1 });
+    
+    res.json(couriers);
+  } catch (error) {
+    console.error('Error fetching couriers:', error);
+    res.status(500).json({ message: 'Error fetching couriers' });
+  }
+});
+
+// Assign order to courier
+router.post('/orders/:orderId/assign', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { courierId } = req.body;
+
+    // Validate courier exists and is actually a courier
+    const courier = await User.findOne({ _id: courierId, role: 'courier' });
+    if (!courier) {
+      return res.status(404).json({ message: 'Courier not found' });
+    }
+
+    // Find and update the order
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Update order with courier and set status to processing
+    order.courier = courierId;
+    order.status = 'processing';
+    await order.save();
+
+    res.json({ message: 'Order assigned successfully', order });
+  } catch (error) {
+    console.error('Error assigning order:', error);
+    res.status(500).json({ message: 'Error assigning order' });
+  }
+});
+
+// Get all orders with courier assignments
 router.get('/orders', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const orders = await Order.find()
       .populate('user', 'firstName lastName email')
+      .populate('courier', 'firstName lastName email')
       .sort({ createdAt: -1 });
+    
     res.json(orders);
   } catch (error) {
     console.error('Error fetching orders:', error);

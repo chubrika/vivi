@@ -1,5 +1,5 @@
 import { Order } from '../types/order';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../utils/authContext';
 import { API_BASE_URL } from '../utils/api';
 
@@ -9,9 +9,17 @@ interface OrderDetailsPanelProps {
   onStatusUpdate?: () => void;
 }
 
+interface Courier {
+  _id: string;
+  firstName: string;
+  lastName: string;
+}
+
 export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: OrderDetailsPanelProps) {
   const { token, user } = useAuth();
   const isCourier = user?.role === 'courier';
+  const isAdmin = user?.role === 'admin';
+  const [couriers, setCouriers] = useState<Courier[]>([]);
 
   useEffect(() => {
     // Prevent body scrolling when panel is open
@@ -20,6 +28,75 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchCouriers();
+    }
+  }, [isAdmin]);
+
+  const fetchCouriers = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/couriers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch couriers');
+      }
+
+      const data = await response.json();
+      setCouriers(data);
+    } catch (error) {
+      console.error('Error fetching couriers:', error);
+    }
+  };
+
+  const handleAssignCourier = async (courierId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/orders/${order?._id}/assign`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ courierId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to assign courier');
+      }
+
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
+    } catch (error) {
+      console.error('Error assigning courier:', error);
+    }
+  };
+
+  const handleRemoveCourier = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/orders/${order?._id}/assign`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to remove courier assignment');
+      }
+
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
+    } catch (error) {
+      console.error('Error removing courier assignment:', error);
+    }
+  };
 
   if (!order) return null;
 
@@ -103,26 +180,62 @@ export default function OrderDetailsPanel({ order, onClose, onStatusUpdate }: Or
           </div>
 
           {/* Content */}
-          <div className="h-[calc(100vh-4rem)] overflow-y-auto px-6 py-4">
+          <div className="px-6 py-4 overflow-y-auto h-[calc(100vh-4rem)]">
             {/* Order Status */}
             <div className="mb-6">
               <div className="flex items-center justify-between">
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>
-                {isCourier && (
+                {(isCourier || isAdmin) && (
                   <select
                     value={order.status}
                     onChange={(e) => handleStatusUpdate(e.target.value as Order['status'])}
                     className="ml-2 block w-40 px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
                   >
+                    <option value="pending">Pending</option>
                     <option value="processing">Processing</option>
                     <option value="shipped">Shipped</option>
                     <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
                   </select>
                 )}
               </div>
             </div>
+
+            {/* Courier Assignment (Admin only) */}
+            {isAdmin && (
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-500 mb-2">Courier Assignment</h4>
+                {order.courier ? (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-900">
+                        {order.courier.firstName} {order.courier.lastName}
+                      </span>
+                      <button
+                        onClick={handleRemoveCourier}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <select
+                    onChange={(e) => handleAssignCourier(e.target.value)}
+                    className="block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
+                  >
+                    <option value="">Select a courier</option>
+                    {couriers.map((courier) => (
+                      <option key={courier._id} value={courier._id}>
+                        {courier.firstName} {courier.lastName}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
 
             {/* Customer Information */}
             <div className="mb-6">

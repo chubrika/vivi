@@ -23,4 +23,9 @@ export interface Order {
   paymentMethod: string;
   paymentStatus: 'pending' | 'completed' | 'failed';
   createdAt: string;
+  courier?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+  };
 } 

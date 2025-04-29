@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../utils/authContext';
 import { API_BASE_URL } from '../../../utils/api';
+import OrderDetailsPanel from '../../../components/OrderDetailsPanel';
 
 interface OrderItem {
   id: string;
@@ -30,6 +31,11 @@ interface Order {
   paymentMethod: string;
   paymentStatus: 'pending' | 'completed' | 'failed';
   createdAt: string;
+  courier?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+  };
 }
 
 export default function AdminOrders() {
@@ -38,27 +44,41 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [couriers, setCouriers] = useState<Array<{ _id: string; firstName: string; lastName: string; }>>([]);
 
   useEffect(() => {
-    fetchOrders();
+    fetchData();
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/orders`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const [ordersResponse, couriersResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/admin/orders`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }),
+        fetch(`${API_BASE_URL}/api/admin/couriers`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      ]);
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
+      if (!ordersResponse.ok || !couriersResponse.ok) {
+        throw new Error('Failed to fetch data');
       }
 
-      const data = await response.json();
-      setOrders(data);
+      const [ordersData, couriersData] = await Promise.all([
+        ordersResponse.json(),
+        couriersResponse.json()
+      ]);
+
+      setOrders(ordersData);
+      setCouriers(couriersData);
     } catch (err) {
-      console.error('Error fetching orders:', err);
+      console.error('Error fetching data:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
@@ -80,12 +100,81 @@ export default function AdminOrders() {
         throw new Error('Failed to update order status');
       }
 
-      // Refresh orders list
-      fetchOrders();
+      fetchData();
     } catch (err) {
       console.error('Error updating order status:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     }
+  };
+
+  const handleAssignCourier = async (orderId: string, courierId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/orders/${orderId}/assign`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ courierId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to assign courier');
+      }
+
+      fetchData();
+    } catch (err) {
+      console.error('Error assigning courier:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    }
+  };
+
+  const handleRemoveCourier = async (orderId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/orders/${orderId}/assign`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to remove courier assignment');
+      }
+
+      fetchData();
+    } catch (err) {
+      console.error('Error removing courier assignment:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    }
+  };
+
+  const getStatusColor = (status: Order['status']) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'processing':
+        return 'bg-blue-100 text-blue-800';
+      case 'shipped':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'delivered':
+        return 'bg-green-100 text-green-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   if (loading) {
@@ -123,12 +212,15 @@ export default function AdminOrders() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {orders.map((order) => (
-                <tr key={order._id}>
+                <tr 
+                  key={order._id}
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => setSelectedOrder(order)}
+                >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {order.orderId}
                   </td>
@@ -143,17 +235,11 @@ export default function AdminOrders() {
                     ${order.totalAmount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
-                      ${order.status === 'processing' ? 'bg-blue-100 text-blue-800' : ''}
-                      ${order.status === 'shipped' ? 'bg-purple-100 text-purple-800' : ''}
-                      ${order.status === 'delivered' ? 'bg-green-100 text-green-800' : ''}
-                      ${order.status === 'cancelled' ? 'bg-red-100 text-red-800' : ''}
-                    `}>
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
                       {order.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                       ${order.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' : ''}
                       ${order.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
@@ -163,20 +249,7 @@ export default function AdminOrders() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <select
-                      value={order.status}
-                      onChange={(e) => handleUpdateStatus(order._id, e.target.value as Order['status'])}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="processing">Processing</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
+                    {formatDate(order.createdAt)}
                   </td>
                 </tr>
               ))}
@@ -184,6 +257,15 @@ export default function AdminOrders() {
           </table>
         </div>
       </div>
+
+      {/* Order Details Panel */}
+      {selectedOrder && (
+        <OrderDetailsPanel
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          onStatusUpdate={fetchData}
+        />
+      )}
     </div>
   );
 } 
