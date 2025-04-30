@@ -12,69 +12,34 @@ const ProductSlider = dynamic(() => import('../components/ProductSlider'), {
   ),
 });
 
+// Dynamically import the HomeSlider component
+const HomeSlider = dynamic(() => import('../components/HomeSlider'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex justify-center items-center h-[500px]">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+    </div>
+  ),
+});
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-purple-700 via-purple-600 to-blue-600 text-white py-24">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <div className="container mx-auto px-6 md:px-12 relative">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="md:w-1/2 space-y-8">
-              <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-                კეთილი იყოს თქვენი მობრძანება{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-300">
-                  VIVI შოპში
-                </span>
-              </h1>
-              <p className="text-xl md:text-2xl text-gray-100 leading-relaxed">
-                აღმოაჩინეთ საოცარი პროდუქტები საუკეთესო ფასებში. შეიძინეთ და ისიამოვნეთ ჩვენი ფართო არჩევანით.
-              </p>
-              <div className="flex gap-4">
-                <Link
-                  href="/products"
-                  className="bg-white text-purple-700 px-8 py-4 rounded-full font-semibold hover:bg-opacity-90 transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  Shop Now
-                </Link>
-                <Link
-                  href="/about"
-                  className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-purple-700 transition duration-300"
-                >
-                  Learn More
-                </Link>
-              </div>
-            </div>
-            <div className="md:w-1/2">
-              <div className="relative h-[500px] w-full overflow-hidden rounded-2xl shadow-2xl">
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-lg"></div>
-                <div className="relative h-full">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-8xl">🛍️</span>
-                  </div>
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                    {[1, 2, 3].map((dot) => (
-                      <button
-                        key={dot}
-                        className="w-3 h-3 rounded-full bg-white/50 hover:bg-white transition-colors"
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <section className="relative pt-10">
+        <div className="container mx-auto">
+          <HomeSlider />
         </div>
       </section>
 
       {/* Categories Section */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide">
-            {['Electronics', 'Groceries', 'Clothing', 'Home & Garden', 'Beauty', 'Sports', 'Books', 'Toys'].map((category) => (
+      <section className="py-10 bg-white">
+        <div className="container mx-auto">
+          <div className="flex flex-wrap gap-2">
+            {['Electronics', 'Groceries', 'Clothing', 'Home & Garden'].map((category) => (
               <div
                 key={category}
-                className="flex-shrink-0 bg-gray-50 hover:bg-purple-50 px-6 py-3 rounded-full cursor-pointer transition duration-300"
+                className="w-[calc(50%-4px)] h-[200px] bg-purple-200 hover:bg-purple-1200 px-6 py-3 rounded-lg cursor-pointer transition duration-300"
               >
                 <span className="text-gray-700 hover:text-purple-600 font-medium">{category}</span>
               </div>
@@ -85,13 +50,8 @@ export default function Home() {
 
       {/* Featured Products Section */}
       <section className="py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
-              Featured Products
-            </span>
-          </h2>
-          <ProductSlider />
+        <div className="container mx-auto">
+          <ProductSlider title="გამორჩეული პროდუქტები" />
         </div>
       </section>
 
