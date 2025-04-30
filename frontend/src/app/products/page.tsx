@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, ReactNode } from 'react';
+import { useState, useEffect, useRef, ReactNode, Suspense } from 'react';
 import ProductDetailPanel from '../../components/ProductDetailPanel';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../utils/api';
@@ -45,7 +45,7 @@ const ProductSkeleton = () => (
   </div>
 );
 
-export default function ProductsPage() {
+function ProductsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -749,5 +749,17 @@ export default function ProductsPage() {
         onClose={handlePanelClose}
       />
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    }>
+      <ProductsPageContent />
+    </Suspense>
   );
 } 
