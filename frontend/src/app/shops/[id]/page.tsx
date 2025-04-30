@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { api } from '../../../utils/api';
+import { Product } from '../../../types/product';
 
 interface Seller {
   _id: string;
@@ -14,20 +16,6 @@ interface Seller {
   businessName: string;
   businessAddress: string;
   isActive: boolean;
-}
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  images: string[];
-  category: {
-    _id: string;
-    name: string;
-  };
-  isActive: boolean;
-  stock: number;
 }
 
 export default function SellerDetailPage() {

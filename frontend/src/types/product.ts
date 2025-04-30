@@ -4,14 +4,17 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  category: {
+  category: string | {
     _id: string;
     name: string;
   };
-  seller: {
-    businessName: string;
+  seller: string | {
     _id: string;
-    name: string;
+    firstName?: string;
+    lastName?: string;
+    businessName?: string;
+    name?: string;
+    email: string;
   };
   isActive: boolean;
   stock: number;
@@ -21,23 +24,24 @@ export interface Product {
     name: string;
     description: string;
   }[];
-  createdAt?: string;
+  createdAt: string;
   updatedAt?: string;
 }
 
 export interface FeatureGroup {
-  featureGroupId: number;
-  featureGroupCaption: string;
+  _id: string;
+  name: string;
   features: Feature[];
 }
 
 export interface Feature {
-  featureId: number;
-  featureCaption: string;
-  featureValues: FeatureValue[];
+  _id: string;
+  name: string;
+  values: FeatureValue[];
 }
 
 export interface FeatureValue {
-  type: number;
-  featureValue: string;
+  _id: string;
+  name: string;
+  value: string;
 } 

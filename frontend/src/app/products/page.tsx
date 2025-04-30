@@ -5,25 +5,7 @@ import ProductDetailPanel from '../../components/ProductDetailPanel';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../utils/api';
 import { filtersService, Filter } from '../../services/filtersService';
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  images: string[];
-  category: {
-    _id: string;
-    name: string;
-  };
-  seller: {
-    businessName: string;
-    _id: string;
-    name: string;
-  };
-  isActive: boolean;
-  stock: number;
-}
+import { Product } from '../../types/product';
 
 interface Category {
   _id: string;

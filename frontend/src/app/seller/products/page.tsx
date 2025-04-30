@@ -8,6 +8,7 @@ import { API_BASE_URL } from '../../../utils/api';
 import Modal from '../../../components/Modal';
 import ProductForm from '../../../components/ProductForm';
 import ProductsGrid from '../../../components/ProductsGrid';
+import { Product } from '../../../types/product';
 
 interface FeatureValue {
   type: number;
@@ -24,32 +25,6 @@ interface FeatureGroup {
   featureGroupId: number;
   featureGroupCaption: string;
   features: Feature[];
-}
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  seller: string | {
-    _id: string;
-    firstName?: string;
-    lastName?: string;
-    businessName?: string;
-    email: string;
-  };
-  category: string | { _id: string; name: string };
-  images: string[];
-  isActive: boolean;
-  productFeatureValues?: FeatureGroup[];
-  filters?: {
-    _id: string;
-    name: string;
-    description: string;
-  }[];
-  createdAt: string;
-  updatedAt?: string;
 }
 
 interface Category {
