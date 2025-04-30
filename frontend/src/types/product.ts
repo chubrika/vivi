@@ -3,11 +3,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  images: string[];
-  category: string | {
-    _id: string;
-    name: string;
-  };
+  stock: number;
   seller: string | {
     _id: string;
     firstName?: string;
@@ -16,8 +12,12 @@ export interface Product {
     name?: string;
     email: string;
   };
+  category: string | {
+    _id: string;
+    name: string;
+  };
+  images: string[];
   isActive: boolean;
-  stock: number;
   productFeatureValues?: FeatureGroup[];
   filters?: {
     _id: string;
@@ -29,19 +29,18 @@ export interface Product {
 }
 
 export interface FeatureGroup {
-  _id: string;
-  name: string;
+  featureGroupId: number;
+  featureGroupCaption: string;
   features: Feature[];
 }
 
 export interface Feature {
-  _id: string;
-  name: string;
-  values: FeatureValue[];
+  featureId: number;
+  featureCaption: string;
+  featureValues: FeatureValue[];
 }
 
 export interface FeatureValue {
-  _id: string;
-  name: string;
-  value: string;
+  type: number;
+  featureValue: string;
 } 

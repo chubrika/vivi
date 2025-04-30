@@ -51,7 +51,14 @@ interface ProductFormProps {
     description: string;
     price: number;
     stock: number;
-    seller: string;
+    seller: string | {
+      _id: string;
+      firstName?: string;
+      lastName?: string;
+      businessName?: string;
+      name?: string;
+      email: string;
+    };
     category: string | { _id: string; name: string };
     images: string[];
     isActive: boolean;
@@ -70,10 +77,10 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   const [description, setDescription] = useState(product?.description || '');
   const [price, setPrice] = useState<number>(product?.price || 0);
   const [images, setImages] = useState<string[]>(product?.images || []);
-  const [category, setCategory] = useState(typeof product?.category === 'string' ? product.category : product?.category._id || '');
+  const [category, setCategory] = useState(typeof product?.category === 'string' ? product.category : product?.category?._id || '');
   const [sellerId, setSellerId] = useState(() => {
     if (product?.seller) {
-      return product.seller;
+      return typeof product.seller === 'string' ? product.seller : product.seller._id;
     }
     if (isSellerContext && user) {
       return user._id || '';
@@ -198,7 +205,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
       setCategory(typeof product.category === 'string' ? product.category : product.category._id);
       setImages(product.images);
       setIsActive(product.isActive);
-      setSellerId(product.seller);
+      setSellerId(typeof product.seller === 'string' ? product.seller : product.seller._id);
       if (product.productFeatureValues) {
         setFeatureGroups(product.productFeatureValues);
       }
