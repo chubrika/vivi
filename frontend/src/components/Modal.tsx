@@ -5,11 +5,12 @@ import { useEffect, useRef } from 'react';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full';
 }
 
-export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,6 +39,27 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
     };
   }, [isOpen, onClose]);
 
+  const getMaxWidthClass = () => {
+    switch (size) {
+      case 'sm':
+        return 'sm:max-w-sm';
+      case 'md':
+        return 'sm:max-w-md';
+      case 'lg':
+        return 'sm:max-w-lg';
+      case 'xl':
+        return 'sm:max-w-xl';
+      case '2xl':
+        return 'sm:max-w-2xl';
+      case '3xl':
+        return 'sm:max-w-3xl';
+      case 'full':
+        return 'sm:max-w-full';
+      default:
+        return 'sm:max-w-md';
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -49,28 +71,31 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
         
         <div 
           ref={modalRef}
-          className="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-[800px] sm:w-full"
+          className={`inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle ${getMaxWidthClass()} sm:w-full`}
         >
           <div className="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <div className="w-full mt-3 text-center sm:mt-0 sm:text-left">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  {title}
-                </h3>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900">
+                    {title}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                  >
+                    <span className="sr-only">Close</span>
+                    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
                 <div className="mt-4">
                   {children}
                 </div>
               </div>
             </div>
-          </div>
-          <div className="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              Close
-            </button>
           </div>
         </div>
       </div>

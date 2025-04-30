@@ -119,6 +119,20 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
+export const requireCourier = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.role !== 'courier') {
+    return res.status(403).json({ message: 'Access denied. Courier role required.' });
+  }
+  next();
+};
+
+export const requireSeller = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.role !== 'seller') {
+    return res.status(403).json({ message: 'Access denied. Seller role required.' });
+  }
+  next();
+};
+
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;

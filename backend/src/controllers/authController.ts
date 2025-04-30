@@ -143,4 +143,33 @@ export const getProfile = async (req: Request, res: Response) => {
     console.error('Profile fetch error:', error);
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = (req.user as any).userId;
+    const { firstName, lastName, email, phoneNumber, personalNumber, address } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update user fields
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
+    if (personalNumber) user.personalNumber = personalNumber;
+    if (address) user.businessAddress = address;
+
+    await user.save();
+
+    // Return updated user without password
+    const updatedUser = await User.findById(userId).select('-password');
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 }; 

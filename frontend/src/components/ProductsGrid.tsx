@@ -163,7 +163,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
   // Filter controls component
   const FilterControls = () => (
     <div className="mb-4 space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 p-4">
         <div className="flex-1">
           <label htmlFor="search" className="block text-sm font-medium text-gray-700">
             Search Products

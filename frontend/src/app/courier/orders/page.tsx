@@ -7,15 +7,6 @@ import { API_BASE_URL } from '../../../utils/api';
 import OrderDetailsPanel from '../../../components/OrderDetailsPanel';
 import { Order } from '../../../types/order';
 
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  images: string[];
-  sellerId: string;
-}
-
 interface PaginationData {
   total: number;
   page: number;
@@ -23,43 +14,36 @@ interface PaginationData {
   totalPages: number;
 }
 
-export default function SellerOrders() {
+export default function CourierOrders() {
   const router = useRouter();
   const { token } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [pagination, setPagination] = useState<PaginationData>({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 0
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
   // Filter states
   const [searchOrderId, setSearchOrderId] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  // Get unique customers and statuses for filters
-  const customers = [...new Set(orders.map(order => `${order.user.firstName} ${order.user.lastName}`))];
-  const statuses = [...new Set(orders.map(order => order.status))];
+  // Get unique statuses for filter
+  const statuses = ['processing', 'shipped', 'delivered'];
 
   // Clear all filters
   const clearFilters = () => {
     setSearchOrderId('');
-    setSelectedCustomer('');
     setSelectedStatus('');
     setStartDate('');
     setEndDate('');
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setCurrentPage(1);
   };
 
   // Check if any filter is active
-  const hasActiveFilters = searchOrderId || selectedCustomer || selectedStatus || startDate || endDate;
+  const hasActiveFilters = searchOrderId || selectedStatus || startDate || endDate;
 
   useEffect(() => {
     if (!token) {
@@ -68,7 +52,7 @@ export default function SellerOrders() {
       return;
     }
     fetchOrders();
-  }, [pagination.page, token]);
+  }, [currentPage, token, searchOrderId, selectedStatus, startDate, endDate]);
 
   const fetchOrders = async () => {
     try {
@@ -76,18 +60,16 @@ export default function SellerOrders() {
       setError('');
       
       const queryParams = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
+        page: currentPage.toString(),
+        limit: '10',
         ...(searchOrderId && { orderId: searchOrderId }),
-        ...(selectedCustomer && { customer: selectedCustomer }),
         ...(selectedStatus && { status: selectedStatus }),
         ...(startDate && { startDate }),
         ...(endDate && { endDate })
       });
 
       console.log('Fetching orders with params:', queryParams.toString());
-      
-      const response = await fetch(`${API_BASE_URL}/api/sellers/orders?${queryParams}`, {
+      const response = await fetch(`${API_BASE_URL}/api/courier/orders?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -101,9 +83,9 @@ export default function SellerOrders() {
 
       const data = await response.json();
       console.log('Received orders data:', data);
-      
-      setOrders(data.orders);
-      setPagination(data.pagination);
+      setOrders(data.orders || []);
+      setTotalPages(data.pagination?.totalPages || 0);
+      console.log('Orders state updated:', data || []);
     } catch (err) {
       console.error('Error fetching orders:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -112,9 +94,14 @@ export default function SellerOrders() {
     }
   };
 
+  // Add a useEffect to log orders state changes
+  useEffect(() => {
+    console.log('Current orders state:', orders);
+  }, [orders]);
+
   const handleUpdateStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sellers/orders/${orderId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/courier/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -137,16 +124,12 @@ export default function SellerOrders() {
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
       case 'processing':
         return 'bg-blue-100 text-blue-800';
       case 'shipped':
         return 'bg-indigo-100 text-indigo-800';
       case 'delivered':
         return 'bg-green-100 text-green-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -161,11 +144,6 @@ export default function SellerOrders() {
       hour: '2-digit',
       minute: '2-digit',
     });
-  };
-
-  // Handle page change
-  const handlePageChange = (pageNumber: number) => {
-    setPagination(prev => ({ ...prev, page: pageNumber }));
   };
 
   const handleRowClick = (order: Order) => {
@@ -222,7 +200,7 @@ export default function SellerOrders() {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Order ID Search */}
             <div>
               <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 mb-1">
@@ -234,34 +212,11 @@ export default function SellerOrders() {
                 value={searchOrderId}
                 onChange={(e) => {
                   setSearchOrderId(e.target.value);
-                  setPagination(prev => ({ ...prev, page: 1 }));
+                  setCurrentPage(1);
                 }}
                 placeholder="Enter order ID"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
               />
-            </div>
-
-            {/* Customer Filter */}
-            <div>
-              <label htmlFor="customer" className="block text-sm font-medium text-gray-700 mb-1">
-                Customer
-              </label>
-              <select
-                id="customer"
-                value={selectedCustomer}
-                onChange={(e) => {
-                  setSelectedCustomer(e.target.value);
-                  setPagination(prev => ({ ...prev, page: 1 }));
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
-              >
-                <option value="">All Customers</option>
-                {customers.map((customer) => (
-                  <option key={customer} value={customer}>
-                    {customer}
-                  </option>
-                ))}
-              </select>
             </div>
 
             {/* Status Filter */}
@@ -274,7 +229,7 @@ export default function SellerOrders() {
                 value={selectedStatus}
                 onChange={(e) => {
                   setSelectedStatus(e.target.value);
-                  setPagination(prev => ({ ...prev, page: 1 }));
+                  setCurrentPage(1);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
               >
@@ -299,7 +254,7 @@ export default function SellerOrders() {
                   value={startDate}
                   onChange={(e) => {
                     setStartDate(e.target.value);
-                    setPagination(prev => ({ ...prev, page: 1 }));
+                    setCurrentPage(1);
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
                 />
@@ -314,7 +269,7 @@ export default function SellerOrders() {
                   value={endDate}
                   onChange={(e) => {
                     setEndDate(e.target.value);
-                    setPagination(prev => ({ ...prev, page: 1 }));
+                    setCurrentPage(1);
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
                 />
@@ -323,7 +278,7 @@ export default function SellerOrders() {
           </div>
         </div>
 
-        {orders.length === 0 ? (
+        {orders?.length === 0 ? (
           <div className="text-center py-12">
             <svg
               className="mx-auto h-12 w-12 text-gray-400"
@@ -389,7 +344,7 @@ export default function SellerOrders() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {orders.map((order) => (
+                      {orders?.map((order) => (
                         <tr
                           key={order._id}
                           onClick={() => handleRowClick(order)}
@@ -435,15 +390,15 @@ export default function SellerOrders() {
             </div>
             
             {/* Pagination */}
-            {pagination.totalPages > 1 && (
+            {totalPages > 1 && (
               <div className="flex justify-center mt-6">
                 <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                   {/* Previous button */}
                   <button
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
                     className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                      pagination.page === 1
+                      currentPage === 1
                         ? 'text-gray-300 cursor-not-allowed'
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
@@ -455,12 +410,12 @@ export default function SellerOrders() {
                   </button>
                   
                   {/* Page numbers */}
-                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
                     <button
                       key={pageNumber}
-                      onClick={() => handlePageChange(pageNumber)}
+                      onClick={() => setCurrentPage(pageNumber)}
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        pageNumber === pagination.page
+                        pageNumber === currentPage
                           ? 'z-10 bg-purple-50 border-purple-500 text-purple-600'
                           : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                       }`}
@@ -471,10 +426,10 @@ export default function SellerOrders() {
                   
                   {/* Next button */}
                   <button
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
                     className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                      pagination.page === pagination.totalPages
+                      currentPage === totalPages
                         ? 'text-gray-300 cursor-not-allowed'
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
@@ -496,6 +451,9 @@ export default function SellerOrders() {
         <OrderDetailsPanel
           order={selectedOrder}
           onClose={handleClosePanel}
+          onStatusUpdate={fetchOrders}
+          showStatusUpdate={true}
+          allowedStatuses={['processing', 'shipped', 'delivered']}
         />
       )}
     </div>

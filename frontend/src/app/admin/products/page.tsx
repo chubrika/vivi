@@ -283,7 +283,7 @@ const ProductsPage = () => {
       />
 
       {isModalOpen && (
-        <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedProduct ? 'Edit Product' : 'Add Product'}>
+        <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedProduct ? 'Edit Product' : 'Add Product'} size="3xl">
           <ProductForm
             product={selectedProduct}
             categories={categories}

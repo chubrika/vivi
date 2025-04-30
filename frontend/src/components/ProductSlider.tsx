@@ -28,7 +28,11 @@ interface Product {
   stock: number;
 }
 
-const ProductSlider = () => {
+interface ProductSliderProps {
+  title?: string;
+}
+
+const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,7 +82,11 @@ const ProductSlider = () => {
 
   return (
     <div className="py-10">
-      <h2 className="text-3xl font-bold text-center mb-8 text-gray-600">გამორჩეული პროდუქტები</h2>
+      <h2 className="text-xl font-bold mb-16">
+        <span className="text-black">
+          {title}
+        </span>
+      </h2>
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         spaceBetween={30}

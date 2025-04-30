@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '../../utils/authContext';
 import { API_BASE_URL } from '../../utils/api';
 
-export default function SellerLayout({
+export default function CourierLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -17,9 +17,9 @@ export default function SellerLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkSellerAccess = async () => {
+    const checkCourierAccess = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/check-seller`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/check-courier`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -32,7 +32,7 @@ export default function SellerLayout({
 
         // We don't need to use the response data as the role is managed by the auth context
       } catch (error) {
-        console.error('Error checking seller access:', error);
+        console.error('Error checking courier access:', error);
         router.push('/login');
       } finally {
         setLoading(false);
@@ -40,7 +40,7 @@ export default function SellerLayout({
     };
 
     if (isAuthenticated) {
-      checkSellerAccess();
+      checkCourierAccess();
     } else {
       router.push('/login');
     }
@@ -54,7 +54,7 @@ export default function SellerLayout({
     );
   }
 
-  if (user?.role !== 'seller') {
+  if (user?.role !== 'courier') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -66,9 +66,8 @@ export default function SellerLayout({
   }
 
   const navigation = [
-    { name: 'Dashboard', href: '/seller/dashboard' },
-    { name: 'Products', href: '/seller/products' },
-    { name: 'Orders', href: '/seller/orders' },
+    { name: 'Dashboard', href: '/courier/dashboard' },
+    { name: 'Orders', href: '/courier/orders' },
     { name: 'Profile', href: '/profile' },
   ];
 
@@ -79,8 +78,8 @@ export default function SellerLayout({
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link href="/seller/dashboard" className="text-xl font-bold text-purple-600">
-                  Seller Portal
+                <Link href="/courier/orders" className="text-xl font-bold text-purple-600">
+                  Courier Portal
                 </Link>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

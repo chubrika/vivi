@@ -150,7 +150,7 @@ export default function GoogleMap({ onLocationSelect, initialLocation }: GoogleM
           </svg>
         </button>
       </form>
-      <div className="w-full h-[400px] rounded-lg overflow-hidden">
+      <div className="w-full h-[220px] rounded-lg overflow-hidden">
         <div ref={mapRef} className="w-full h-full" />
       </div>
     </div>
