@@ -8,25 +8,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { api } from '../utils/api';
 import ProductDetailPanel from './ProductDetailPanel';
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  images: string[];
-  seller: {
-    businessName: string;
-    _id: string;
-    name: string;
-  };
-  category: {
-    _id: string;
-    name: string;
-  };
-  isActive: boolean;
-  stock: number;
-}
+import { Product } from '../types/product';
 
 interface ProductSliderProps {
   title?: string;
