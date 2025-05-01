@@ -685,7 +685,7 @@ function ProductsPageContent() {
                 filteredProducts.map((product) => (
                   <div
                     key={product._id}
-                    className="bg-white rounded-lg shadow overflow-hidden cursor-pointer"
+                    className="bg-white rounded-lg transition-all duration-300 hover:border hover:border-purple-600 overflow-hidden cursor-pointer"
                     onClick={() => handleProductSelect(product)}
                   >
                     <div className="relative aspect-square">
@@ -697,9 +697,9 @@ function ProductsPageContent() {
                     </div>
                     <div className="p-4">
                       <p className="text-gray-900 font-semibold">{product.price.toFixed(2)} ₾</p>
-                      <h2 className="text-md text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
+                      <h2 className="text-sm text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="text-sm text-gray-500">{product.seller?.businessName}</span>
+                        <span className="text-xs text-gray-500">{product.seller?.businessName}</span>
                       </div>
                     </div>
                   </div>

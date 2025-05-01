@@ -23,6 +23,11 @@ export default function Navbar() {
   const isCourier = user?.role === 'courier';
   const isCourierRoute = pathname?.includes('courier');
 
+  const navigationItems = [
+    { href: '/products', title: 'პროდუქტები' },
+    { href: '/shops', title: 'მაღაზიები' },
+  ];
+
   // Check authentication status on component mount and when pathname changes
   useEffect(() => {
     // Add event listener for storage changes to detect login/logout from other tabs
@@ -206,28 +211,21 @@ export default function Navbar() {
         </div>
         
         {/* Bottom row with navigation items */}
-        <div className="hidden md:flex items-center h-12 border-t border-gray-100">
+        <div className="hidden md:flex items-center h-8 border-t border-gray-100">
           <div className="flex gap-8">
-            <Link
-              href="/products"
-              className={`inline-flex items-center px-2 py-1 text-sm font-medium transition duration-300 ${
-                isActive('/products')
-                  ? 'text-purple-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              პროდუქტები
-            </Link>
-            <Link
-              href="/shops"
-              className={`inline-flex items-center px-2 py-1 text-sm font-medium transition duration-300 ${
-                isActive('/shops')
-                  ? 'text-purple-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              მაღაზიები
-            </Link>
+            {navigationItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`inline-flex items-center px-2 py-1 text-sm font-medium transition duration-300 ${
+                  isActive(item.href)
+                    ? 'text-purple-600'
+                    : 'text-black hover:text-purple-600'
+                }`}
+              >
+                {item.title}
+              </Link>
+            ))}
           </div>
         </div>
       </div>
@@ -235,28 +233,20 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} bg-white border-t border-gray-100`}>
         <div className="px-4 py-3 space-y-2">
-          <Link
-            href="/products"
-            className={`block px-3 py-2 rounded-lg text-base font-medium transition duration-300 ${
-              isActive('/products')
-                ? 'bg-purple-50 text-purple-600'
-                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-            }`}
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            პროდუქტები
-          </Link>
-          <Link
-            href="/shops"
-            className={`block px-3 py-2 rounded-lg text-base font-medium transition duration-300 ${
-              isActive('/shops')
-                ? 'bg-purple-50 text-purple-600'
-                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-            }`}
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            მაღაზიები
-          </Link>
+          {navigationItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`block px-3 py-2 rounded-lg text-base font-medium transition duration-300 ${
+                isActive(item.href)
+                  ? 'bg-purple-50 text-purple-600'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {item.title}
+            </Link>
+          ))}
         </div>
       </div>
     </nav>
