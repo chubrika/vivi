@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect } from 'react';
 import AddToCartButton from './AddToCartButton';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../utils/authContext';
+import { Product, FeatureGroup } from '../types/product';
 
 interface FeatureValue {
     type: number;
@@ -14,32 +15,6 @@ interface Feature {
     featureId: number;
     featureCaption: string;
     featureValues: FeatureValue[];
-}
-
-interface FeatureGroup {
-    featureGroupId: number;
-    featureGroupCaption: string;
-    features: Feature[];
-}
-
-interface Product {
-    _id: string;
-    name: string;
-    description: string;
-    price: number;
-    images: string[];
-    category: {
-        _id: string;
-        name: string;
-    };
-    seller: {
-        businessName: string;
-        _id: string;
-        name: string;
-    };
-    isActive: boolean;
-    stock: number;
-    productFeatureValues?: FeatureGroup[];
 }
 
 interface ProductDetailPanelProps {

@@ -1,19 +1,10 @@
 'use client';
 
 import { useCart } from '../utils/cartContext';
+import { Product } from '../types/product';
 
 interface AddToCartButtonProps {
-  product: {
-    _id: string;
-    name: string;
-    price: number;
-    images: string[];
-    seller: {
-      _id: string;
-    };
-    isActive: boolean;
-    stock: number;
-  };
+  product: Product;
   quantity?: number;
   className?: string;
 }

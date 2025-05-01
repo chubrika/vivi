@@ -6,24 +6,7 @@ import Link from 'next/link';
 import AddToCartButton from '../../../components/AddToCartButton';
 import { api } from '../../../utils/api';
 import { useAuth } from '../../../utils/authContext';
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  images: string[];
-  category: {
-    _id: string;
-    name: string;
-  };
-  seller: {
-    _id: string;
-    name: string;
-  };
-  isActive: boolean;
-}
+import { Product } from '../../../types/product';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const [product, setProduct] = useState<Product | null>(null);
