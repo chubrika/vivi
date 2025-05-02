@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import AddToCartButton from './AddToCartButton';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../utils/authContext';
+import { useCart } from '../utils/cartContext';
 import { Product, FeatureGroup } from '../types/product';
+import { ShoppingCart } from 'lucide-react';
 
 interface FeatureValue {
     type: number;
@@ -29,6 +31,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
     const [showFullDescription, setShowFullDescription] = useState(false);
     const router = useRouter();
     const { user } = useAuth();
+    const { addItem, totalItems } = useCart();
     const isSeller = user?.role === 'seller';
     const isCourier = user?.role === 'courier';
 
@@ -93,7 +96,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
 
             {/* Panel */}
             <div
-                className={`fixed z-[52] right-0 top-[64px]  h-[calc(100vh-64px)] w-full md:w-[75%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed z-[52] right-0 top-0 h-full w-full md:w-[75%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
                 <div className="h-full overflow-y-auto">
@@ -101,14 +104,33 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                     <div className="bg-white border-b border-gray-200 fixed w-full z-10">
                         <div className="flex justify-between items-center p-4 md:px-[30px]">
                             <p className="text-black text-lg font-bold">{product.name}</p>
-                            <button
-                                onClick={onClose}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                            <div className="flex items-center gap-4">
+                                {!isSeller && !isCourier && (
+                                    <button
+                                        onClick={() => {
+                                            router.push('/cart');
+                                        }}
+                                        className="relative"
+                                    >
+                                        <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition duration-300">
+                                            <ShoppingCart className="h-5 w-5" />
+                                            {totalItems > 0 && (
+                                                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                                    {totalItems}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </button>
+                                )}
+                                <button
+                                    onClick={onClose}
+                                    className="text-gray-500 hover:text-gray-700"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
