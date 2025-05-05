@@ -9,6 +9,14 @@ export interface Filter {
     _id: string;
     name: string;
   };
+  type: 'select' | 'range' | 'color' | 'boolean';
+  config?: {
+    options?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+  };
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -18,12 +26,28 @@ export interface CreateFilterData {
   name: string;
   description: string;
   category: string;
+  type: 'select' | 'range' | 'color' | 'boolean';
+  config?: {
+    options?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+  };
 }
 
 export interface UpdateFilterData {
   name?: string;
   description?: string;
   category?: string;
+  type?: 'select' | 'range' | 'color' | 'boolean';
+  config?: {
+    options?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+  };
   isActive?: boolean;
 }
 

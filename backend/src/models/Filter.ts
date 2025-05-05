@@ -5,7 +5,14 @@ export interface IFilter extends Document {
   name: string;
   description?: string;
   category: mongoose.Types.ObjectId;
-  colors: string[];
+  type: string;
+  config: {
+    options?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+  };
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -27,10 +34,21 @@ const filterSchema = new Schema<IFilter>(
       ref: 'Category',
       required: [true, 'Category is required'],
     },
-    colors: [{
+    type: {
       type: String,
-      trim: true,
-    }],
+      required: [true, 'Filter type is required'],
+      enum: ['select', 'range', 'color', 'boolean'],
+    },
+    config: {
+      options: [{
+        type: String,
+        trim: true,
+      }],
+      min: Number,
+      max: Number,
+      step: Number,
+      unit: String,
+    },
     isActive: {
       type: Boolean,
       default: true,

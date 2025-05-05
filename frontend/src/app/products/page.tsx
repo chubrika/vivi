@@ -33,6 +33,7 @@ function ProductsPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filters, setFilters] = useState<Filter[]>([]);
+  const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     searchParams.get('category') || null
   );
@@ -196,42 +197,23 @@ function ProductsPageContent() {
         name: 'Category Filter',
         description: 'Filter by category',
         category: firstCategory,
+        type: 'select' as const,
+        config: {
+          options: ['Electronics', 'Clothing', 'Home', 'Sports']
+        },
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
-        _id: 'filter-high-price',
-        name: 'High Price',
-        description: 'Filter high-priced products',
+        _id: 'filter-color',
+        name: 'Color Filter',
+        description: 'Filter by color',
         category: firstCategory,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        _id: 'filter-low-price',
-        name: 'Low Price',
-        description: 'Filter low-priced products',
-        category: firstCategory,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        _id: 'filter-in-stock',
-        name: 'In Stock',
-        description: 'Filter products in stock',
-        category: firstCategory,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        _id: 'filter-out-of-stock',
-        name: 'Out of Stock',
-        description: 'Filter products out of stock',
-        category: firstCategory,
+        type: 'color' as const,
+        config: {
+          options: ['#FF0000', '#00FF00', '#0000FF', '#FFFF00']
+        },
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -503,6 +485,13 @@ function ProductsPageContent() {
     router.push(`/products?${params.toString()}`, { scroll: false });
   };
 
+  const toggleFilterExpansion = (filterId: string) => {
+    setExpandedFilters(prev => ({
+      ...prev,
+      [filterId]: !prev[filterId]
+    }));
+  };
+
   if (initialLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -564,7 +553,7 @@ function ProductsPageContent() {
             {/* Filters Section - Moved from horizontal navigation to sidebar */}
             <div className="mb-6">
               <h2 className="text-lg font-semibold mb-4 text-gray-800">ფილტრები</h2>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {filtersLoading ? (
                   <div className="animate-pulse space-y-2">
                     {[1, 2, 3, 4].map((i) => (
@@ -575,20 +564,62 @@ function ProductsPageContent() {
                   filters
                     .filter(filter => !selectedCategory || filter.category._id === selectedCategory)
                     .map((filter) => (
-                      <div key={filter._id} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id={`filter-${filter._id}`}
-                          checked={selectedFilter === filter._id}
-                          onChange={() => handleFilterSelect(selectedFilter === filter._id ? null : filter._id)}
-                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                        />
-                        <label
-                          htmlFor={`filter-${filter._id}`}
-                          className="ml-2 block text-sm text-gray-700 cursor-pointer"
+                      <div key={filter._id} className="border border-gray-200 rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => toggleFilterExpansion(filter._id)}
+                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
                         >
-                          {filter.name}
-                        </label>
+                          <h3 className="text-sm font-medium text-gray-900">{filter.name}</h3>
+                          <svg
+                            className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${
+                              expandedFilters[filter._id] ? 'rotate-180' : ''
+                            }`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        <div
+                          className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                            expandedFilters[filter._id] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                          }`}
+                        >
+                          <div className="p-3 pt-0">
+                            {filter.type === 'color' && filter.config?.options && (
+                              <div className="grid grid-cols-4 gap-2">
+                                {filter.config.options.map((color) => (
+                                  <div
+                                    key={color}
+                                    className="w-8 h-8 rounded-full cursor-pointer border-2 border-gray-200 hover:border-purple-500"
+                                    style={{ backgroundColor: color }}
+                                    title={color}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                            {filter.type === 'select' && filter.config?.options && (
+                              <div className="space-y-2">
+                                {filter.config.options.map((option) => (
+                                  <div key={option} className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      id={`${filter._id}-${option}`}
+                                      className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                    />
+                                    <label
+                                      htmlFor={`${filter._id}-${option}`}
+                                      className="ml-2 block text-sm text-gray-700 cursor-pointer"
+                                    >
+                                      {option}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))
                 )}

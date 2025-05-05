@@ -63,8 +63,8 @@ const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
   }
 
   return (
-    <div className="py-10">
-      <h2 className="text-xl font-bold mb-16">
+    <div>
+      <h2 className="text-xl font-bold mb-10">
         <span className="text-black">
           {title}
         </span>

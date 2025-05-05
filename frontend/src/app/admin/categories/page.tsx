@@ -3,16 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../utils/authContext';
 import Modal from '../../../components/Modal';
-import CategoryForm from '../../../components/CategoryForm';
-
-interface Category {
-  _id: string;
-  name: string;
-  description: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import HierarchicalCategoryForm from '../../../components/HierarchicalCategoryForm';
+import { Category } from '../../../types/category';
 
 const CategoriesPage = () => {
   const { token, isAuthenticated } = useAuth();
@@ -21,6 +13,7 @@ const CategoriesPage = () => {
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | undefined>(undefined);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const fetchCategories = async () => {
     try {
@@ -36,6 +29,19 @@ const CategoriesPage = () => {
       
       const data = await response.json();
       setCategories(data);
+
+      // Automatically expand all categories with children
+      const categoriesWithChildren = new Set<string>();
+      const findCategoriesWithChildren = (categories: Category[]) => {
+        categories.forEach(category => {
+          if (category.children && category.children.length > 0) {
+            categoriesWithChildren.add(category._id);
+            findCategoriesWithChildren(category.children);
+          }
+        });
+      };
+      findCategoriesWithChildren(data);
+      setExpandedCategories(categoriesWithChildren);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -86,6 +92,80 @@ const CategoriesPage = () => {
     }
   };
 
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId);
+      } else {
+        newSet.add(categoryId);
+      }
+      return newSet;
+    });
+  };
+
+  const renderCategoryTree = (category: Category, level: number = 0) => {
+    const isExpanded = expandedCategories.has(category._id);
+    
+    return (
+      <div key={category._id} className="ml-4">
+        <div className="flex items-center py-2 hover:bg-gray-100 rounded">
+          <div className="flex-1 flex items-center">
+            {category.hasChildren && (
+              <button
+                onClick={() => toggleCategory(category._id)}
+                className="w-4 h-4 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-transform duration-200"
+                style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            )}
+            {!category.hasChildren && <span className="w-4 text-gray-400">•</span>}
+            <span className="ml-2 text-gray-600">{category.name}</span>
+            {!category.isActive && (
+              <span className="ml-2 text-xs text-red-500">(Inactive)</span>
+            )}
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => handleOpenModal(category)}
+              className="text-indigo-600 hover:text-indigo-900"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(category._id)}
+              className="text-red-600 hover:text-red-900"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => handleOpenModal(undefined)}
+              className="text-green-600 hover:text-green-900"
+            >
+              Add Child
+            </button>
+          </div>
+        </div>
+        {category.hasChildren && (
+          <div 
+            className={`border-l-2 border-gray-200 overflow-hidden transition-all duration-300 ease-in-out`}
+            style={{
+              maxHeight: isExpanded ? '1000px' : '0',
+              opacity: isExpanded ? 1 : 0
+            }}
+          >
+            <div className="pl-4">
+              {category.children?.map(child => renderCategoryTree(child, level + 1))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (!isAuthenticated) {
     return <div className="p-4">Please log in to access this page.</div>;
   }
@@ -100,67 +180,30 @@ const CategoriesPage = () => {
         <h1 className="text-2xl font-bold text-gray-600">კატეგორიები</h1>
         <button
           onClick={() => handleOpenModal()}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
         >
-          კატეგორიის დამატება
+          Add Category
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
           {error}
         </div>
       )}
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
-          {categories.length === 0 ? (
-            <li className="px-4 py-4">No categories found.</li>
-          ) : (
-            categories.map((category) => (
-              <li key={category._id} className="px-2 py-2 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className='flex mr-10'>
-                    <p className="text-md font-medium text-gray-600  mr-10">{category.name}</p>
-                    {/* <p className="text-sm text-gray-500">{category.description}</p> */}
-                    <div className="mt-1 flex items-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {category.isActive ? 'აქტიური' : 'შეჩერებული'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleOpenModal(category)}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(category._id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))
-          )}
-        </ul>
+      <div className="bg-white rounded-lg shadow">
+        {categories
+          .filter(category => !category.parentId)
+          .map(category => renderCategoryTree(category))}
       </div>
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title={selectedCategory ? 'Edit Category' : 'Add Category'}
-      >
-        <CategoryForm
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+        <HierarchicalCategoryForm
           onClose={handleCloseModal}
           onSuccess={handleSuccess}
           category={selectedCategory}
+          parentCategories={categories}
         />
       </Modal>
     </div>

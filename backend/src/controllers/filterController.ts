@@ -4,12 +4,14 @@ import Filter from '../models/Filter';
 // Create a new filter
 export const createFilter = async (req: Request, res: Response) => {
   try {
-    const { name, description, category } = req.body;
+    const { name, description, category, type, config } = req.body;
 
     const filter = await Filter.create({
       name,
       description,
-      category
+      category,
+      type,
+      config
     });
 
     res.status(201).json(filter);
@@ -57,11 +59,11 @@ export const getFilterById = async (req: Request, res: Response) => {
 // Update a filter
 export const updateFilter = async (req: Request, res: Response) => {
   try {
-    const { name, description, category, isActive } = req.body;
+    const { name, description, category, type, config, isActive } = req.body;
     
     const filter = await Filter.findByIdAndUpdate(
       req.params.id,
-      { name, description, category, isActive },
+      { name, description, category, type, config, isActive },
       { new: true, runValidators: true }
     ).populate('category', 'name');
     
