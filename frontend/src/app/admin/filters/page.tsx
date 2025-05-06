@@ -9,6 +9,8 @@ import { filtersService, Filter, CreateFilterData, UpdateFilterData } from '../.
 interface Category {
   _id: string;
   name: string;
+  slug: string;
+  children?: Category[];
 }
 
 type FilterType = 'select' | 'range' | 'color' | 'boolean';
@@ -225,6 +227,17 @@ const FiltersPage = () => {
     });
   };
 
+  const renderCategoryOptions = (categories: Category[], level: number = 0) => {
+    return categories.map((category) => (
+      <React.Fragment key={category._id}>
+        <option value={category._id} className={level > 0 ? `pl-${level * 4}` : ''}>
+          {'\u00A0'.repeat(level * 4)}{category.name} ({category.slug})
+        </option>
+        {category.children && level < 2 && renderCategoryOptions(category.children, level + 1)}
+      </React.Fragment>
+    ));
+  };
+
   if (!isAuthenticated) {
     return <div className="p-4">Please log in to access this page.</div>;
   }
@@ -313,11 +326,7 @@ const FiltersPage = () => {
                     required
                   >
                     <option value="">Select a category</option>
-                    {categories.map((category) => (
-                      <option key={category._id} value={category._id}>
-                        {category.name}
-                      </option>
-                    ))}
+                    {renderCategoryOptions(categories)}
                   </select>
                 </div>
 

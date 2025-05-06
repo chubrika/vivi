@@ -14,6 +14,7 @@ export interface Category {
 export interface CreateCategoryData {
   name: string;
   description: string;
+  slug: string;
   parentId?: string;
   isActive: boolean;
 }
@@ -21,6 +22,7 @@ export interface CreateCategoryData {
 export interface UpdateCategoryData {
   name?: string;
   description?: string;
+  slug?: string;
   parentId?: string;
   isActive?: boolean;
 } 

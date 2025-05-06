@@ -19,6 +19,7 @@ const HierarchicalCategoryForm: React.FC<HierarchicalCategoryFormProps> = ({
   const [formData, setFormData] = useState<CreateCategoryData>({
     name: '',
     description: '',
+    slug: '',
     isActive: true
   });
   const [error, setError] = useState('');
@@ -29,6 +30,7 @@ const HierarchicalCategoryForm: React.FC<HierarchicalCategoryFormProps> = ({
       setFormData({
         name: category.name,
         description: category.description,
+        slug: category.slug,
         parentId: category.parentId,
         isActive: category.isActive
       });
@@ -110,6 +112,16 @@ const HierarchicalCategoryForm: React.FC<HierarchicalCategoryFormProps> = ({
             onChange={handleChange}
             required
             placeholder="Category Name"
+            className="w-full px-3 py-2 border-b border-gray-300 focus:border-purple-500 focus:outline-none text-gray-600"
+          />
+
+          <input
+            type="text"
+            name="slug"
+            value={formData.slug}
+            onChange={handleChange}
+            required
+            placeholder="Category Slug (e.g., electronics)"
             className="w-full px-3 py-2 border-b border-gray-300 focus:border-purple-500 focus:outline-none text-gray-600"
           />
 

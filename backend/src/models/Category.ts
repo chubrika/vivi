@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface ICategory extends Document {
   name: string;
   description: string;
+  slug: string;
   parentId?: mongoose.Types.ObjectId;
   hasChildren: boolean;
   isActive: boolean;
@@ -19,6 +20,12 @@ const categorySchema = new Schema({
   },
   description: {
     type: String,
+    trim: true
+  },
+  slug: {
+    type: String,
+    required: [true, 'Category slug is required'],
+    unique: true,
     trim: true
   },
   parentId: {
@@ -40,7 +47,7 @@ const categorySchema = new Schema({
 
 // Create indexes for better query performance
 categorySchema.index({ name: 1 });
-categorySchema.index({ isActive: 1 });
+categorySchema.index({ slug: 1 });
 categorySchema.index({ parentId: 1 });
 categorySchema.index({ hasChildren: 1 });
 

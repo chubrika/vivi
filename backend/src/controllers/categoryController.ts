@@ -6,6 +6,7 @@ interface CategoryWithChildren {
   _id: mongoose.Types.ObjectId;
   name: string;
   description: string;
+  slug: string;
   parentId?: mongoose.Types.ObjectId;
   hasChildren: boolean;
   isActive: boolean;
@@ -75,11 +76,14 @@ export const getCategoryById = async (req: Request, res: Response) => {
 // Create new category
 export const createCategory = async (req: Request, res: Response) => {
   try {
-    const { parentId, name, description, isActive } = req.body;
+    const { parentId, name, description, slug, isActive } = req.body;
     
     // Validate required fields
     if (!name) {
       return res.status(400).json({ message: 'Category name is required' });
+    }
+    if (!slug) {
+      return res.status(400).json({ message: 'Category slug is required' });
     }
 
     // If parentId is provided, verify it exists
@@ -100,6 +104,7 @@ export const createCategory = async (req: Request, res: Response) => {
     const category = new Category({
       name,
       description,
+      slug,
       parentId,
       isActive: isActive !== undefined ? isActive : true,
       hasChildren: false
@@ -118,7 +123,7 @@ export const createCategory = async (req: Request, res: Response) => {
         });
       }
       if (error.name === 'MongoServerError' && (error as any).code === 11000) {
-        return res.status(400).json({ message: 'Category name must be unique' });
+        return res.status(400).json({ message: 'Category name or slug must be unique' });
       }
     }
     res.status(500).json({ message: 'Error creating category', error: error instanceof Error ? error.message : 'Unknown error' });

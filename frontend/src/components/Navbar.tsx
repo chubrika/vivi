@@ -8,6 +8,7 @@ import { useCart } from '../utils/cartContext';
 import Image from 'next/image';
 import SearchResults from './SearchResults';
 import { Search, ShoppingCart, User, Menu, X } from 'lucide-react';
+import CategoryMenu from './CategoryMenu';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const isSeller = user?.role === 'seller';
@@ -213,15 +215,21 @@ export default function Navbar() {
         {/* Bottom row with navigation items */}
         <div className="hidden md:flex items-center h-8 border-t border-gray-100">
           <div className="flex gap-8">
+            <button
+              onClick={() => setIsCategoryMenuOpen(true)}
+              className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700"
+            >
+              ყველა კატეგორია
+            </button>
             {navigationItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`inline-flex items-center px-2 py-1 text-sm font-medium transition duration-300 ${
-                  isActive(item.href)
-                    ? 'text-purple-600'
-                    : 'text-black hover:text-purple-600'
-                }`}
+                className={`${
+                  pathname === item.href
+                    ? 'text-gray-900'
+                    : 'text-gray-500 hover:text-gray-700'
+                } inline-flex items-center px-1 pt-1 text-sm font-medium`}
               >
                 {item.title}
               </Link>
@@ -233,22 +241,29 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} bg-white border-t border-gray-100`}>
         <div className="px-4 py-3 space-y-2">
+          <button
+            onClick={() => setIsCategoryMenuOpen(true)}
+            className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+          >
+            ყველა კატეგორია
+          </button>
           {navigationItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`block px-3 py-2 rounded-lg text-base font-medium transition duration-300 ${
-                isActive(item.href)
-                  ? 'bg-purple-50 text-purple-600'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
+              className={`${
+                pathname === item.href
+                  ? 'bg-purple-50 border-purple-500 text-purple-700'
+                  : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+              } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
             >
               {item.title}
             </Link>
           ))}
         </div>
       </div>
+
+      <CategoryMenu isOpen={isCategoryMenuOpen} onClose={() => setIsCategoryMenuOpen(false)} />
     </nav>
   );
 } 
