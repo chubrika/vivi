@@ -190,7 +190,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
             <option value="">All Categories</option>
             {categories.map((category) => (
               <option key={category._id} value={category._id}>
-                {category.name}
+                {category?.name}
               </option>
             ))}
           </select>
@@ -348,7 +348,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {typeof product.category === 'object' ? product.category.name : product.category}
+                          {typeof product.category === 'object' ? product.category?.name : product.category}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -441,7 +441,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
                       </span>
                       <span className="text-sm text-gray-500">•</span>
                       <span className="text-sm text-gray-500">
-                        კატეგორია: {typeof product.category === 'object' ? product.category.name : product.category}
+                        კატეგორია: {typeof product.category === 'object' ? product.category?.name : product.category}
                       </span>
                       <span className="text-sm text-gray-500">•</span>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

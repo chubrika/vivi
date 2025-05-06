@@ -76,6 +76,15 @@ export const createProduct = async (req: Request, res: Response) => {
     if (seller.role !== 'seller') {
       return res.status(400).json({ message: 'The specified user is not a seller' });
     }
+
+    // Process filters to extract filter IDs
+    if (req.body.filters && Array.isArray(req.body.filters)) {
+      req.body.filters = req.body.filters.map((filter: string) => {
+        // Extract filter ID from the format "filterId:value"
+        const [filterId] = filter.split(':');
+        return filterId;
+      });
+    }
     
     const product = new Product(req.body);
     await product.save();

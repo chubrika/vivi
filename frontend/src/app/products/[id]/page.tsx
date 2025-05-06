@@ -124,7 +124,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Category</h2>
-                <p className="mt-1 text-gray-600">{product.category.name}</p>
+                <p className="mt-1 text-gray-600">{product.category?.name}</p>
               </div>
 
               <div>

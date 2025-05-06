@@ -233,7 +233,7 @@ const FiltersPage = () => {
         <option value={category._id} className={level > 0 ? `pl-${level * 4}` : ''}>
           {'\u00A0'.repeat(level * 4)}{category.name} ({category.slug})
         </option>
-        {category.children && level < 2 && renderCategoryOptions(category.children, level + 1)}
+        {category.children && renderCategoryOptions(category.children, level + 1)}
       </React.Fragment>
     ));
   };

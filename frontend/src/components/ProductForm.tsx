@@ -6,17 +6,14 @@ import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
 import { filtersService, Filter } from '../services/filtersService';
 import { useAuth } from '../utils/authContext';
+import HierarchicalCategorySelect from './HierarchicalCategorySelect';
+import { Category } from '../types/category';
 
 // Use dynamic import with no SSR to avoid hydration issues
 const ReactQuill = dynamic(() => import('react-quill'), { 
   ssr: false,
   loading: () => <p>Loading editor...</p>
 });
-
-interface Category {
-  _id: string;
-  name: string;
-}
 
 interface User {
   _id: string;
@@ -70,6 +67,160 @@ interface ProductFormProps {
   onSuccess: () => void;
   isSellerContext?: boolean;
 }
+
+// Add this new component for rendering individual filters
+const FilterInput: React.FC<{
+  filter: Filter;
+  value: string;
+  onChange: (value: string) => void;
+}> = ({ filter, value, onChange }) => {
+  // Show filter configuration details
+  const renderConfigDetails = () => {
+    if (!filter.config) return null;
+    
+    return (
+      <div className="mt-1 text-xs text-gray-500">
+        {filter.type === 'select' && filter.config.options && (
+          <div>
+            <span className="font-medium">Options:</span>{' '}
+            {filter.config.options.join(', ')}
+          </div>
+        )}
+        {filter.type === 'range' && (
+          <div className="space-y-1">
+            <div>
+              <span className="font-medium">Range:</span>{' '}
+              {filter.config.min} - {filter.config.max}
+              {filter.config.unit && ` ${filter.config.unit}`}
+            </div>
+            {filter.config.step && (
+              <div>
+                <span className="font-medium">Step:</span> {filter.config.step}
+              </div>
+            )}
+          </div>
+        )}
+        {filter.type === 'boolean' && (
+          <div>
+            <span className="font-medium">Type:</span> Yes/No
+          </div>
+        )}
+        {filter.type === 'color' && filter.config.options && (
+          <div className="mt-1">
+            <span className="font-medium">Available Colors:</span>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {filter.config.options.map((color) => (
+                <span 
+                  key={color}
+                  className="inline-block w-4 h-4 rounded-full border border-gray-300" 
+                  style={{ backgroundColor: color }}
+                  title={color}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  if (filter.type === 'select') {
+    return (
+      <div className="space-y-1">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+        >
+          <option value="">Select {filter.name}</option>
+          {filter.config?.options?.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        {renderConfigDetails()}
+      </div>
+    );
+  }
+
+  if (filter.type === 'range') {
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center space-x-2">
+          <input
+            type="number"
+            min={filter.config?.min}
+            max={filter.config?.max}
+            step={filter.config?.step}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out"
+            placeholder={`${filter.config?.min} - ${filter.config?.max} ${filter.config?.unit || ''}`}
+          />
+          {filter.config?.unit && (
+            <span className="text-gray-500 whitespace-nowrap">{filter.config.unit}</span>
+          )}
+        </div>
+        {renderConfigDetails()}
+      </div>
+    );
+  }
+
+  if (filter.type === 'boolean') {
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={value === 'true'}
+            onChange={(e) => onChange(e.target.checked.toString())}
+            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded transition duration-200"
+          />
+          <span className="text-sm text-gray-600">Yes</span>
+        </div>
+        {renderConfigDetails()}
+      </div>
+    );
+  }
+
+  if (filter.type === 'color') {
+    return (
+      <div className="space-y-1">
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+          {filter.config?.options?.map((color) => (
+            <button
+              key={color}
+              type="button"
+              onClick={() => onChange(color)}
+              className={`relative p-1 rounded-lg border-2 transition-all duration-200 ${
+                value === color 
+                  ? 'border-purple-500 ring-2 ring-purple-200' 
+                  : 'border-gray-200 hover:border-purple-300'
+              }`}
+              title={color}
+            >
+              <span 
+                className="block w-full h-8 rounded-md"
+                style={{ backgroundColor: color }}
+              />
+              {value === color && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+        {renderConfigDetails()}
+      </div>
+    );
+  }
+
+  return null;
+};
 
 export default function ProductForm({ product, categories, sellers, onClose, onSuccess, isSellerContext = false }: ProductFormProps) {
   const { user } = useAuth();
@@ -164,22 +315,24 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   // Fetch filters when category changes
   useEffect(() => {
     const fetchFilters = async () => {
-      if (category) {
-        try {
-          setFiltersLoading(true);
-          const data = await filtersService.getFiltersByCategory(category);
-          setFilters(data);
-          // Reset selected filters when category changes
-          setSelectedFilters([]);
-        } catch (err) {
-          console.error('Error fetching filters:', err);
-          setFilters([]);
-        } finally {
-          setFiltersLoading(false);
-        }
-      } else {
+      if (!category) {
         setFilters([]);
         setSelectedFilters([]);
+        return;
+      }
+
+      setFiltersLoading(true);
+      try {
+        const categoryFilters = await filtersService.getFiltersByCategory(category);
+        setFilters(categoryFilters);
+        
+        // Reset selected filters when category changes
+        setSelectedFilters([]);
+      } catch (error) {
+        console.error('Error fetching filters:', error);
+        setError('Failed to load filters');
+      } finally {
+        setFiltersLoading(false);
       }
     };
 
@@ -482,54 +635,57 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-4">
         <div>
           <label className="block text-gray-700 text-sm font-bold mb-2">
-            კატეგორია
+            Category
           </label>
-          <select
-            id="category"
+          <HierarchicalCategorySelect
+            categories={categories}
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
-          >
-            <option value="">აირჩიე კატეგორია</option>
-            {categories.map((cat) => (
-              <option key={cat._id} value={cat._id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+            onChange={setCategory}
+            required
+          />
         </div>
 
         <div>
-          <label htmlFor="filters" className="block text-sm font-medium text-gray-700 mb-1">
-              ფილტრები
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            Filters
           </label>
-          <select
-            id="filters"
-            multiple
-            value={selectedFilters}
-            onChange={(e) => {
-              const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-              setSelectedFilters(selectedOptions);
-            }}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
-            disabled={!category || filtersLoading}
-          >
+          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
             {filtersLoading ? (
-              <option value="" disabled>Loading filters...</option>
-            ) : filters.length > 0 ? (
-              filters.map((filter) => (
-                <option key={filter._id} value={filter._id}>
-                  {filter.name}
-                </option>
-              ))
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
+                <span className="ml-2 text-gray-500">Loading filters...</span>
+              </div>
             ) : (
-              <option value="" disabled>No filters available for this category</option>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filters.map((filter) => (
+                  <div key={filter._id} className="space-y-2 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <label className="block text-sm font-medium text-gray-700">
+                      {filter.name}
+                      {filter.description && (
+                        <span className="ml-1 text-gray-500 text-xs">
+                          ({filter.description})
+                        </span>
+                      )}
+                    </label>
+                    <FilterInput
+                      filter={filter}
+                      value={selectedFilters.find(f => f.startsWith(`${filter._id}:`))?.split(':')[1] || ''}
+                      onChange={(newValue) => {
+                        const newFilters = selectedFilters.filter(f => !f.startsWith(`${filter._id}:`));
+                        if (newValue) {
+                          newFilters.push(`${filter._id}:${newValue}`);
+                        }
+                        setSelectedFilters(newFilters);
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
             )}
-          </select>
-          <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple filters</p>
+          </div>
         </div>
       </div>
 

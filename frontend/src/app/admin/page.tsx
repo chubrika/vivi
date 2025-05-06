@@ -185,7 +185,7 @@ export default function AdminDashboard() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
                           <p className="text-sm text-gray-500">
-                            {product.category.name}
+                            {product.category?.name}
                           </p>
                         </div>
                         <div className="ml-4 flex-shrink-0">

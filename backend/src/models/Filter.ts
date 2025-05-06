@@ -12,6 +12,7 @@ export interface IFilter extends Document {
     max?: number;
     step?: number;
     unit?: string;
+    color?: string;
   };
   isActive: boolean;
   createdAt: Date;
@@ -48,6 +49,7 @@ const filterSchema = new Schema<IFilter>(
       max: Number,
       step: Number,
       unit: String,
+      color: String,
     },
     isActive: {
       type: Boolean,

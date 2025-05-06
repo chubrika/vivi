@@ -16,6 +16,7 @@ export interface Filter {
     max?: number;
     step?: number;
     unit?: string;
+    color?: string;
   };
   isActive: boolean;
   createdAt: string;
@@ -33,6 +34,7 @@ export interface CreateFilterData {
     max?: number;
     step?: number;
     unit?: string;
+    color?: string;
   };
 }
 
@@ -47,6 +49,7 @@ export interface UpdateFilterData {
     max?: number;
     step?: number;
     unit?: string;
+    color?: string;
   };
   isActive?: boolean;
 }
