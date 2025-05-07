@@ -60,29 +60,43 @@ function ProductsPageContent() {
   const maxThumbRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
 
-  // Fetch products based on selected category, filter, and price range
+  // Add new state for selected colors and options
+  const [selectedColors, setSelectedColors] = useState<Record<string, string[]>>({});
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
+
+  // Fetch products whenever query parameters change
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setProductsLoading(true);
         
-        // Construct URL with category and filter parameters
+        // Get all current query parameters
         const params = new URLSearchParams();
         
-        if (selectedCategory) {
-          params.append('category', selectedCategory);
+        // Add category if present
+        const category = searchParams.get('category');
+        if (category) {
+          params.append('category', category);
         }
         
-        if (selectedFilter) {
-          params.append('filter', selectedFilter);
-        }
+        // Add all filter parameters
+        searchParams.forEach((value, key) => {
+          const filter = filters.find(f => f._id === key);
+          if (filter) {
+            params.append(key, value);
+          }
+        });
         
-        // Add price range parameters
-        params.append('minPrice', priceRange[0].toString());
-        params.append('maxPrice', priceRange[1].toString());
+        // Add price range if present
+        const minPrice = searchParams.get('minPrice');
+        const maxPrice = searchParams.get('maxPrice');
+        if (minPrice) params.append('minPrice', minPrice);
+        if (maxPrice) params.append('maxPrice', maxPrice);
         
         const queryString = params.toString();
         const endpoint = queryString ? `/api/products?${queryString}` : '/api/products';
+        
+        console.log('Fetching products with params:', queryString); // Debug log
         
         const data = await api.get(endpoint, undefined, false);
         setProducts(data);
@@ -96,7 +110,21 @@ function ProductsPageContent() {
     };
 
     fetchProducts();
-  }, [selectedCategory, selectedFilter, priceRange]);
+  }, [searchParams, filters]); // Added filters dependency
+
+  // Update local state when URL parameters change
+  useEffect(() => {
+    setSelectedCategory(searchParams.get('category'));
+    setSelectedFilter(searchParams.get('filter'));
+    
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    if (minPrice && maxPrice) {
+      setPriceRange([Number(minPrice), Number(maxPrice)]);
+      setMinPriceInput(minPrice);
+      setMaxPriceInput(maxPrice);
+    }
+  }, [searchParams]);
 
   // Fetch categories
   useEffect(() => {
@@ -227,6 +255,7 @@ function ProductsPageContent() {
       if (selectedCategory) {
         try {
           setFiltersLoading(true);
+          console.log(selectedCategory);
           const data = await filtersService.getFiltersByCategory(selectedCategory);
           setFilters(data);
         } catch (err) {
@@ -415,58 +444,28 @@ function ProductsPageContent() {
   };
 
   const handleCategorySelect = async (categoryId: string | null) => {
-    setSelectedCategory(categoryId);
-    setSelectedFilter(null); // Reset filter when category changes
+    // Update URL with selected category
+    const params = new URLSearchParams(searchParams.toString());
     
-    // Load all filters when "ყველა" is clicked
-    if (categoryId === null) {
-      try {
-        setFiltersLoading(true);
-        const data = await filtersService.getActiveFilters();
-        setFilters(data);
-      } catch (err) {
-        console.error('Error fetching all filters:', err);
-        // Create example filters if there's an error
-        const exampleFilters = createExampleFilters();
-        setFilters(exampleFilters);
-      } finally {
-        setFiltersLoading(false);
-      }
+    if (categoryId) {
+      params.set('category', categoryId);
+    } else {
+      params.delete('category');
     }
+    
+    // Remove filter when category changes
+    params.delete('filter');
+    
+    // Preserve product ID if it exists
+    const productId = searchParams.get('product');
+    if (productId) {
+      params.set('product', productId);
+    }
+    
+    router.push(`/products?${params.toString()}`, { scroll: false });
   };
 
   const handleFilterSelect = async (filterId: string | null) => {
-    setSelectedFilter(filterId);
-    setProductsLoading(true);
-    
-    try {
-      // Construct URL with filter parameter if selected
-      const params = new URLSearchParams();
-      
-      if (selectedCategory) {
-        params.append('category', selectedCategory);
-      }
-      
-      if (filterId) {
-        params.append('filter', filterId);
-      }
-      
-      // Add price range parameters
-      params.append('minPrice', priceRange[0].toString());
-      params.append('maxPrice', priceRange[1].toString());
-      
-      const queryString = params.toString();
-      const endpoint = queryString ? `/api/products?${queryString}` : '/api/products';
-      
-      const data = await api.get(endpoint, undefined, false);
-      setProducts(data);
-    } catch (err) {
-      console.error('Error fetching filtered products:', err);
-      setError('Failed to fetch filtered products');
-    } finally {
-      setProductsLoading(false);
-    }
-    
     // Update URL with selected filter
     const params = new URLSearchParams(searchParams.toString());
     
@@ -492,6 +491,108 @@ function ProductsPageContent() {
     }));
   };
 
+  // Add new handlers for color and option selection
+  const handleColorSelect = async (filterId: string, color: string) => {
+    setSelectedColors(prev => {
+      const currentColors = prev[filterId] || [];
+      const newColors = currentColors.includes(color)
+        ? currentColors.filter(c => c !== color)
+        : [...currentColors, color];
+      
+      return {
+        ...prev,
+        [filterId]: newColors
+      };
+    });
+
+    // Update URL parameters
+    const params = new URLSearchParams(searchParams.toString());
+    const currentColors = selectedColors[filterId] || [];
+    const newColors = currentColors.includes(color)
+      ? currentColors.filter(c => c !== color)
+      : [...currentColors, color];
+
+    if (newColors.length > 0) {
+      params.set(filterId, newColors.join(','));
+    } else {
+      params.delete(filterId);
+    }
+
+    // Preserve other parameters
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (selectedFilter) params.set('filter', selectedFilter);
+    const productId = searchParams.get('product');
+    if (productId) params.set('product', productId);
+
+    // Update URL and fetch filtered products
+    router.push(`/products?${params.toString()}`, { scroll: false });
+  };
+
+  const handleOptionSelect = async (filterId: string, option: string) => {
+    setSelectedOptions(prev => {
+      const currentOptions = prev[filterId] || [];
+      const newOptions = currentOptions.includes(option)
+        ? currentOptions.filter(o => o !== option)
+        : [...currentOptions, option];
+      
+      return {
+        ...prev,
+        [filterId]: newOptions
+      };
+    });
+
+    // Update URL parameters
+    const params = new URLSearchParams(searchParams.toString());
+    const currentOptions = selectedOptions[filterId] || [];
+    const newOptions = currentOptions.includes(option)
+      ? currentOptions.filter(o => o !== option)
+      : [...currentOptions, option];
+
+    if (newOptions.length > 0) {
+      params.set(filterId, newOptions.join(','));
+    } else {
+      params.delete(filterId);
+    }
+
+    // Preserve other parameters
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (selectedFilter) params.set('filter', selectedFilter);
+    const productId = searchParams.get('product');
+    if (productId) params.set('product', productId);
+
+    // Update URL and fetch filtered products
+    router.push(`/products?${params.toString()}`, { scroll: false });
+  };
+
+  // Update useEffect to handle filter parameters from URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // Reset selections
+    setSelectedColors({});
+    setSelectedOptions({});
+
+    // Process all parameters
+    params.forEach((value, key) => {
+      // Find the filter to determine its type
+      const filter = filters.find(f => f._id === key);
+      if (filter) {
+        const values = value.split(',');
+        if (filter.type === 'color') {
+          setSelectedColors(prev => ({
+            ...prev,
+            [key]: values
+          }));
+        } else if (filter.type === 'select') {
+          setSelectedOptions(prev => ({
+            ...prev,
+            [key]: values
+          }));
+        }
+      }
+    });
+  }, [searchParams, filters]);
+
   if (initialLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -510,47 +611,12 @@ function ProductsPageContent() {
 
   return (
     <div className="container mx-auto px-4 py-4">
-      {/* Horizontal Category Filter Navigation */}
-      <div className="mb-8">
-        <h2 className="text-sm font-semibold mb-4 text-gray-500">კატეგორიები</h2>
-        <div className="relative">
-          <div className="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            <div className="flex gap-2 min-w-max">
-              <button
-                onClick={() => handleCategorySelect(null)}
-                className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
-                  selectedCategory === null
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                ყველა
-              </button>
-              {categories.map((category) => (
-                <button
-                  key={category._id}
-                  onClick={() => handleCategorySelect(category._id)}
-                  className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
-                    selectedCategory === category._id
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white pointer-events-none"></div>
-        </div>
-      </div>
-
       <div className="flex flex-col md:flex-row gap-8">
         {/* Categories Sidebar */}
         <div className="w-full md:w-64 flex-shrink-0 mb-6 md:mb-0">
           <div className="bg-white rounded-lg shadow p-4">
             
-            {/* Filters Section - Moved from horizontal navigation to sidebar */}
+            {/* Filters Section */}
             <div className="mb-6">
               <h2 className="text-lg font-semibold mb-4 text-gray-800">ფილტრები</h2>
               <div className="space-y-4">
@@ -562,7 +628,6 @@ function ProductsPageContent() {
                   </div>
                 ) : (
                   filters
-                    .filter(filter => !selectedCategory || filter.category._id === selectedCategory)
                     .map((filter) => (
                       <div key={filter._id} className="border border-gray-200 rounded-lg overflow-hidden">
                         <button
@@ -590,11 +655,19 @@ function ProductsPageContent() {
                             {filter.type === 'color' && filter.config?.options && (
                               <div className="grid grid-cols-4 gap-2">
                                 {filter.config.options.map((color) => (
-                                  <div
+                                  <button
                                     key={color}
-                                    className="w-8 h-8 rounded-full cursor-pointer border-2 border-gray-200 hover:border-purple-500"
+                                    className={`w-8 h-8 rounded-full cursor-pointer border-2 transition-colors ${
+                                      selectedColors[filter._id]?.includes(color)
+                                        ? 'border-purple-500'
+                                        : 'border-gray-200 hover:border-purple-500'
+                                    }`}
                                     style={{ backgroundColor: color }}
                                     title={color}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleColorSelect(filter._id, color);
+                                    }}
                                   />
                                 ))}
                               </div>
@@ -606,6 +679,11 @@ function ProductsPageContent() {
                                     <input
                                       type="checkbox"
                                       id={`${filter._id}-${option}`}
+                                      checked={selectedOptions[filter._id]?.includes(option) || false}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        handleOptionSelect(filter._id, option);
+                                      }}
                                       className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                                     />
                                     <label

@@ -119,17 +119,17 @@ export const filtersService = {
   },
 
   /**
-   * Get filters by category ID
-   * @param categoryId Category ID
+   * Get filters by category slug
+   * @param categorySlug Category slug
    * @returns Promise<Filter[]> Array of filters for the specified category
    */
-  async getFiltersByCategory(categoryId: string): Promise<Filter[]> {
+  async getFiltersByCategory(categorySlug: string): Promise<Filter[]> {
     const token = getToken();
     if (!token) {
       throw new Error('Authentication required');
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/filters?category=${categoryId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/filters?category=${categorySlug}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
