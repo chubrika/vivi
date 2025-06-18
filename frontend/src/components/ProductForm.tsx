@@ -8,6 +8,7 @@ import { filtersService, Filter } from '../services/filtersService';
 import { useAuth } from '../utils/authContext';
 import HierarchicalCategorySelect from './HierarchicalCategorySelect';
 import { Category } from '../types/category';
+import { productsService } from '../services/productsService';
 
 // Use dynamic import with no SSR to avoid hydration issues
 const ReactQuill = dynamic(() => import('react-quill'), { 
@@ -74,116 +75,6 @@ const FilterInput: React.FC<{
   value: string;
   onChange: (value: string) => void;
 }> = ({ filter, value, onChange }) => {
-  // Show filter configuration details
-  const renderConfigDetails = () => {
-    if (!filter.config) return null;
-    
-    return (
-      <div className="mt-1 text-xs text-gray-500">
-        {filter.type === 'select' && filter.config.options && (
-          <div>
-            <span className="font-medium">Options:</span>{' '}
-            {filter.config.options.join(', ')}
-          </div>
-        )}
-        {filter.type === 'range' && (
-          <div className="space-y-1">
-            <div>
-              <span className="font-medium">Range:</span>{' '}
-              {filter.config.min} - {filter.config.max}
-              {filter.config.unit && ` ${filter.config.unit}`}
-            </div>
-            {filter.config.step && (
-              <div>
-                <span className="font-medium">Step:</span> {filter.config.step}
-              </div>
-            )}
-          </div>
-        )}
-        {filter.type === 'boolean' && (
-          <div>
-            <span className="font-medium">Type:</span> Yes/No
-          </div>
-        )}
-        {filter.type === 'color' && filter.config.options && (
-          <div className="mt-1">
-            <span className="font-medium">Available Colors:</span>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {filter.config.options.map((color) => (
-                <span 
-                  key={color}
-                  className="inline-block w-4 h-4 rounded-full border border-gray-300" 
-                  style={{ backgroundColor: color }}
-                  title={color}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  if (filter.type === 'select') {
-    return (
-      <div className="space-y-1">
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
-        >
-          <option value="">Select {filter.name}</option>
-          {filter.config?.options?.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-        {renderConfigDetails()}
-      </div>
-    );
-  }
-
-  if (filter.type === 'range') {
-    return (
-      <div className="space-y-1">
-        <div className="flex items-center space-x-2">
-          <input
-            type="number"
-            min={filter.config?.min}
-            max={filter.config?.max}
-            step={filter.config?.step}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out"
-            placeholder={`${filter.config?.min} - ${filter.config?.max} ${filter.config?.unit || ''}`}
-          />
-          {filter.config?.unit && (
-            <span className="text-gray-500 whitespace-nowrap">{filter.config.unit}</span>
-          )}
-        </div>
-        {renderConfigDetails()}
-      </div>
-    );
-  }
-
-  if (filter.type === 'boolean') {
-    return (
-      <div className="space-y-1">
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={value === 'true'}
-            onChange={(e) => onChange(e.target.checked.toString())}
-            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded transition duration-200"
-          />
-          <span className="text-sm text-gray-600">Yes</span>
-        </div>
-        {renderConfigDetails()}
-      </div>
-    );
-  }
-
   if (filter.type === 'color') {
     return (
       <div className="space-y-1">
@@ -214,7 +105,25 @@ const FilterInput: React.FC<{
             </button>
           ))}
         </div>
-        {renderConfigDetails()}
+      </div>
+    );
+  }
+
+  if (filter.type === 'select') {
+    return (
+      <div className="space-y-1">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+        >
+          <option value="">Select {filter.name}</option>
+          {filter.config?.options?.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
       </div>
     );
   }
@@ -406,45 +315,35 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     setError(null);
 
     try {
-      // Validate seller ID
-      if (!sellerId) {
-        throw new Error('Seller information is required');
-      }
-      
+      // Prepare filter values
+      const filterValues = selectedFilters.map(filterStr => {
+        const [filterId, value] = filterStr.split(':');
+        return {
+          filterId,
+          value
+        };
+      });
+
       const productData = {
         name,
         description,
         price,
         stock,
-        category,
         images,
-        filters: selectedFilters,
-        productFeatureValues: featureGroups,
-        isActive,
+        category,
         seller: sellerId,
+        isActive,
+        productFeatureValues: featureGroups, // Only include the actual feature groups
+        filters: filterValues.map(fv => fv.filterId) // Only include filter IDs
       };
 
-      console.log('Submitting product with seller ID:', sellerId);
-
-      const url = product ? `/api/products/${product._id}` : '/api/products';
-      const method = product ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(productData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save product');
+      if (product?._id) {
+        await productsService.updateProduct(product._id, productData);
+      } else {
+        await productsService.createProduct(productData);
       }
 
       onSuccess();
-      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

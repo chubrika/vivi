@@ -6,12 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../utils/api';
 import { filtersService, Filter } from '../../services/filtersService';
 import { Product } from '../../types/product';
-
-interface Category {
-  _id: string;
-  name: string;
-  productCount?: number;
-}
+import CategoryNavigation from '../../components/CategoryNavigation';
+import { Category } from '../../types/category';
 
 // Product Skeleton Loader Component
 const ProductSkeleton = () => (
@@ -131,6 +127,7 @@ function ProductsPageContent() {
     const fetchCategories = async () => {
       try {
         const data = await api.get('/api/categories', undefined, false);
+        console.log(data);
         setCategories(data);
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -610,16 +607,20 @@ function ProductsPageContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4">
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Categories Sidebar */}
-        <div className="w-full md:w-64 flex-shrink-0 mb-6 md:mb-0">
-          <div className="bg-white rounded-lg shadow p-4">
-            
-            {/* Filters Section */}
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-4 text-gray-800">ფილტრები</h2>
-              <div className="space-y-4">
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex gap-8">
+        {/* Left sidebar with categories and filters */}
+        <div className="w-64 space-y-6">
+          <CategoryNavigation 
+            categories={categories} 
+            selectedCategorySlug={selectedCategory} 
+          />
+          
+          {/* Filters section */}
+          {filters.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">ფილტრები</h3>
+              <div >
                 {filtersLoading ? (
                   <div className="animate-pulse space-y-2">
                     {[1, 2, 3, 4].map((i) => (
@@ -629,10 +630,10 @@ function ProductsPageContent() {
                 ) : (
                   filters
                     .map((filter) => (
-                      <div key={filter._id} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div key={filter._id} className="border-b border-gray-200 overflow-hidden">
                         <button
                           onClick={() => toggleFilterExpansion(filter._id)}
-                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+                          className="w-full flex items-center justify-between pt-3 pb-3 hover:bg-gray-50 transition-colors"
                         >
                           <h3 className="text-sm font-medium text-gray-900">{filter.name}</h3>
                           <svg
@@ -703,68 +704,10 @@ function ProductsPageContent() {
                 )}
               </div>
             </div>
-            
-            {/* Price Range Filter */}
-            <div className="pt-4 border-t border-gray-200">
-              <h2 className="text-lg font-semibold mb-4 text-gray-800">ფასი ₾</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <input
-                    type="number"
-                    name="min"
-                    value={minPriceInput}
-                    onChange={handlePriceInputChange}
-                    className="w-20 px-2 py-1 border border-gray-300 rounded-md text-sm text-gray-800"
-                    min={minPrice}
-                    max={maxPrice}
-                  />
-                  <input
-                    type="number"
-                    name="max"
-                    value={maxPriceInput}
-                    onChange={handlePriceInputChange}
-                    className="w-20 px-2 py-1 border border-gray-300 rounded-md text-sm text-gray-800"
-                    min={minPrice}
-                    max={maxPrice}
-                  />
-                </div>
-                
-                {/* Dual Handle Slider */}
-                <div className="relative h-8" ref={sliderRef}>
-                  {/* Track */}
-                  <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 rounded-full transform -translate-y-1/2"></div>
-                  
-                  {/* Selected Range */}
-                  <div 
-                    className="absolute top-1/2 h-1 bg-purple-500 rounded-full transform -translate-y-1/2"
-                    style={{
-                      left: `${minThumbPosition}%`,
-                      width: `${maxThumbPosition - minThumbPosition}%`
-                    }}
-                  ></div>
-                  
-                  {/* Min Thumb */}
-                  <div
-                    ref={minThumbRef}
-                    className="absolute top-1/2 w-4 h-4 bg-white border-2 border-purple-500 rounded-full transform -translate-y-1/2 cursor-pointer shadow-md"
-                    style={{ left: `${minThumbPosition}%` }}
-                    onMouseDown={(e) => handleThumbMouseDown(e, 'min')}
-                  ></div>
-                  
-                  {/* Max Thumb */}
-                  <div
-                    ref={maxThumbRef}
-                    className="absolute top-1/2 w-4 h-4 bg-white border-2 border-purple-500 rounded-full transform -translate-y-1/2 cursor-pointer shadow-md"
-                    style={{ left: `${maxThumbPosition}%` }}
-                    onMouseDown={(e) => handleThumbMouseDown(e, 'max')}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Products Grid */}
+        {/* Main content */}
         <div className="flex-1">
           {selectedFilter && (
             <div className="mb-4 flex items-center">

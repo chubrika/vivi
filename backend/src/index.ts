@@ -14,6 +14,7 @@ import filterRoutes from './routes/filterRoutes';
 import adminRoutes from './routes/adminRoutes';
 import orderRoutes from './routes/orderRoutes';
 import courierRoutes from './routes/courierRoutes';
+import widgetGroupRoutes from './routes/widgetGroup.routes';
 
 // Load environment variables based on NODE_ENV
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
@@ -61,6 +62,7 @@ app.use('/api/filters', filterRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/courier', courierRoutes);
+app.use('/api/widget-groups', widgetGroupRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

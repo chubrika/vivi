@@ -1,6 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { ShoppingCart, Search, Package, Truck, Shield, Mail } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 // Dynamically import the ProductSlider component with no SSR
 const ProductSlider = dynamic(() => import('../components/ProductSlider'), {
@@ -22,7 +26,57 @@ const HomeSlider = dynamic(() => import('../components/HomeSlider'), {
   ),
 });
 
+interface Category {
+  categoryId: string;
+  name: string;
+  image: string;
+  slug: string;
+}
+
+interface WidgetGroup {
+  _id: string;
+  groupNumber: number;
+  categories: Category[];
+}
+
 export default function Home() {
+  const router = useRouter();
+  const [widgetGroups, setWidgetGroups] = useState<WidgetGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWidgetGroups = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/widget-groups`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setWidgetGroups(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching widget groups:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWidgetGroups();
+  }, []);
+
+  const handleCategoryClick = (slug: string) => {
+    router.push(`/products?category=${slug}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
@@ -35,16 +89,48 @@ export default function Home() {
       {/* Categories Section */}
       <section className="py-10 bg-white">
         <div className="container mx-auto">
-          <div className="flex flex-wrap gap-2">
-            {['Electronics', 'Groceries', 'Clothing', 'Home & Garden'].map((category) => (
-              <div
-                key={category}
-                className="w-[calc(50%-4px)] h-[200px] bg-purple-200 hover:bg-purple-1200 px-6 py-3 rounded-lg cursor-pointer transition duration-300"
-              >
-                <span className="text-gray-700 hover:text-purple-600 font-medium">{category}</span>
+          {widgetGroups.map((group) => (
+            <div key={group._id} className="mb-12">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Group {group.groupNumber}
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                {group.categories.map((category) => (
+                  <div
+                    key={category.categoryId}
+                    onClick={() => handleCategoryClick(category.slug)}
+                    className="relative w-full h-[200px] bg-purple-200 hover:bg-purple-300 rounded-lg cursor-pointer transition duration-300 overflow-hidden group"
+                  >
+                    {category.image ? (
+                      <img
+                        src={category.image}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-gray-700 group-hover:text-purple-600 font-medium">
+                          {category.name}
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
+                      <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-medium">
+                        {category.name}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+
+          {widgetGroups.length === 0 && (
+            <div className="text-center py-12">
+              <h2 className="text-2xl font-semibold text-gray-700">No Widget Groups Available</h2>
+              <p className="mt-2 text-gray-500">Please add some widget groups from the admin panel.</p>
+            </div>
+          )}
         </div>
       </section>
 

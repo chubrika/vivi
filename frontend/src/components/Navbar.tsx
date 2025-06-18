@@ -9,6 +9,7 @@ import Image from 'next/image';
 import SearchResults from './SearchResults';
 import { Search, ShoppingCart, User, Menu, X } from 'lucide-react';
 import CategoryMenu from './CategoryMenu';
+import { Category } from '../types/category';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -19,15 +20,40 @@ export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const isSeller = user?.role === 'seller';
   const isCourier = user?.role === 'courier';
   const isCourierRoute = pathname?.includes('courier');
 
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const data = await response.json();
+        // Only get root categories (no parent)
+        const rootCategories = data.filter((cat: Category) => !cat.parentId);
+        setCategories(rootCategories);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const navigationItems = [
     { href: '/products', title: 'პროდუქტები' },
     { href: '/shops', title: 'მაღაზიები' },
+    ...categories.map(category => ({
+      href: `/products?category=${category.slug}`,
+      title: category.name
+    }))
   ];
 
   // Check authentication status on component mount and when pathname changes
@@ -105,6 +131,17 @@ export default function Navbar() {
                 className="mr-2"
               />
             </Link>
+            
+            {/* Categories Button */}
+            <button
+              onClick={() => setIsCategoryMenuOpen(true)}
+              className="hidden md:flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-full transition duration-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+              </svg>
+              კატეგორიები
+            </button>
             
             {/* Search Input */}
             <div className="hidden md:block w-[400px]">
@@ -213,14 +250,8 @@ export default function Navbar() {
         </div>
         
         {/* Bottom row with navigation items */}
-        <div className="hidden md:flex items-center h-8 border-t border-gray-100">
+        <div className="hidden md:flex items-center h-10 border-t border-gray-100">
           <div className="flex gap-8">
-            <button
-              onClick={() => setIsCategoryMenuOpen(true)}
-              className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700"
-            >
-              ყველა კატეგორია
-            </button>
             {navigationItems.map((item) => (
               <Link
                 key={item.href}
@@ -229,7 +260,7 @@ export default function Navbar() {
                   pathname === item.href
                     ? 'text-gray-900'
                     : 'text-gray-500 hover:text-gray-700'
-                } inline-flex items-center px-1 pt-1 text-sm font-medium`}
+                } inline-flex items-center px-1 text-sm font-medium`}
               >
                 {item.title}
               </Link>
@@ -263,7 +294,10 @@ export default function Navbar() {
         </div>
       </div>
 
-      <CategoryMenu isOpen={isCategoryMenuOpen} onClose={() => setIsCategoryMenuOpen(false)} />
+      <CategoryMenu 
+        isOpen={isCategoryMenuOpen} 
+        onClose={() => setIsCategoryMenuOpen(false)} 
+      />
     </nav>
   );
 } 
