@@ -141,30 +141,17 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleOpenModal = (product?: Product) => {
-    if (product) {
-      setSelectedProduct(product);
-      setFormData({
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        stock: product.stock,
-        images: product.images,
-        isActive: product.isActive,
-        productFeatureValues: product.productFeatureValues,
-      });
-    } else {
-      setSelectedProduct(undefined);
-      setFormData({
-        name: '',
-        description: '',
-        price: 0,
-        stock: 0,
-        images: [],
-        isActive: true,
-        productFeatureValues: []
-      });
-    }
+  const handleOpenModal = (product: Product) => {
+    setSelectedProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      stock: product.stock,
+      images: product.images,
+      isActive: product.isActive,
+      productFeatureValues: product.productFeatureValues || []
+    });
     setIsModalOpen(true);
   };
 
