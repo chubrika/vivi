@@ -155,7 +155,9 @@ function ProductsPageContent() {
   useEffect(() => {
     if (allProducts.length > 0) {
       const categoryCounts = allProducts.reduce((acc, product) => {
-        const categoryId = product.category._id;
+        const categoryId = typeof product.category === 'object' && product.category !== null
+          ? product.category._id
+          : product.category;
         acc[categoryId] = (acc[categoryId] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
@@ -751,7 +753,11 @@ function ProductsPageContent() {
                       <p className="text-gray-900 font-semibold">{product.price.toFixed(2)} ₾</p>
                       <h2 className="text-sm text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="text-xs text-gray-500">{product.seller?.businessName}</span>
+                        <span className="text-xs text-gray-500">
+                          {typeof product.seller === 'object' && product.seller !== null
+                            ? product.seller.businessName
+                            : ''}
+                        </span>
                       </div>
                     </div>
                   </div>

@@ -9,6 +9,7 @@ import Modal from '../../../components/Modal';
 import ProductForm from '../../../components/ProductForm';
 import ProductsGrid from '../../../components/ProductsGrid';
 import { Product } from '../../../types/product';
+import { Category } from '../../../types/category';
 
 interface FeatureValue {
   type: number;
@@ -25,11 +26,6 @@ interface FeatureGroup {
   featureGroupId: number;
   featureGroupCaption: string;
   features: Feature[];
-}
-
-interface Category {
-  _id: string;
-  name: string;
 }
 
 interface Filter {

@@ -4,7 +4,7 @@ export interface Product {
   description: string;
   price: number;
   stock: number;
-  seller: {
+  seller: string | {
     _id: string;
     firstName?: string;
     lastName?: string;
@@ -12,7 +12,7 @@ export interface Product {
     name?: string;
     email: string;
   };
-  category: {
+  category: string | {
     _id: string;
     name: string;
   };

@@ -19,7 +19,7 @@ export default function AddToCartButton({ product, quantity = 1, className = '' 
       price: product.price,
       quantity: quantity,
       image: product.images[0],
-      sellerId: product.seller._id
+      sellerId: typeof product.seller === 'string' ? product.seller : product.seller._id
     });
   };
 
