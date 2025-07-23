@@ -6,17 +6,15 @@ import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
 import { filtersService, Filter } from '../services/filtersService';
 import { useAuth } from '../utils/authContext';
+import HierarchicalCategorySelect from './HierarchicalCategorySelect';
+import { Category } from '../types/category';
+import { productsService } from '../services/productsService';
 
 // Use dynamic import with no SSR to avoid hydration issues
 const ReactQuill = dynamic(() => import('react-quill'), { 
   ssr: false,
   loading: () => <p>Loading editor...</p>
 });
-
-interface Category {
-  _id: string;
-  name: string;
-}
 
 interface User {
   _id: string;
@@ -70,6 +68,68 @@ interface ProductFormProps {
   onSuccess: () => void;
   isSellerContext?: boolean;
 }
+
+// Add this new component for rendering individual filters
+const FilterInput: React.FC<{
+  filter: Filter;
+  value: string;
+  onChange: (value: string) => void;
+}> = ({ filter, value, onChange }) => {
+  if (filter.type === 'color') {
+    return (
+      <div className="space-y-1">
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+          {filter.config?.options?.map((color) => (
+            <button
+              key={color}
+              type="button"
+              onClick={() => onChange(color)}
+              className={`relative p-1 rounded-lg border-2 transition-all duration-200 ${
+                value === color 
+                  ? 'border-purple-500 ring-2 ring-purple-200' 
+                  : 'border-gray-200 hover:border-purple-300'
+              }`}
+              title={color}
+            >
+              <span 
+                className="block w-full h-8 rounded-md"
+                style={{ backgroundColor: color }}
+              />
+              {value === color && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (filter.type === 'select') {
+    return (
+      <div className="space-y-1">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+        >
+          <option value="">Select {filter.name}</option>
+          {filter.config?.options?.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  }
+
+  return null;
+};
 
 export default function ProductForm({ product, categories, sellers, onClose, onSuccess, isSellerContext = false }: ProductFormProps) {
   const { user } = useAuth();
@@ -164,22 +224,24 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   // Fetch filters when category changes
   useEffect(() => {
     const fetchFilters = async () => {
-      if (category) {
-        try {
-          setFiltersLoading(true);
-          const data = await filtersService.getFiltersByCategory(category);
-          setFilters(data);
-          // Reset selected filters when category changes
-          setSelectedFilters([]);
-        } catch (err) {
-          console.error('Error fetching filters:', err);
-          setFilters([]);
-        } finally {
-          setFiltersLoading(false);
-        }
-      } else {
+      if (!category) {
         setFilters([]);
         setSelectedFilters([]);
+        return;
+      }
+
+      setFiltersLoading(true);
+      try {
+        const categoryFilters = await filtersService.getFiltersByCategory(category);
+        setFilters(categoryFilters);
+        
+        // Reset selected filters when category changes
+        setSelectedFilters([]);
+      } catch (error) {
+        console.error('Error fetching filters:', error);
+        setError('Failed to load filters');
+      } finally {
+        setFiltersLoading(false);
       }
     };
 
@@ -253,45 +315,35 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     setError(null);
 
     try {
-      // Validate seller ID
-      if (!sellerId) {
-        throw new Error('Seller information is required');
-      }
-      
+      // Prepare filter values
+      const filterValues = selectedFilters.map(filterStr => {
+        const [filterId, value] = filterStr.split(':');
+        return {
+          filterId,
+          value
+        };
+      });
+
       const productData = {
         name,
         description,
         price,
         stock,
-        category,
         images,
-        filters: selectedFilters,
-        productFeatureValues: featureGroups,
-        isActive,
+        category,
         seller: sellerId,
+        isActive,
+        productFeatureValues: featureGroups, // Only include the actual feature groups
+        filters: filterValues.map(fv => fv.filterId) // Only include filter IDs
       };
 
-      console.log('Submitting product with seller ID:', sellerId);
-
-      const url = product ? `/api/products/${product._id}` : '/api/products';
-      const method = product ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(productData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save product');
+      if (product?._id) {
+        await productsService.updateProduct(product._id, productData);
+      } else {
+        await productsService.createProduct(productData);
       }
 
       onSuccess();
-      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -482,54 +534,57 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-4">
         <div>
           <label className="block text-gray-700 text-sm font-bold mb-2">
-            კატეგორია
+            Category
           </label>
-          <select
-            id="category"
+          <HierarchicalCategorySelect
+            categories={categories}
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
-          >
-            <option value="">აირჩიე კატეგორია</option>
-            {categories.map((cat) => (
-              <option key={cat._id} value={cat._id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+            onChange={setCategory}
+            required
+          />
         </div>
 
         <div>
-          <label htmlFor="filters" className="block text-sm font-medium text-gray-700 mb-1">
-              ფილტრები
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            Filters
           </label>
-          <select
-            id="filters"
-            multiple
-            value={selectedFilters}
-            onChange={(e) => {
-              const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-              setSelectedFilters(selectedOptions);
-            }}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
-            disabled={!category || filtersLoading}
-          >
+          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
             {filtersLoading ? (
-              <option value="" disabled>Loading filters...</option>
-            ) : filters.length > 0 ? (
-              filters.map((filter) => (
-                <option key={filter._id} value={filter._id}>
-                  {filter.name}
-                </option>
-              ))
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
+                <span className="ml-2 text-gray-500">Loading filters...</span>
+              </div>
             ) : (
-              <option value="" disabled>No filters available for this category</option>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filters.map((filter) => (
+                  <div key={filter._id} className="space-y-2 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <label className="block text-sm font-medium text-gray-700">
+                      {filter.name}
+                      {filter.description && (
+                        <span className="ml-1 text-gray-500 text-xs">
+                          ({filter.description})
+                        </span>
+                      )}
+                    </label>
+                    <FilterInput
+                      filter={filter}
+                      value={selectedFilters.find(f => f.startsWith(`${filter._id}:`))?.split(':')[1] || ''}
+                      onChange={(newValue) => {
+                        const newFilters = selectedFilters.filter(f => !f.startsWith(`${filter._id}:`));
+                        if (newValue) {
+                          newFilters.push(`${filter._id}:${newValue}`);
+                        }
+                        setSelectedFilters(newFilters);
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
             )}
-          </select>
-          <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple filters</p>
+          </div>
         </div>
       </div>
 

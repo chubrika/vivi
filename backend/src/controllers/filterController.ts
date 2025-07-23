@@ -1,15 +1,18 @@
 import { Request, Response } from 'express';
 import Filter from '../models/Filter';
+import Category from '../models/Category';
 
 // Create a new filter
 export const createFilter = async (req: Request, res: Response) => {
   try {
-    const { name, description, category } = req.body;
+    const { name, description, category, type, config } = req.body;
 
     const filter = await Filter.create({
       name,
       description,
-      category
+      category,
+      type,
+      config
     });
 
     res.status(201).json(filter);
@@ -25,11 +28,18 @@ export const getAllFilters = async (req: Request, res: Response) => {
     
     // Add category filter if provided
     if (req.query.category) {
-      query.category = req.query.category;
+      // First try to find the category by slug
+      const category = await Category.findOne({ slug: req.query.category });
+      if (category) {
+        query.category = category._id;
+      } else {
+        // If not found by slug, try using the value directly (for backward compatibility)
+        query.category = req.query.category;
+      }
     }
     
     const filters = await Filter.find(query)
-      .populate('category', 'name')
+      .populate('category', 'name slug')
       .sort({ createdAt: -1 });
       
     res.json(filters);
@@ -57,11 +67,11 @@ export const getFilterById = async (req: Request, res: Response) => {
 // Update a filter
 export const updateFilter = async (req: Request, res: Response) => {
   try {
-    const { name, description, category, isActive } = req.body;
+    const { name, description, category, type, config, isActive } = req.body;
     
     const filter = await Filter.findByIdAndUpdate(
       req.params.id,
-      { name, description, category, isActive },
+      { name, description, category, type, config, isActive },
       { new: true, runValidators: true }
     ).populate('category', 'name');
     

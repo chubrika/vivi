@@ -9,6 +9,24 @@ import { filtersService, Filter, CreateFilterData, UpdateFilterData } from '../.
 interface Category {
   _id: string;
   name: string;
+  slug: string;
+  children?: Category[];
+}
+
+type FilterType = 'select' | 'range' | 'color' | 'boolean';
+
+interface FormData {
+  name: string;
+  description: string;
+  category: string;
+  type: FilterType;
+  config?: {
+    options?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+  };
 }
 
 const FiltersPage = () => {
@@ -19,10 +37,18 @@ const FiltersPage = () => {
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<Filter | undefined>(undefined);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
     category: '',
+    type: 'select',
+    config: {
+      options: [''],
+      min: 0,
+      max: 100,
+      step: 1,
+      unit: '',
+    },
   });
 
   const fetchFilters = async () => {
@@ -69,6 +95,8 @@ const FiltersPage = () => {
         name: filter.name,
         description: filter.description,
         category: filter.category._id,
+        type: filter.type,
+        config: filter.config,
       });
     } else {
       setSelectedFilter(undefined);
@@ -76,6 +104,14 @@ const FiltersPage = () => {
         name: '',
         description: '',
         category: '',
+        type: 'select',
+        config: {
+          options: [''],
+          min: 0,
+          max: 100,
+          step: 1,
+          unit: '',
+        },
       });
     }
     setIsModalOpen(true);
@@ -87,6 +123,14 @@ const FiltersPage = () => {
       name: '',
       description: '',
       category: '',
+      type: 'select',
+      config: {
+        options: [''],
+        min: 0,
+        max: 100,
+        step: 1,
+        unit: '',
+      },
     });
     setIsModalOpen(false);
   };
@@ -100,6 +144,8 @@ const FiltersPage = () => {
           name: formData.name,
           description: formData.description,
           category: formData.category,
+          type: formData.type,
+          config: formData.config,
         };
         await filtersService.updateFilter(selectedFilter._id, updateData);
       } else {
@@ -108,6 +154,8 @@ const FiltersPage = () => {
           name: formData.name,
           description: formData.description,
           category: formData.category,
+          type: formData.type,
+          config: formData.config,
         };
         await filtersService.createFilter(createData);
       }
@@ -130,6 +178,64 @@ const FiltersPage = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
+  };
+
+  const handleOptionChange = (index: number, value: string) => {
+    const newOptions = [...formData.config?.options || []];
+    newOptions[index] = value;
+    setFormData({
+      ...formData,
+      config: {
+        ...formData.config,
+        options: newOptions,
+      },
+    });
+  };
+
+  const addOption = () => {
+    setFormData({
+      ...formData,
+      config: {
+        ...formData.config,
+        options: [...formData.config?.options || [], ''],
+      },
+    });
+  };
+
+  const removeOption = (index: number) => {
+    const newOptions = formData.config?.options?.filter((_, i) => i !== index) || [];
+    setFormData({
+      ...formData,
+      config: {
+        ...formData.config,
+        options: newOptions,
+      },
+    });
+  };
+
+  const handleTypeChange = (type: FilterType) => {
+    setFormData({
+      ...formData,
+      type,
+      config: {
+        options: type === 'boolean' ? ['Yes', 'No'] : [''],
+        min: 0,
+        max: 100,
+        step: 1,
+        unit: '',
+      },
+    });
+  };
+
+  const renderCategoryOptions = (categories: Category[], level: number = 0) => {
+    return categories.map((category) => (
+      <React.Fragment key={category._id}>
+        <option value={category._id} className={level > 0 ? `pl-${level * 4}` : ''}>
+          {'\u00A0'.repeat(level * 4)}{category.name} ({category.slug})
+        </option>
+        {category.children && renderCategoryOptions(category.children, level + 1)}
+      </React.Fragment>
+    ));
   };
 
   if (!isAuthenticated) {
@@ -208,8 +314,7 @@ const FiltersPage = () => {
           <div className="p-6">
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
-                
-              <div>
+                <div>
                   <label htmlFor="category" className="block text-sm font-medium text-gray-700">
                     Category
                   </label>
@@ -221,13 +326,28 @@ const FiltersPage = () => {
                     required
                   >
                     <option value="">Select a category</option>
-                    {categories.map((category) => (
-                      <option key={category._id} value={category._id}>
-                        {category.name}
-                      </option>
-                    ))}
+                    {renderCategoryOptions(categories)}
                   </select>
                 </div>
+
+                <div>
+                  <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+                    Filter Type
+                  </label>
+                  <select
+                    id="type"
+                    value={formData.type}
+                    onChange={(e) => handleTypeChange(e.target.value as FilterType)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                    required
+                  >
+                    <option value="select">Select (Multiple Options)</option>
+                    <option value="range">Range (Min-Max)</option>
+                    <option value="color">Color</option>
+                    <option value="boolean">Boolean (Yes/No)</option>
+                  </select>
+                </div>
+
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                     Name
@@ -241,6 +361,7 @@ const FiltersPage = () => {
                     required
                   />
                 </div>
+
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                     Description
@@ -253,7 +374,145 @@ const FiltersPage = () => {
                     rows={3}
                   />
                 </div>
+
+                {formData.type === 'select' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Options
+                    </label>
+                    {formData.config?.options?.map((option, index) => (
+                      <div key={index} className="flex items-center space-x-2 mb-2">
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleOptionChange(index, e.target.value)}
+                          className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                          placeholder={`Option ${index + 1}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeOption(index)}
+                          className="px-3 py-2 text-red-600 hover:text-red-800"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addOption}
+                      className="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                    >
+                      Add Option
+                    </button>
+                  </div>
+                )}
+
+                {formData.type === 'range' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="min" className="block text-sm font-medium text-gray-700">
+                        Minimum Value
+                      </label>
+                      <input
+                        type="number"
+                        id="min"
+                        value={formData.config?.min}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          config: { ...formData.config, min: Number(e.target.value) }
+                        })}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="max" className="block text-sm font-medium text-gray-700">
+                        Maximum Value
+                      </label>
+                      <input
+                        type="number"
+                        id="max"
+                        value={formData.config?.max}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          config: { ...formData.config, max: Number(e.target.value) }
+                        })}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="step" className="block text-sm font-medium text-gray-700">
+                        Step
+                      </label>
+                      <input
+                        type="number"
+                        id="step"
+                        value={formData.config?.step}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          config: { ...formData.config, step: Number(e.target.value) }
+                        })}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="unit" className="block text-sm font-medium text-gray-700">
+                        Unit (e.g., kg, cm, $)
+                      </label>
+                      <input
+                        type="text"
+                        id="unit"
+                        value={formData.config?.unit}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          config: { ...formData.config, unit: e.target.value }
+                        })}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.type === 'color' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Color Options
+                    </label>
+                    {formData.config?.options?.map((option, index) => (
+                      <div key={index} className="flex items-center space-x-2 mb-2">
+                        <input
+                          type="color"
+                          value={option}
+                          onChange={(e) => handleOptionChange(index, e.target.value)}
+                          className="w-12 h-12 rounded border border-gray-200"
+                        />
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleOptionChange(index, e.target.value)}
+                          className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                          placeholder={`Color ${index + 1}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeOption(index)}
+                          className="px-3 py-2 text-red-600 hover:text-red-800"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addOption}
+                      className="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                    >
+                      Add Color
+                    </button>
+                  </div>
+                )}
               </div>
+
               <div className="mt-6 flex justify-end space-x-3">
                 <button
                   type="button"

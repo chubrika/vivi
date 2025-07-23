@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import Product from '../models/Product';
 import User from '../models/User';
+import Category from '../models/Category';
+import Filter from '../models/Filter';
 
 // Get all products
 export const getAllProducts = async (req: Request, res: Response) => {
@@ -9,23 +11,79 @@ export const getAllProducts = async (req: Request, res: Response) => {
     
     // Add category filter if provided
     if (req.query.category) {
-      query.category = req.query.category;
+      // First try to find the category by slug
+      const category = await Category.findOne({ slug: req.query.category });
+      if (category) {
+        query.category = category._id;
+      } else {
+        // If not found by slug, try using the value directly (for backward compatibility)
+        query.category = req.query.category;
+      }
     }
     
     // Add seller filter if provided
     if (req.query.seller) {
       query.seller = req.query.seller;
     }
-    
-    // Add filter filter if provided
-    if (req.query.filter) {
-      query.filters = req.query.filter;
+
+    // Handle filter parameters
+    const filterParams = Object.entries(req.query)
+      .filter(([key]) => {
+        // Check if the key matches any filter ID in the database
+        return key !== 'category' && key !== 'seller' && key !== 'minPrice' && key !== 'maxPrice';
+      })
+      .map(([key, value]) => ({
+        filterId: key,
+        values: (value as string).split(',')
+      }));
+
+    if (filterParams.length > 0) {
+      // Get all filters to determine their types
+      const filters = await Filter.find({
+        _id: { $in: filterParams.map(fp => fp.filterId) }
+      });
+
+      // Build filter conditions
+      const filterConditions = filterParams.map(fp => {
+        const filter = filters.find(f => f._id.toString() === fp.filterId);
+        if (!filter) return null;
+
+        if (filter.type === 'color') {
+          // For color filters, match products that have any of the selected colors
+          return {
+            'filters': filter._id,
+            'productFeatureValues.features.featureValues.featureValue': { $in: fp.values }
+          };
+        } else if (filter.type === 'select') {
+          // For select filters, match products that have any of the selected options
+          return {
+            'filters': filter._id,
+            'productFeatureValues.features.featureValues.featureValue': { $in: fp.values }
+          };
+        }
+        return null;
+      }).filter(Boolean);
+
+      if (filterConditions.length > 0) {
+        query.$and = filterConditions;
+      }
+    }
+
+    // Add price range filter if provided
+    if (req.query.minPrice || req.query.maxPrice) {
+      query.price = {};
+      if (req.query.minPrice) {
+        query.price.$gte = Number(req.query.minPrice);
+      }
+      if (req.query.maxPrice) {
+        query.price.$lte = Number(req.query.maxPrice);
+      }
     }
     
     const products = await Product.find(query)
       .populate('seller', 'firstName lastName businessName email')
-      .populate('category', 'name')
-      .populate('filters', 'name description')
+      .populate('category', 'name slug parentId')
+      .populate('filters', 'name description type config')
       .sort({ createdAt: -1 });
       
     res.json(products);
@@ -75,6 +133,15 @@ export const createProduct = async (req: Request, res: Response) => {
     
     if (seller.role !== 'seller') {
       return res.status(400).json({ message: 'The specified user is not a seller' });
+    }
+
+    // Process filters to extract filter IDs
+    if (req.body.filters && Array.isArray(req.body.filters)) {
+      req.body.filters = req.body.filters.map((filter: string) => {
+        // Extract filter ID from the format "filterId:value"
+        const [filterId] = filter.split(':');
+        return filterId;
+      });
     }
     
     const product = new Product(req.body);

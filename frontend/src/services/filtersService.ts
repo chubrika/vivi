@@ -9,6 +9,15 @@ export interface Filter {
     _id: string;
     name: string;
   };
+  type: 'select' | 'range' | 'color' | 'boolean';
+  config?: {
+    options?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+    color?: string;
+  };
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -18,12 +27,30 @@ export interface CreateFilterData {
   name: string;
   description: string;
   category: string;
+  type: 'select' | 'range' | 'color' | 'boolean';
+  config?: {
+    options?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+    color?: string;
+  };
 }
 
 export interface UpdateFilterData {
   name?: string;
   description?: string;
   category?: string;
+  type?: 'select' | 'range' | 'color' | 'boolean';
+  config?: {
+    options?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+    color?: string;
+  };
   isActive?: boolean;
 }
 
@@ -92,17 +119,17 @@ export const filtersService = {
   },
 
   /**
-   * Get filters by category ID
-   * @param categoryId Category ID
+   * Get filters by category slug
+   * @param categorySlug Category slug
    * @returns Promise<Filter[]> Array of filters for the specified category
    */
-  async getFiltersByCategory(categoryId: string): Promise<Filter[]> {
+  async getFiltersByCategory(categorySlug: string): Promise<Filter[]> {
     const token = getToken();
     if (!token) {
       throw new Error('Authentication required');
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/filters?category=${categoryId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/filters?category=${categorySlug}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
