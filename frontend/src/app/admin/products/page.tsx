@@ -8,6 +8,7 @@ import Modal from '../../../components/Modal';
 import ProductForm from '../../../components/ProductForm';
 import ProductsGrid from '../../../components/ProductsGrid';
 import { Product, FeatureGroup } from '../../../types/product';
+import { Category } from '../../../types/category';
 import toast, { Toaster } from 'react-hot-toast';
 import { FiEdit, FiTrash2, FiPlus } from 'react-icons/fi';
 
@@ -20,11 +21,6 @@ interface Feature {
   featureId: number;
   featureCaption: string;
   featureValues: FeatureValue[];
-}
-
-interface Category {
-  _id: string;
-  name: string;
 }
 
 interface Seller {

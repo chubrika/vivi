@@ -5,7 +5,7 @@ import AddToCartButton from './AddToCartButton';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
-import { Product, FeatureGroup } from '../types/product';
+import { Product } from '../types/product';
 import { ShoppingCart } from 'lucide-react';
 
 interface FeatureValue {
@@ -171,7 +171,12 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                             <div className="w-full md:w-2/5">
                                 <div className="border-b border-gray-200 py-3">
                                     <h2 className="text-sm font-semibold text-gray-900">მაღაზია</h2>
-                                    <p className="text-gray-600 text-sm">{product.seller?.businessName || product.seller?.name || 'Unknown Seller'}</p>
+                                    <p className="text-gray-600 text-sm">
+                                        {typeof product.seller === 'object' 
+                                            ? (product.seller.businessName || product.seller.name || 'Unknown Seller')
+                                            : 'Unknown Seller'
+                                        }
+                                    </p>
                                 </div>
 
                                 <div>

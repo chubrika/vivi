@@ -124,7 +124,11 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Category</h2>
-                <p className="mt-1 text-gray-600">{product.category?.name}</p>
+                <p className="mt-1 text-gray-600">
+                  {typeof product.category === 'object' && product.category !== null
+                    ? product.category.name
+                    : ''}
+                </p>
               </div>
 
               <div>
@@ -137,7 +141,11 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Seller</h2>
-                <p className="mt-1 text-gray-600">{product.seller.name}</p>
+                <p className="mt-1 text-gray-600">
+                  {typeof product.seller === 'object' && product.seller !== null
+                    ? product.seller.name || `${product.seller.firstName} ${product.seller.lastName}` || product.seller.businessName
+                    : ''}
+                </p>
               </div>
 
               <div className="pt-6">

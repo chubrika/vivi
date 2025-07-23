@@ -205,8 +205,8 @@ export default function SellerDetailPage() {
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">{product.name}</h3>
                   <p className="text-purple-600 font-medium">{product.price.toFixed(2)} ₾</p>
-                  {product.category && (
-                    <p className="text-sm text-gray-500 mt-1">{product.category?.name}</p>
+                  {product.category && typeof product.category === 'object' && (
+                    <p className="text-sm text-gray-500 mt-1">{product.category.name}</p>
                   )}
                   <div className="mt-2 flex items-center">
                     <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
