@@ -36,8 +36,20 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 
 // CORS configuration
+const allowedOrigins = [
+  'https://www.vivi.ge',
+  'https://vivi.ge', // optional, for non-www
+  'http://localhost:3000', // for development
+];
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: function (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };
