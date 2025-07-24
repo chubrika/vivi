@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IWidgetGroup extends Document {
   groupNumber: number;
@@ -27,7 +27,8 @@ const widgetGroupSchema = new Schema({
 // Add a pre-save middleware to automatically set the group number
 widgetGroupSchema.pre('save', async function(next) {
   if (this.isNew) {
-    const lastGroup = await this.constructor.findOne({}, {}, { sort: { 'groupNumber': -1 } });
+    const model = this.constructor as Model<IWidgetGroup>;
+    const lastGroup = await model.findOne({}, {}, { sort: { groupNumber: -1 } });
     this.groupNumber = lastGroup ? lastGroup.groupNumber + 1 : 1;
   }
   next();
