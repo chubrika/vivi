@@ -8,6 +8,8 @@ import CartProviderWrapper from '../components/CartProviderWrapper';
 import Footer from '../components/Footer';
 import MobileBottomNav from '../components/MobileBottomNav';
 import { CategoryMenuProvider } from '../contexts/CategoryMenuContext';
+import { LoginSidebarProvider } from '../contexts/LoginSidebarContext';
+import LoginSidebarWrapper from '../components/LoginSidebarWrapper';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,14 +29,17 @@ export default function RootLayout({
         <AuthProviderWrapper>
           <CartProviderWrapper>
             <CategoryMenuProvider>
-              <div className="flex flex-col min-h-screen">
-                <NavbarWrapper />
-                <main className="flex-grow mt-[100px] md:mt-[130px] pb-16 md:pb-0">
-                  {children}
-                </main>
-                <MobileBottomNav />
-                <Footer />
-              </div>
+              <LoginSidebarProvider>
+                <div className="flex flex-col min-h-screen">
+                  <NavbarWrapper />
+                  <main className="flex-grow mt-[100px] md:mt-[130px] pb-16 md:pb-0">
+                    {children}
+                  </main>
+                  <MobileBottomNav />
+                  <Footer />
+                </div>
+                <LoginSidebarWrapper />
+              </LoginSidebarProvider>
             </CategoryMenuProvider>
           </CartProviderWrapper>
         </AuthProviderWrapper>

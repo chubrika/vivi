@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
 import { useCategoryMenu } from '../contexts/CategoryMenuContext';
+import { useLoginSidebar } from '../contexts/LoginSidebarContext';
 import Image from 'next/image';
 import SearchResults from './SearchResults';
 import { Search, ShoppingCart, User, Menu, X, MessageCircle } from 'lucide-react';
@@ -17,6 +18,7 @@ export default function Navbar() {
   const { isAuthenticated, logout, user } = useAuth();
   const { totalItems } = useCart();
   const { isCategoryMenuOpen, toggleCategoryMenu, closeCategoryMenu } = useCategoryMenu();
+  const { openLoginSidebar } = useLoginSidebar();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -222,12 +224,12 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center gap-4 hidden md:flex">
-                <Link
-                  href="/login"
+                <button
+                  onClick={openLoginSidebar}
                   className="px-4 py-2 text-sm font-medium rounded-full text-purple-600 hover:bg-purple-50 transition duration-300"
                 >
                   შესვლა
-                </Link>
+                </button>
               </div>
             )}
           </div>
