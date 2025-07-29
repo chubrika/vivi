@@ -154,6 +154,20 @@
   color: #9333ea; /* Purple-600 */
 }
 
+/* Hide swiper navigation arrows on mobile */
+@media (max-width: 767px) {
+  .product-swiper .swiper-button-next,
+  .product-swiper .swiper-button-prev {
+    display: none !important;
+  }
+  
+  /* Also hide navigation for HomeSlider */
+  .swiper-button-next,
+  .swiper-button-prev {
+    display: none !important;
+  }
+}
+
 .product-swiper .swiper-pagination-bullet-active {
   background: #9333ea; /* Purple-600 */
 }
