@@ -199,7 +199,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                 {/* Price */}
                                 <div>
                                     <p className="text-2xl font-semibold text-purple-600">
-                                        ${product.price.toFixed(2)}
+                                        {product.price.toFixed(2)} ₾
                                     </p>
                                 </div>
 

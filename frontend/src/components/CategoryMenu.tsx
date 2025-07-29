@@ -81,7 +81,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
       ) : error ? (
         <div className="text-red-500 text-center py-8">{error}</div>
       ) : (
-        <div className="container mx-auto px-4 py-8 border border-gray-200 border-t-0 rounded-md bg-white box-shadow-md">
+        <div className="mx-auto px-4 py-8 border border-gray-200 border-t-0 rounded-md bg-white box-shadow-md h-[100vh]">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg md:text-xl font-bold text-gray-900">კატეგორიები</h2>
             <button

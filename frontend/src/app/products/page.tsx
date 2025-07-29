@@ -43,6 +43,9 @@ function ProductsPageContent() {
   const [productsLoading, setProductsLoading] = useState(false);
   const [filtersLoading, setFiltersLoading] = useState(false);
   
+  // Mobile sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   // Price range state
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(1000);
@@ -462,6 +465,9 @@ function ProductsPageContent() {
     }
     
     router.push(`/products?${params.toString()}`, { scroll: false });
+    
+    // Close sidebar on mobile after selection
+    setIsSidebarOpen(false);
   };
 
   const handleFilterSelect = async (filterId: string | null) => {
@@ -609,176 +615,225 @@ function ProductsPageContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex gap-8">
-        {/* Left sidebar with categories and filters */}
-        <div className="w-64 space-y-6">
-          <CategoryNavigation 
-            categories={categories} 
-            selectedCategorySlug={selectedCategory} 
-          />
-          
-          {/* Filters section */}
-          {filters.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">ფილტრები</h3>
-              <div >
-                {filtersLoading ? (
-                  <div className="animate-pulse space-y-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="h-6 bg-gray-200 rounded"></div>
-                    ))}
-                  </div>
-                ) : (
-                  filters
-                    .map((filter) => (
-                      <div key={filter._id} className="border-b border-gray-200 overflow-hidden">
-                        <button
-                          onClick={() => toggleFilterExpansion(filter._id)}
-                          className="w-full flex items-center justify-between pt-3 pb-3 hover:bg-gray-50 transition-colors"
-                        >
-                          <h3 className="text-sm font-medium text-gray-900">{filter.name}</h3>
-                          <svg
-                            className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${
-                              expandedFilters[filter._id] ? 'rotate-180' : ''
-                            }`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                        <div
-                          className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                            expandedFilters[filter._id] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                          }`}
-                        >
-                          <div className="p-3 pt-0">
-                            {filter.type === 'color' && filter.config?.options && (
-                              <div className="grid grid-cols-4 gap-2">
-                                {filter.config.options.map((color) => (
-                                  <button
-                                    key={color}
-                                    className={`w-8 h-8 rounded-full cursor-pointer border-2 transition-colors ${
-                                      selectedColors[filter._id]?.includes(color)
-                                        ? 'border-purple-500'
-                                        : 'border-gray-200 hover:border-purple-500'
-                                    }`}
-                                    style={{ backgroundColor: color }}
-                                    title={color}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleColorSelect(filter._id, color);
-                                    }}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                            {filter.type === 'select' && filter.config?.options && (
-                              <div className="space-y-2">
-                                {filter.config.options.map((option) => (
-                                  <div key={option} className="flex items-center">
-                                    <input
-                                      type="checkbox"
-                                      id={`${filter._id}-${option}`}
-                                      checked={selectedOptions[filter._id]?.includes(option) || false}
-                                      onChange={(e) => {
-                                        e.stopPropagation();
-                                        handleOptionSelect(filter._id, option);
-                                      }}
-                                      className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                                    />
-                                    <label
-                                      htmlFor={`${filter._id}-${option}`}
-                                      className="ml-2 block text-sm text-gray-700 cursor-pointer"
-                                    >
-                                      {option}
-                                    </label>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                )}
-              </div>
-            </div>
-          )}
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header with Filter Button - Only visible on mobile */}
+      <div className="lg:hidden bg-white shadow-sm border-b">
+        <div className="flex items-center justify-between p-4">
+          <h1 className="text-lg font-semibold text-gray-900">პროდუქტები</h1>
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="flex items-center space-x-2 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+            </svg>
+            <span>ფილტრები</span>
+          </button>
         </div>
+      </div>
 
-        {/* Main content */}
-        <div className="flex-1">
-          {selectedFilter && (
-            <div className="mb-4 flex items-center">
-              <span className="text-sm text-gray-600 mr-2">Filtered by:</span>
-              <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                {filters.find(f => f._id === selectedFilter)?.name || 'Filter'}
-              </span>
-              <button 
-                onClick={() => handleFilterSelect(null)}
-                className="ml-2 text-gray-500 hover:text-gray-700"
+      <div className="flex">
+        {/* Mobile Sidebar Overlay - Only on mobile */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <div className={`
+          fixed lg:static inset-y-0 left-0 z-50 w-80 bg-white shadow-lg lg:shadow-none
+          transform transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          lg:inset-y-auto lg:left-auto lg:z-auto
+        `}>
+          <div className="h-full overflow-y-auto p-4 lg:p-6 space-y-6">
+            {/* Mobile Close Button - Only visible on mobile */}
+            <div className="flex items-center justify-between lg:hidden">
+              <h2 className="text-lg font-semibold text-gray-900">ფილტრები</h2>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-2 text-gray-500 hover:text-gray-700"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {productsLoading ? (
-              // Show skeleton loaders while products are loading
-              Array(6).fill(0).map((_, index) => (
-                <ProductSkeleton key={index} />
-              ))
-            ) : (
-              // Show actual products when loaded
-              filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
-                  <div
-                    key={product._id}
-                    className="bg-white rounded-lg transition-all duration-300 hover:border hover:border-purple-600 overflow-hidden cursor-pointer"
-                    onClick={() => handleProductSelect(product)}
-                  >
-                    <div className="relative aspect-square">
-                      <img
-                        src={product.images[0] || 'https://via.placeholder.com/400'}
-                        alt={product.name}
-                        className="object-cover w-full h-full"
-                      />
+
+            <CategoryNavigation 
+              categories={categories} 
+              selectedCategorySlug={selectedCategory} 
+            />
+            
+            {/* Filters section */}
+            {filters.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-4 border">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">ფილტრები</h3>
+                <div>
+                  {filtersLoading ? (
+                    <div className="animate-pulse space-y-2">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="h-6 bg-gray-200 rounded"></div>
+                      ))}
                     </div>
-                    <div className="p-4">
-                      <p className="text-gray-900 font-semibold">{product.price.toFixed(2)} ₾</p>
-                      <h2 className="text-sm text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
-                      <div className="mt-2 flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
-                          {typeof product.seller === 'object' && product.seller !== null
-                            ? product.seller.businessName
-                            : ''}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  ) : (
+                    filters
+                      .map((filter) => (
+                        <div key={filter._id} className="border-b border-gray-200 overflow-hidden">
+                          <button
+                            onClick={() => toggleFilterExpansion(filter._id)}
+                            className="w-full flex items-center justify-between pt-3 pb-3 hover:bg-gray-50 transition-colors"
+                          >
+                            <h3 className="text-sm font-medium text-gray-900">{filter.name}</h3>
+                            <svg
+                              className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${
+                                expandedFilters[filter._id] ? 'rotate-180' : ''
+                              }`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          <div
+                            className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                              expandedFilters[filter._id] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                            }`}
+                          >
+                            <div className="p-3 pt-0">
+                              {filter.type === 'color' && filter.config?.options && (
+                                <div className="grid grid-cols-4 gap-2">
+                                  {filter.config.options.map((color) => (
+                                    <button
+                                      key={color}
+                                      className={`w-8 h-8 rounded-full cursor-pointer border-2 transition-colors ${
+                                        selectedColors[filter._id]?.includes(color)
+                                          ? 'border-purple-500'
+                                          : 'border-gray-200 hover:border-purple-500'
+                                      }`}
+                                      style={{ backgroundColor: color }}
+                                      title={color}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleColorSelect(filter._id, color);
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                              {filter.type === 'select' && filter.config?.options && (
+                                <div className="space-y-2">
+                                  {filter.config.options.map((option) => (
+                                    <div key={option} className="flex items-center">
+                                      <input
+                                        type="checkbox"
+                                        id={`${filter._id}-${option}`}
+                                        checked={selectedOptions[filter._id]?.includes(option) || false}
+                                        onChange={(e) => {
+                                          e.stopPropagation();
+                                          handleOptionSelect(filter._id, option);
+                                        }}
+                                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                      />
+                                      <label
+                                        htmlFor={`${filter._id}-${option}`}
+                                        className="ml-2 block text-sm text-gray-700 cursor-pointer"
+                                      >
+                                        {option}
+                                      </label>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 min-w-0">
+          <div className="p-4 lg:p-8">
+            {/* Active Filters Display */}
+            {selectedFilter && (
+              <div className="mb-4 flex items-center flex-wrap gap-2">
+                <span className="text-sm text-gray-600">Filtered by:</span>
+                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                  {filters.find(f => f._id === selectedFilter)?.name || 'Filter'}
+                </span>
+                <button 
+                  onClick={() => handleFilterSelect(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {/* Products Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+              {productsLoading ? (
+                // Show skeleton loaders while products are loading
+                Array(10).fill(0).map((_, index) => (
+                  <ProductSkeleton key={index} />
                 ))
               ) : (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-gray-500 text-lg">პროდუქტები არ მოიძებნა</p>
-                  <button 
-                    onClick={() => {
-                      handleFilterSelect(null);
-                      setPriceRange([minPrice, maxPrice]);
-                      setMinPriceInput(minPrice.toString());
-                      setMaxPriceInput(maxPrice.toString());
-                    }}
-                    className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-                  >
-                    ფილტრის გასუფთავება
-                  </button>
-                </div>
-              )
-            )}
+                // Show actual products when loaded
+                filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <div
+                      key={product._id}
+                      className="bg-white rounded-lg transition-all duration-300 hover:border hover:border-purple-600 overflow-hidden cursor-pointer shadow-sm hover:shadow-md"
+                      onClick={() => handleProductSelect(product)}
+                    >
+                      <div className="relative aspect-square">
+                        <img
+                          src={product.images[0] || 'https://via.placeholder.com/400'}
+                          alt={product.name}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                      <div className="p-3 sm:p-4">
+                        <p className="text-gray-900 font-semibold text-sm sm:text-base">{product.price.toFixed(2)} ₾</p>
+                        <h2 className="text-xs sm:text-sm text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="text-xs text-gray-500 truncate">
+                            {typeof product.seller === 'object' && product.seller !== null
+                              ? product.seller.businessName
+                              : ''}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-gray-500 text-lg">პროდუქტები არ მოიძებნა</p>
+                    <button 
+                      onClick={() => {
+                        handleFilterSelect(null);
+                        setPriceRange([minPrice, maxPrice]);
+                        setMinPriceInput(minPrice.toString());
+                        setMaxPriceInput(maxPrice.toString());
+                      }}
+                      className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+                    >
+                      ფილტრის გასუფთავება
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </div>
       </div>

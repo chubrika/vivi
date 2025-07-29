@@ -109,7 +109,7 @@ const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
                 )}
               </div>
               <div className="pt-5 flex-grow flex flex-col">
-                <span className="text-gray-900 font-bold">${product.price.toFixed(2)}</span>
+                <span className="text-gray-900 font-bold">{product.price.toFixed(2)} ₾</span>
                 <h3 className="text-md mb-2 text-gray-900 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h3>
                 <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                   {typeof product.seller === 'object' && product.seller !== null ? product.seller.businessName : product.seller}

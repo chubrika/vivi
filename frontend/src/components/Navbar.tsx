@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
+import { useCategoryMenu } from '../contexts/CategoryMenuContext';
 import Image from 'next/image';
 import SearchResults from './SearchResults';
-import { Search, ShoppingCart, User, Menu, X } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, MessageCircle } from 'lucide-react';
 import CategoryMenu from './CategoryMenu';
 import { Category } from '../types/category';
 
@@ -15,11 +16,11 @@ export default function Navbar() {
   const pathname = usePathname();
   const { isAuthenticated, logout, user } = useAuth();
   const { totalItems } = useCart();
+  const { isCategoryMenuOpen, toggleCategoryMenu, closeCategoryMenu } = useCategoryMenu();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -109,7 +110,12 @@ export default function Navbar() {
     setDropdownOpen(!dropdownOpen);
   };
 
-  const toggleCategoryMenu = () => setIsCategoryMenuOpen(prev => !prev);
+  // Function to open Tawk.to chat
+  const openChat = () => {
+    if (typeof window !== 'undefined' && (window as any).Tawk_API) {
+      (window as any).Tawk_API.maximize();
+    }
+  };
 
   const isActive = (path: string) => pathname === path;
 
@@ -123,26 +129,24 @@ export default function Navbar() {
       <div className="container mx-auto px-4">
         {/* Top row with logo, search, and user controls */}
         <div className="flex items-center justify-between h-20">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 md:gap-8">
             <Link href="/" className="flex items-center">
               <Image
                 src="/img/logo.png"
                 alt="Logo"
                 width={80}
                 height={80}
-                className="mr-2"
+                className="mr-2 w-12 h-12 md:w-auto md:h-auto"
               />
             </Link>
             
-    
-            
             {/* Search Input */}
-            <div className="hidden md:block w-[400px]">
+            <div className="flex-1 md:w-[400px] md:flex-none">
               <div className="relative" ref={searchRef}>
                 <input
                   type="text"
                   placeholder="ძიება..."
-                  className="w-full px-4 py-2.5 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-50"
+                  className="w-full text-gray-500 px-4 py-2.5 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-50"
                   value={searchTerm}
                   onChange={handleSearchChange}
                 />
@@ -159,10 +163,19 @@ export default function Navbar() {
             </div>
           </div>
           
-          <div className="flex items-center gap-6">
-            {/* Cart Icon - Only show for non-sellers and non-couriers */}
+          <div className="flex items-center gap-4 md:gap-6">
+            {/* Chat Icon - Mobile Only */}
+            <button
+              onClick={openChat}
+              className="md:hidden p-2 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors"
+              title="Chat with us"
+            >
+              <MessageCircle className="h-5 w-5" />
+            </button>
+
+            {/* Cart Icon - Only show for non-sellers and non-couriers on desktop */}
             {!isSeller && !isCourier && (
-              <Link href="/cart" className="relative">
+              <Link href="/cart" className="relative hidden md:block">
                 <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition duration-300">
                   <ShoppingCart className="h-5 w-5" />
                   {totalItems > 0 && (
@@ -175,7 +188,7 @@ export default function Navbar() {
             )}
             
             {isAuthenticated ? (
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative hidden md:block" ref={dropdownRef}>
                 <button
                   onClick={toggleDropdown}
                   className="flex items-center focus:outline-none"
@@ -208,37 +221,15 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 hidden md:flex">
                 <Link
                   href="/login"
                   className="px-4 py-2 text-sm font-medium rounded-full text-purple-600 hover:bg-purple-50 transition duration-300"
                 >
-                  Login
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-4 py-2 text-sm font-medium rounded-full text-white bg-purple-600 hover:bg-purple-700 transition duration-300"
-                >
-                  Register
+                  შესვლა
                 </Link>
               </div>
             )}
-
-            {/* Mobile menu button */}
-            <button
-              type="button"
-              onClick={toggleMobileMenu}
-              className="md:hidden p-2 rounded-full text-gray-500 hover:bg-gray-100 transition duration-300"
-              aria-controls="mobile-menu"
-              aria-expanded={mobileMenuOpen}
-            >
-              <span className="sr-only">Open main menu</span>
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
           </div>
         </div>
         
@@ -298,7 +289,7 @@ export default function Navbar() {
 
       <CategoryMenu 
         isOpen={isCategoryMenuOpen} 
-        onClose={() => setIsCategoryMenuOpen(false)} 
+        onClose={closeCategoryMenu} 
       />
     </nav>
   );
