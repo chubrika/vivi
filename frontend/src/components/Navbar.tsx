@@ -48,7 +48,7 @@ export default function Navbar() {
   }, []);
 
   const navigationItems = [
-    { href: '/products', title: 'პროდუქტები' },
+    // { href: '/products', title: 'პროდუქტები' },
     { href: '/shops', title: 'მაღაზიები' },
     ...categories.map(category => ({
       href: `/products?category=${category.slug}`,
@@ -109,6 +109,8 @@ export default function Navbar() {
     setDropdownOpen(!dropdownOpen);
   };
 
+  const toggleCategoryMenu = () => setIsCategoryMenuOpen(prev => !prev);
+
   const isActive = (path: string) => pathname === path;
 
   // If URL contains 'courier', don't render the navbar
@@ -132,16 +134,7 @@ export default function Navbar() {
               />
             </Link>
             
-            {/* Categories Button */}
-            <button
-              onClick={() => setIsCategoryMenuOpen(true)}
-              className="hidden md:flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-full transition duration-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-              </svg>
-              კატეგორიები
-            </button>
+    
             
             {/* Search Input */}
             <div className="hidden md:block w-[400px]">
@@ -252,6 +245,15 @@ export default function Navbar() {
         {/* Bottom row with navigation items */}
         <div className="hidden md:flex items-center h-10 border-t border-gray-100">
           <div className="flex gap-8">
+            <button
+              onClick={toggleCategoryMenu}
+              className="inline-flex items-center px-1 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+              </svg>
+              კატეგორიები
+            </button>
             {navigationItems.map((item) => (
               <Link
                 key={item.href}
@@ -273,7 +275,7 @@ export default function Navbar() {
       <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} bg-white border-t border-gray-100`}>
         <div className="px-4 py-3 space-y-2">
           <button
-            onClick={() => setIsCategoryMenuOpen(true)}
+            onClick={toggleCategoryMenu}
             className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300"
           >
             ყველა კატეგორია
