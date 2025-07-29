@@ -5,12 +5,14 @@ import { Home, ShoppingCart, User } from 'lucide-react';
 import { useAuth } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
 import { useCategoryMenu } from '../contexts/CategoryMenuContext';
+import { useLoginSidebar } from '../contexts/LoginSidebarContext';
 import { useState, useRef, useEffect } from 'react';
 
 const MobileBottomNav = () => {
   const { isAuthenticated, logout, user } = useAuth();
   const { totalItems } = useCart();
   const { toggleCategoryMenu } = useCategoryMenu();
+  const { openLoginSidebar } = useLoginSidebar();
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -130,10 +132,13 @@ const MobileBottomNav = () => {
               )}
             </>
           ) : (
-            <Link href="/login" className="flex flex-col items-center p-2 text-gray-600 hover:text-purple-600 transition-colors">
+            <button 
+              onClick={openLoginSidebar}
+              className="flex flex-col items-center p-2 text-gray-600 hover:text-purple-600 transition-colors"
+            >
               <User className="w-5 h-5" />
               <span className="text-xs mt-1">შესვლა</span>
-            </Link>
+            </button>
           )}
         </div>
       </div>
