@@ -19,7 +19,7 @@ interface UserProfile {
   lastName?: string;
   businessName?: string;
   email: string;
-  role: 'user' | 'admin' | 'seller' | 'courier';
+  role: 'user' | 'admin' | 'seller' | 'courier' | 'customer';
   phoneNumber?: string;
   bio?: string;
   balance: number;
@@ -595,7 +595,7 @@ export default function ProfilePage() {
                   <h2 className="text-lg font-semibold text-gray-800 text-center">{profile?.firstName || profile?.businessName || 'მომხმარებელი'}</h2>
                 </div>
 
-                {profile?.role === 'user' && (
+                {profile?.role === 'customer' && (
                   <>
                     <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4 border border-gray-200 mx-auto" style={{ maxWidth: '180px' }}>
                       <div className="flex items-center">

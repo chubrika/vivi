@@ -189,7 +189,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                           name="firstName"
                           type="text"
                           required
-                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="block text-gray-900 w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           placeholder="სახელი"
                           value={formData.firstName}
                           onChange={handleChange}
@@ -205,7 +205,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                         name="lastName"
                         type="text"
                         required
-                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         placeholder="გვარი"
                         value={formData.lastName}
                         onChange={handleChange}
@@ -223,7 +223,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                       name="phoneNumber"
                       type="tel"
                       required
-                      className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       placeholder="+995 5XX XX XX XX"
                       value={formData.phoneNumber}
                       onChange={handleChange}
@@ -274,7 +274,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                           name="businessName"
                           type="text"
                           required
-                          className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           placeholder="თქვენი ბიზნესის სახელი"
                           value={formData.businessName}
                           onChange={handleChange}
@@ -289,7 +289,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                           name="businessAddress"
                           type="text"
                           required
-                          className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           placeholder="ბიზნესის მისამართი"
                           value={formData.businessAddress}
                           onChange={handleChange}
@@ -314,7 +314,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                     name="email"
                     type="email"
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="block text-gray-900 w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="თქვენი ელ-ფოსტა"
                     value={formData.email}
                     onChange={handleChange}
@@ -336,7 +336,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="block text-gray-900 w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="თქვენი პაროლი"
                     value={formData.password}
                     onChange={handleChange}
