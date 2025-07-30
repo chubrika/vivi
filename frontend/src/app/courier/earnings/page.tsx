@@ -62,8 +62,8 @@ export default function CourierEarningsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-          <p className="text-gray-600">Failed to load earnings data.</p>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">შეცდომა!</h1>
+          <p className="text-gray-600"> მონაცემების ჩატვირთვა ვერ მოხერხდა.</p>
         </div>
       </div>
     );
@@ -72,7 +72,7 @@ export default function CourierEarningsPage() {
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div className="px-4 py-6 sm:px-0">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Earnings</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">ჩემი შემოსავალი</h1>
 
         {error && (
           <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -92,7 +92,7 @@ export default function CourierEarningsPage() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Earnings</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">შემოსავალი</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{earnings.totalEarnings} ₾</div>
                     </dd>
@@ -112,7 +112,7 @@ export default function CourierEarningsPage() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Deliveries</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">მიტანილი შეკვეთები</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{earnings.totalDeliveries}</div>
                     </dd>
@@ -122,27 +122,6 @@ export default function CourierEarningsPage() {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-yellow-600 rounded-md p-3">
-                  <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Average per Delivery</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">
-                        {earnings.totalDeliveries > 0 ? Math.round(earnings.totalEarnings / earnings.totalDeliveries) : 0} ₾
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="p-5">
@@ -154,7 +133,7 @@ export default function CourierEarningsPage() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Payout History</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">გატანის ისტორია</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{earnings.payoutHistory.length}</div>
                     </dd>
@@ -167,13 +146,13 @@ export default function CourierEarningsPage() {
 
         {/* Withdrawal Section */}
         <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Withdrawal</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">გატანა</h2>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">
                 {earnings.pendingWithdrawal 
-                  ? 'You have a pending withdrawal request. Please wait for admin approval.'
-                  : `Available for withdrawal: ${earnings.totalEarnings} ₾`
+                  ? 'გატანის მოთხოვნის მოლოდინშია. გთხოვთ მდაელოდოთ დადასტურებას.'
+                  : `გასატანად ხელმისაწვდომია: ${earnings.totalEarnings} ₾`
                 }
               </p>
             </div>
@@ -182,12 +161,12 @@ export default function CourierEarningsPage() {
                 onClick={handleWithdrawalRequest}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
               >
-                Request Withdrawal
+                გატანის მოთხოვნა
               </button>
             )}
             {earnings.pendingWithdrawal && (
               <div className="inline-flex items-center px-4 py-2 border border-yellow-300 text-sm font-medium rounded-md text-yellow-700 bg-yellow-100">
-                Withdrawal Pending
+                გატანის მოთხოვნის მოლოდინშია
               </div>
             )}
           </div>
@@ -195,25 +174,25 @@ export default function CourierEarningsPage() {
 
         {/* Delivery History */}
         <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Delivery History</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">მიტანის ისტორია</h2>
           {earnings.deliveryHistory.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No deliveries completed yet.</p>
+            <p className="text-gray-500 text-center py-4">მიტანა არ მოიძებნა.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Order ID
+                      შეკვეთის ID
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Amount
+                      თანხა
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      სტატუსი
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
+                      თარიღი
                     </th>
                   </tr>
                 </thead>
@@ -248,22 +227,22 @@ export default function CourierEarningsPage() {
 
         {/* Payout History */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Payout History</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">გატანის ისტორია</h2>
           {earnings.payoutHistory.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No payout history available.</p>
+            <p className="text-gray-500 text-center py-4">გატანის ისტორია არ მოიძებნა.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Amount
+                      თანხა
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      სტატუსი
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
+                      თარიღი
                     </th>
                   </tr>
                 </thead>

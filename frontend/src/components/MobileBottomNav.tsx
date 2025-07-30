@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, ShoppingCart, User } from 'lucide-react';
+import { Home, ShoppingCart, User, Package, DollarSign, List } from 'lucide-react';
 import { useAuth } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
 import { useCategoryMenu } from '../contexts/CategoryMenuContext';
 import { useLoginSidebar } from '../contexts/LoginSidebarContext';
 import { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 const MobileBottomNav = () => {
   const { isAuthenticated, logout, user } = useAuth();
@@ -15,6 +16,10 @@ const MobileBottomNav = () => {
   const { openLoginSidebar } = useLoginSidebar();
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  // Check if we're in courier portal
+  const isInCourierPortal = pathname?.startsWith('/courier');
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -35,6 +40,11 @@ const MobileBottomNav = () => {
     setAccountDropdownOpen(false);
     window.location.href = '/';
   };
+
+  // Don't render anything if we're in courier portal
+  if (isInCourierPortal) {
+    return null;
+  }
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">

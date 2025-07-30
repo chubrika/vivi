@@ -79,7 +79,7 @@ export default function CourierDashboard() {
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div className="px-4 py-6 sm:px-0">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Courier Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">დაშბორდი</h1>
 
         {error && (
           <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -99,7 +99,7 @@ export default function CourierDashboard() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">შეკვეთები</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{stats.totalOrders}</div>
                     </dd>
@@ -119,7 +119,7 @@ export default function CourierDashboard() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Pending Orders</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">მიმდინარე შეკვეთები</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{stats.pendingOrders}</div>
                     </dd>
@@ -140,7 +140,7 @@ export default function CourierDashboard() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Today's Orders</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">დღის შეკვეთები</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{stats.todayOrders}</div>
                     </dd>
@@ -160,7 +160,7 @@ export default function CourierDashboard() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Delivered Orders</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">მიტანილი შეკვეთები</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{stats.deliveredOrders}</div>
                     </dd>
@@ -181,7 +181,7 @@ export default function CourierDashboard() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Shipped Orders</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">გამოგზავნილი შეკვეთები</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{stats.shippedOrders}</div>
                     </dd>
@@ -202,7 +202,7 @@ export default function CourierDashboard() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Earnings</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">შემოსავალი</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{stats.totalEarnings} ₾</div>
                     </dd>
@@ -223,7 +223,7 @@ export default function CourierDashboard() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Completed Deliveries</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">მიტანილი შეკვეთები</dt>
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{stats.totalDeliveries}</div>
                     </dd>
@@ -243,31 +243,31 @@ export default function CourierDashboard() {
               href="/courier/orders"
               className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
             >
-              View All Orders
+              ყველა შეკვეთა
             </Link>
             <Link
               href="/profile"
               className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
-              Update Profile
+              პროფილის განახლება
             </Link>
             <Link
               href="/courier/earnings"
               className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             >
-              View Earnings
+              შემოსავალის ნახვა
             </Link>
             {stats.totalEarnings > 0 && !stats.pendingWithdrawal && (
               <button
                 onClick={handleWithdrawalRequest}
                 className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
               >
-                Request Withdrawal ({stats.totalEarnings} ₾)
+                გატანის მოთხოვნა ({stats.totalEarnings} ₾)
               </button>
             )}
             {stats.pendingWithdrawal && (
               <div className="inline-flex items-center justify-center px-4 py-2 border border-yellow-300 text-sm font-medium rounded-md text-yellow-700 bg-yellow-100">
-                Withdrawal Pending
+                გატანის მოთხოვნის მოლოდინში
               </div>
             )}
           </div>
@@ -275,9 +275,9 @@ export default function CourierDashboard() {
 
         {/* Recent Activity */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">ბოლო აქტივობა</h2>
           <div className="border-t border-gray-200">
-            <p className="text-gray-500 py-4 text-center">No recent activity to display.</p>
+            <p className="text-gray-500 py-4 text-center">ბოლო აქტივობა არ მოიძებნა.</p>
           </div>
         </div>
       </div>

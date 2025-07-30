@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../utils/authContext';
 import { API_BASE_URL } from '../../utils/api';
+import CourierMobileBottomNav from '../../components/CourierMobileBottomNav';
 
 export default function CourierLayout({
   children,
@@ -79,7 +80,7 @@ export default function CourierLayout({
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
                 <Link href="/courier/orders" className="text-xl font-bold text-purple-600">
-                  Courier Portal
+                  კურიერის პორტალი
                 </Link>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -103,14 +104,16 @@ export default function CourierLayout({
                 href="/"
                 className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
               >
-                Back to Store
+                მაღაზიაში დაბრუნება
               </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <main>{children}</main>
+      <main className="pb-20 md:pb-0">{children}</main>
+      
+      <CourierMobileBottomNav />
     </div>
   );
 } 
