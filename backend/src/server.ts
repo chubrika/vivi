@@ -10,6 +10,7 @@ import cartRoutes from './routes/cartRoutes';
 import addressRoutes from './routes/addressRoutes';
 import adminRoutes from './routes/adminRoutes';
 import orderRoutes from './routes/orderRoutes';
+import courierRoutes from './routes/courierRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +37,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/courier', courierRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

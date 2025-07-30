@@ -6,7 +6,7 @@ interface IUser {
   lastName?: string;
   email: string;
   password: string;
-  role: 'user' | 'admin' | 'customer' | 'seller';
+  role: 'user' | 'admin' | 'customer' | 'seller' | 'courier';
   businessName?: string;
   businessAddress?: string;
   phoneNumber?: string;
@@ -14,6 +14,15 @@ interface IUser {
   balance: number;
   isActive: boolean;
   createdAt: Date;
+  // Courier-specific fields
+  deliveryHistory?: mongoose.Types.ObjectId[];
+  totalEarnings?: number;
+  pendingWithdrawal?: boolean;
+  payoutHistory?: Array<{
+    amount: number;
+    date: Date;
+    status: 'paid' | 'rejected';
+  }>;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -39,7 +48,7 @@ const userSchema = new mongoose.Schema<IUser>({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'customer', 'seller'],
+    enum: ['user', 'admin', 'customer', 'seller', 'courier'],
     default: 'user',
   },
   businessName: {
@@ -70,6 +79,35 @@ const userSchema = new mongoose.Schema<IUser>({
     type: Date,
     default: Date.now,
   },
+  // Courier-specific fields
+  deliveryHistory: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Order',
+    default: []
+  }],
+  totalEarnings: {
+    type: Number,
+    default: 0
+  },
+  pendingWithdrawal: {
+    type: Boolean,
+    default: false
+  },
+  payoutHistory: [{
+    amount: {
+      type: Number,
+      required: true
+    },
+    date: {
+      type: Date,
+      default: Date.now
+    },
+    status: {
+      type: String,
+      enum: ['paid', 'rejected'],
+      default: 'paid'
+    }
+  }]
 });
 
 // Hash password before saving

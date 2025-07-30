@@ -10,6 +10,7 @@ import MobileBottomNav from '../components/MobileBottomNav';
 import { CategoryMenuProvider } from '../contexts/CategoryMenuContext';
 import { LoginSidebarProvider } from '../contexts/LoginSidebarContext';
 import LoginSidebarWrapper from '../components/LoginSidebarWrapper';
+import MainContent from '../components/MainContent';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,9 +33,9 @@ export default function RootLayout({
               <LoginSidebarProvider>
                 <div className="flex flex-col min-h-screen">
                   <NavbarWrapper />
-                  <main className="flex-grow mt-[100px] md:mt-[130px] pb-16 md:pb-0">
+                  <MainContent>
                     {children}
-                  </main>
+                  </MainContent>
                   <MobileBottomNav />
                   <Footer />
                 </div>
@@ -45,7 +46,7 @@ export default function RootLayout({
         </AuthProviderWrapper>
         
         {/* Tawk.to Chat Script */}
-        <Script
+        {/* <Script
           id="tawk-to-script"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
@@ -67,7 +68,7 @@ export default function RootLayout({
               })();
             `,
           }}
-        />
+        /> */}
       </body>
     </html>
   );

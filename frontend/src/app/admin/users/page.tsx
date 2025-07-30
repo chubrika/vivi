@@ -11,7 +11,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   email: string;
-  role: 'user' | 'seller' | 'admin';
+  role: 'user' | 'seller' | 'admin' | 'courier';
   isActive: boolean;
   createdAt: string;
 }
@@ -168,6 +168,7 @@ export default function UsersManagement() {
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                     user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 
                     user.role === 'seller' ? 'bg-orange-100 text-orange-800' :
+                    user.role === 'courier' ? 'bg-blue-100 text-blue-800' :
                     'bg-green-100 text-green-800'
                   }`}>
                     {user.role}
@@ -248,12 +249,13 @@ export default function UsersManagement() {
                   </label>
                   <select
                     value={editingUser.role}
-                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as 'user' | 'admin' | 'seller' })}
+                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as 'user' | 'admin' | 'seller' | 'courier' })}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                     <option value="seller">Seller</option>
+                    <option value="courier">Courier</option>
                   </select>
                 </div>
                 <div className="flex justify-end gap-4">
