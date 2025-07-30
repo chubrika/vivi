@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, fetchWithAuth } from '../../../utils/authContext';
 import { API_BASE_URL } from '../../../utils/api';
+import { courierService, CourierStats } from '../../../services/courierService';
 import Link from 'next/link';
 
-interface DashboardStats {
+interface DashboardStats extends CourierStats {
   totalOrders: number;
   pendingOrders: number;
   deliveredOrders: number;
@@ -20,9 +21,14 @@ export default function CourierDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     pendingOrders: 0,
+    processingOrders: 0,
     deliveredOrders: 0,
     shippedOrders: 0,
-    todayOrders: 0
+    cancelledOrders: 0,
+    todayOrders: 0,
+    totalEarnings: 0,
+    pendingWithdrawal: false,
+    totalDeliveries: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,15 +45,7 @@ export default function CourierDashboard() {
   const fetchStats = async () => {
     try {
       console.log('Fetching stats with token:', token);
-      const response = await fetchWithAuth(`${API_BASE_URL}/api/courier/stats`);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Stats fetch error:', errorData);
-        throw new Error(errorData.message || 'Failed to fetch courier stats');
-      }
-
-      const data = await response.json();
+      const data = await courierService.getStats(token!);
       console.log('Received stats data:', data);
       setStats(data);
     } catch (err) {
@@ -55,6 +53,18 @@ export default function CourierDashboard() {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleWithdrawalRequest = async () => {
+    try {
+      await courierService.requestWithdrawal(token!);
+      // Refresh stats to update pending withdrawal status
+      await fetchStats();
+      alert('Withdrawal request submitted successfully!');
+    } catch (err) {
+      console.error('Error requesting withdrawal:', err);
+      setError(err instanceof Error ? err.message : 'Failed to request withdrawal');
     }
   };
 
@@ -181,6 +191,48 @@ export default function CourierDashboard() {
             </div>
           </div>
 
+          {/* Total Earnings Card */}
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 bg-green-600 rounded-md p-3">
+                  <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Total Earnings</dt>
+                    <dd className="flex items-baseline">
+                      <div className="text-2xl font-semibold text-gray-900">{stats.totalEarnings} ₾</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Deliveries Card */}
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                  <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Completed Deliveries</dt>
+                    <dd className="flex items-baseline">
+                      <div className="text-2xl font-semibold text-gray-900">{stats.totalDeliveries}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* Quick Actions */}
@@ -199,6 +251,25 @@ export default function CourierDashboard() {
             >
               Update Profile
             </Link>
+            <Link
+              href="/courier/earnings"
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+            >
+              View Earnings
+            </Link>
+            {stats.totalEarnings > 0 && !stats.pendingWithdrawal && (
+              <button
+                onClick={handleWithdrawalRequest}
+                className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+              >
+                Request Withdrawal ({stats.totalEarnings} ₾)
+              </button>
+            )}
+            {stats.pendingWithdrawal && (
+              <div className="inline-flex items-center justify-center px-4 py-2 border border-yellow-300 text-sm font-medium rounded-md text-yellow-700 bg-yellow-100">
+                Withdrawal Pending
+              </div>
+            )}
           </div>
         </div>
 
