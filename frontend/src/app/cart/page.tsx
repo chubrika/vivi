@@ -20,7 +20,7 @@ export default function CartPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
         </div>
       </div>
     );
@@ -36,7 +36,7 @@ export default function CartPage() {
           </svg>
           <h2 className="text-xl font-semibold mb-2 text-gray-600">შენი კალათა ცარიელია</h2>
           <p className="text-gray-500 mb-6">როგორც ჩანს, ჯერ არ დაგიმატებია რაიმე პროდუქტი კალათაში.</p>
-          <Link href="/products" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
+          <Link href="/products" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700">
             გაგრძელება
           </Link>
         </div>
@@ -133,7 +133,7 @@ export default function CartPage() {
             <button
               onClick={handleCheckout}
               disabled={isCheckingOut}
-              className="w-full py-3 px-4 bg-purple-600 text-white rounded-md font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50"
+              className="w-full py-3 px-4 bg-sky-600 text-white rounded-md font-medium hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50"
             >
               {isCheckingOut ? (
                 <span className="flex items-center justify-center">
@@ -148,7 +148,7 @@ export default function CartPage() {
               )}
             </button>
             <div className="mt-4 text-center">
-              <Link href="/products" className="text-sm text-purple-600 hover:text-purple-800">
+              <Link href="/products" className="text-sm text-sky-600 hover:text-sky-800">
                 ყიდვის გაგრძელება
               </Link>
             </div>

@@ -166,7 +166,7 @@ export default function UsersManagement() {
                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 
+                    user.role === 'admin' ? 'bg-sky-100 text-sky-800' : 
                     user.role === 'seller' ? 'bg-orange-100 text-orange-800' :
                     user.role === 'courier' ? 'bg-blue-100 text-blue-800' :
                     'bg-green-100 text-green-800'

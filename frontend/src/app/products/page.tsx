@@ -601,7 +601,7 @@ function ProductsPageContent() {
   if (initialLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
       </div>
     );
   }
@@ -622,7 +622,7 @@ function ProductsPageContent() {
           <h1 className="text-lg font-semibold text-gray-900">პროდუქტები</h1>
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="flex items-center space-x-2 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+            className="flex items-center space-x-2 px-3 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
@@ -711,8 +711,8 @@ function ProductsPageContent() {
                                       key={color}
                                       className={`w-8 h-8 rounded-full cursor-pointer border-2 transition-colors ${
                                         selectedColors[filter._id]?.includes(color)
-                                          ? 'border-purple-500'
-                                          : 'border-gray-200 hover:border-purple-500'
+                                          ? 'border-sky-500'
+                                          : 'border-gray-200 hover:border-sky-500'
                                       }`}
                                       style={{ backgroundColor: color }}
                                       title={color}
@@ -736,7 +736,7 @@ function ProductsPageContent() {
                                           e.stopPropagation();
                                           handleOptionSelect(filter._id, option);
                                         }}
-                                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
                                       />
                                       <label
                                         htmlFor={`${filter._id}-${option}`}
@@ -766,7 +766,7 @@ function ProductsPageContent() {
             {selectedFilter && (
               <div className="mb-4 flex items-center flex-wrap gap-2">
                 <span className="text-sm text-gray-600">Filtered by:</span>
-                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                <span className="px-3 py-1 bg-sky-100 text-sky-800 rounded-full text-sm">
                   {filters.find(f => f._id === selectedFilter)?.name || 'Filter'}
                 </span>
                 <button 
@@ -793,7 +793,7 @@ function ProductsPageContent() {
                   filteredProducts.map((product) => (
                     <div
                       key={product._id}
-                      className="bg-white rounded-lg transition-all duration-300 hover:border hover:border-purple-600 overflow-hidden cursor-pointer shadow-sm hover:shadow-md"
+                      className="bg-white rounded-lg transition-all duration-300 hover:border hover:border-sky-600 overflow-hidden cursor-pointer shadow-sm hover:shadow-md"
                       onClick={() => handleProductSelect(product)}
                     >
                       <div className="relative aspect-square">
@@ -826,7 +826,7 @@ function ProductsPageContent() {
                         setMinPriceInput(minPrice.toString());
                         setMaxPriceInput(maxPrice.toString());
                       }}
-                      className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+                      className="mt-4 px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
                     >
                       ფილტრის გასუფთავება
                     </button>
@@ -851,7 +851,7 @@ export default function ProductsPage() {
   return (
     <Suspense fallback={
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
       </div>
     }>
       <ProductsPageContent />

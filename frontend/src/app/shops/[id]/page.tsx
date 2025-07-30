@@ -85,7 +85,7 @@ export default function SellerDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
       </div>
     );
   }
@@ -111,7 +111,7 @@ export default function SellerDetailPage() {
       <div className="mb-6">
         <Link 
           href="/shops"
-          className="text-purple-600 hover:text-purple-800 flex items-center gap-2"
+          className="text-sky-600 hover:text-sky-800 flex items-center gap-2"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -172,7 +172,7 @@ export default function SellerDetailPage() {
         
         {productsLoading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
           </div>
         ) : productsError ? (
           <div className="text-red-500 text-center py-8">{productsError}</div>
@@ -204,7 +204,7 @@ export default function SellerDetailPage() {
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">{product.name}</h3>
-                  <p className="text-purple-600 font-medium">{product.price.toFixed(2)} ₾</p>
+                  <p className="text-sky-600 font-medium">{product.price.toFixed(2)} ₾</p>
                   {product.category && typeof product.category === 'object' && (
                     <p className="text-sm text-gray-500 mt-1">{product.category.name}</p>
                   )}

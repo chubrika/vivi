@@ -43,7 +43,7 @@ export default function AdminCouriersPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
       </div>
     );
   }
@@ -138,9 +138,9 @@ export default function AdminCouriersPage() {
                 {pendingWithdrawals.reduce((sum, courier) => sum + courier.totalEarnings, 0)} ₾
               </div>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <div className="text-sm font-medium text-purple-600">Average Request</div>
-              <div className="text-2xl font-bold text-purple-900">
+            <div className="bg-sky-50 p-4 rounded-lg">
+              <div className="text-sm font-medium text-sky-600">Average Request</div>
+              <div className="text-2xl font-bold text-sky-900">
                 {pendingWithdrawals.length > 0 
                   ? Math.round(pendingWithdrawals.reduce((sum, courier) => sum + courier.totalEarnings, 0) / pendingWithdrawals.length)
                   : 0} ₾

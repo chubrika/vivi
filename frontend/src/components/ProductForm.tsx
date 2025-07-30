@@ -86,8 +86,8 @@ const FilterInput: React.FC<{
               onClick={() => onChange(color)}
               className={`relative p-1 rounded-lg border-2 transition-all duration-200 ${
                 value === color 
-                  ? 'border-purple-500 ring-2 ring-purple-200' 
-                  : 'border-gray-200 hover:border-purple-300'
+                  ? 'border-sky-500 ring-2 ring-sky-200' 
+                  : 'border-gray-200 hover:border-sky-300'
               }`}
               title={color}
             >
@@ -115,7 +115,7 @@ const FilterInput: React.FC<{
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
         >
           <option value="">Select {filter.name}</option>
           {filter.config?.options?.map((option) => (
@@ -438,7 +438,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
           required
         />
       </div>
@@ -457,7 +457,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
               id="price"
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
-              className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+              className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
               min="0"
               step="0.01"
               required
@@ -474,7 +474,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
             id="stock"
             value={stock}
             onChange={(e) => setStock(Number(e.target.value))}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
             min="0"
             required
           />
@@ -554,7 +554,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
           <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
             {filtersLoading ? (
               <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div>
                 <span className="ml-2 text-gray-500">Loading filters...</span>
               </div>
             ) : (
@@ -615,7 +615,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
           id="isActive"
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
-          className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded transition duration-200"
+          className="h-5 w-5 text-sky-600 focus:ring-sky-500 border-gray-300 rounded transition duration-200"
         />
         <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
           აქტიური
@@ -684,7 +684,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                           placeholder="Type"
                           value={newFeatureValue.type || ''}
                           onChange={(e) => setNewFeatureValue({...newFeatureValue, type: Number(e.target.value)})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
                           min="1"
                         />
                         <input
@@ -692,12 +692,12 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                           placeholder="Value"
                           value={newFeatureValue.featureValue}
                           onChange={(e) => setNewFeatureValue({...newFeatureValue, featureValue: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
                         />
                         <button
                           type="button"
                           onClick={() => handleAddFeatureValue(groupIndex, featureIndex)}
-                          className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 text-sm font-medium"
+                          className="px-3 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition duration-200 text-sm font-medium"
                         >
                           Add Value
                         </button>
@@ -715,19 +715,19 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                       placeholder="Feature ID"
                       value={newFeature.featureId || ''}
                       onChange={(e) => setNewFeature({...newFeature, featureId: Number(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
                     />
                     <input
                       type="text"
                       placeholder="Feature Caption"
                       value={newFeature.featureCaption}
                       onChange={(e) => setNewFeature({...newFeature, featureCaption: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
                     />
                     <button
                       type="button"
                       onClick={() => handleAddFeature(groupIndex)}
-                      className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 text-sm font-medium"
+                      className="px-3 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition duration-200 text-sm font-medium"
                     >
                       ჯგუფის დამატება
                     </button>
@@ -746,19 +746,19 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                 placeholder="Group ID"
                 value={newFeatureGroup.featureGroupId || ''}
                 onChange={(e) => setNewFeatureGroup({...newFeatureGroup, featureGroupId: Number(e.target.value)})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
               />
               <input
                 type="text"
                 placeholder="Group Caption"
                 value={newFeatureGroup.featureGroupCaption}
                 onChange={(e) => setNewFeatureGroup({...newFeatureGroup, featureGroupCaption: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
               />
               <button
                 type="button"
                 onClick={handleAddFeatureGroup}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 font-medium"
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition duration-200 font-medium"
               >
                 ჯგუფის დამატება
               </button>
@@ -778,7 +778,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-200 font-medium"
+          className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition duration-200 font-medium"
         >
           {loading ? 'შენახვა...' : product ? 'რედაქტირება' : 'შენახვა'}
         </button>

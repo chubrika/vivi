@@ -71,7 +71,7 @@ export default function SellersPage() {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
             </div>
         );
     }
@@ -97,7 +97,7 @@ export default function SellersPage() {
                             onClick={() => handleFilterClick(num)}
                             className={`px-3 py-1 rounded-md text-sm font-medium ${
                                 activeFilter === num
-                                    ? 'bg-purple-600 text-white'
+                                    ? 'bg-sky-600 text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                         >
@@ -110,7 +110,7 @@ export default function SellersPage() {
                             onClick={() => handleFilterClick(letter)}
                             className={`px-3 py-1 rounded-md text-sm font-medium ${
                                 activeFilter === letter
-                                    ? 'bg-purple-600 text-white'
+                                    ? 'bg-sky-600 text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                         >
@@ -140,7 +140,7 @@ export default function SellersPage() {
                             <div className="mb-4">
                                 <Link
                                     href={`/shops/${seller._id}`}
-                                    className="text-xl font-semibold text-purple-600 hover:text-purple-800 block mb-2"
+                                    className="text-xl font-semibold text-sky-600 hover:text-sky-800 block mb-2"
                                 >
                                     {seller.businessName}
                                 </Link>

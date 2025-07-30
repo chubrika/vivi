@@ -54,8 +54,8 @@ export default function CategoryNavigation({ categories, selectedCategorySlug }:
             onClick={() => handleCategoryClick(category)}
             className={`w-full text-left px-4 py-2 text-sm ${
               category.slug === selectedCategorySlug
-                ? 'text-purple-600 font-medium'
-                : 'text-gray-600 hover:text-purple-600'
+                ? 'text-sky-600 font-medium'
+                : 'text-gray-600 hover:text-sky-600'
             }`}
           >
             {category.name}

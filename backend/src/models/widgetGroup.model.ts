@@ -13,7 +13,7 @@ export interface IWidgetGroup extends Document {
 }
 
 const widgetGroupSchema = new Schema({
-  groupNumber: { type: Number, required: true },
+  groupNumber: { type: Number, required: false },
   categories: [{
     categoryId: { type: String, required: true },
     name: { type: String, required: true },
@@ -26,7 +26,7 @@ const widgetGroupSchema = new Schema({
 
 // Add a pre-save middleware to automatically set the group number
 widgetGroupSchema.pre('save', async function(next) {
-  if (this.isNew) {
+  if (this.isNew && !this.groupNumber) {
     const model = this.constructor as Model<IWidgetGroup>;
     const lastGroup = await model.findOne({}, {}, { sort: { groupNumber: -1 } });
     this.groupNumber = lastGroup ? lastGroup.groupNumber + 1 : 1;

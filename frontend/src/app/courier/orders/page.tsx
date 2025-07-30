@@ -157,7 +157,7 @@ export default function CourierOrders() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
       </div>
     );
   }
@@ -180,7 +180,7 @@ export default function CourierOrders() {
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-sky-700 bg-sky-100 hover:bg-sky-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
               >
                 <svg
                   className="mr-2 h-4 w-4"
@@ -215,7 +215,7 @@ export default function CourierOrders() {
                   setCurrentPage(1);
                 }}
                 placeholder="შეკვეთის ID შეყვანა"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 text-gray-600"
               />
             </div>
 
@@ -231,7 +231,7 @@ export default function CourierOrders() {
                   setSelectedStatus(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 text-gray-600"
               >
                 <option value="">ყველა სტატუსი</option>
                 {statuses.map((status) => (
@@ -256,7 +256,7 @@ export default function CourierOrders() {
                     setStartDate(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 text-gray-600"
                 />
               </div>
               <div>
@@ -271,7 +271,7 @@ export default function CourierOrders() {
                     setEndDate(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 text-gray-600"
                 />
               </div>
             </div>
@@ -416,7 +416,7 @@ export default function CourierOrders() {
                       onClick={() => setCurrentPage(pageNumber)}
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                         pageNumber === currentPage
-                          ? 'z-10 bg-purple-50 border-purple-500 text-purple-600'
+                          ? 'z-10 bg-sky-50 border-sky-500 text-sky-600'
                           : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                       }`}
                     >

@@ -294,14 +294,14 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div>
               <div className="flex items-center mb-6">
-                <svg className="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-sky-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <h2 className="text-lg font-medium text-gray-900">პირადი ინფორმაცია</h2>
               </div>
               <form className="space-y-6" onSubmit={handleUpdateProfile}>
                 {updateSuccess && (
-                  <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                  <div className="bg-sky-100 border border-sky-400 text-sky-700 px-4 py-3 rounded relative" role="alert">
                     <span className="block sm:inline">Profile updated successfully!</span>
                   </div>
                 )}
@@ -317,10 +317,10 @@ export default function ProfilePage() {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
                       placeholder=" "
                     />
-                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.firstName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.firstName ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                       }`}>
                       სახელი
                     </label>
@@ -332,10 +332,10 @@ export default function ProfilePage() {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
                       placeholder=" "
                     />
-                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.lastName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.lastName ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                       }`}>
                       გვარი
                     </label>
@@ -348,10 +348,10 @@ export default function ProfilePage() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
                     placeholder=" "
                   />
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.email ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.email ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                     }`}>
                     ელ-ფოსტა
                   </label>
@@ -363,10 +363,10 @@ export default function ProfilePage() {
                     name="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
                     placeholder=" "
                   />
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.phoneNumber ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.phoneNumber ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                     }`}>
                     ტელეფონის ნომერი
                   </label>
@@ -378,10 +378,10 @@ export default function ProfilePage() {
                     name="personalNumber"
                     value={formData.personalNumber}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
                     placeholder=" "
                   />
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.personalNumber ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.personalNumber ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                     }`}>
                     პირადი ნომერი
                   </label>
@@ -391,13 +391,13 @@ export default function ProfilePage() {
                   <div className="flex justify-end space-x-4">
                     <button
                       type="button"
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
                     >
                       გაუქმება
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
                     >
                       პროფილის განახლება
                     </button>
@@ -408,7 +408,7 @@ export default function ProfilePage() {
 
             <div className="pt-6 border-t border-gray-200">
               <div className="flex items-center mb-4">
-                <svg className="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-sky-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 <h3 className="text-lg font-medium text-gray-900">უსაფრთხოება</h3>
@@ -416,7 +416,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={handleChangePassword}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
               >
                 პაროლის ცვლილება
               </button>
@@ -428,7 +428,7 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center">
-                <svg className="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-sky-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -436,7 +436,7 @@ export default function ProfilePage() {
               </div>
               <button
                 onClick={() => setShowAddAddress(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
               >
                 მისამართის დამატება
               </button>
@@ -455,7 +455,7 @@ export default function ProfilePage() {
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium text-gray-900">{address.title}</h3>
                       {address.isDefault && (
-                        <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                        <span className="bg-sky-100 text-sky-800 text-xs px-2 py-1 rounded-full">
                           მთავარი
                         </span>
                       )}
@@ -465,7 +465,7 @@ export default function ProfilePage() {
                       {!address.isDefault && (
                         <button
                           onClick={() => handleSetDefaultAddress(address.id || address._id || '')}
-                          className="text-sm text-purple-600 hover:text-purple-800"
+                          className="text-sm text-sky-600 hover:text-sky-800"
                         >
                           მთავარი გახადე
                         </button>
@@ -485,7 +485,7 @@ export default function ProfilePage() {
                 <p className="text-gray-500">მისამართი ვერ მოიძებნა.</p>
                 <button
                   onClick={() => setShowAddAddress(true)}
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
                 >
                   პირველი მისამართის დამატება
                 </button>
@@ -497,7 +497,7 @@ export default function ProfilePage() {
         return (
           <div className="space-y-6">
             <div className="flex items-center">
-              <svg className="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-sky-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
               <h2 className="text-lg font-medium text-gray-900">ჩემი შეკვეთები</h2>
@@ -505,7 +505,7 @@ export default function ProfilePage() {
             
             {ordersLoading ? (
               <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600"></div>
               </div>
             ) : ordersError ? (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -522,9 +522,9 @@ export default function ProfilePage() {
                       </div>
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        order.status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                        order.status === 'shipped' ? 'bg-purple-100 text-purple-800' :
-                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                        order.status === 'processing' ? 'bg-sky-100 text-sky-800' :
+                        order.status === 'shipped' ? 'bg-sky-100 text-sky-800' :
+                        order.status === 'delivered' ? 'bg-sky-100 text-sky-800' :
                         order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
@@ -544,7 +544,7 @@ export default function ProfilePage() {
                       </div>
                       <Link
                         href={`/order-confirmation/${order._id}`}
-                        className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                        className="text-sm text-sky-600 hover:text-sky-800 font-medium"
                       >
                         დეტალურად →
                       </Link>
@@ -564,13 +564,13 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center">
-                <svg className="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-sky-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
                 <h2 className="text-lg font-medium text-gray-900">ჩემი ბარათები</h2>
               </div>
               <button
-                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
               >
                 ბარათის დამატება
               </button>
@@ -602,7 +602,7 @@ export default function ProfilePage() {
               {/* User Profile Summary */}
               <div className="mb-6 pb-6 border-b border-gray-200">
                 <div className="flex flex-col items-center mb-4">
-                  <div className="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-white mb-3">
+                  <div className="w-16 h-16 rounded-full bg-sky-600 flex items-center justify-center text-white mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -619,7 +619,7 @@ export default function ProfilePage() {
                       <div className="flex items-center">
                         <span className="font-semibold text-gray-800 mr-2">{profile?.balance.toFixed(2) || '0.00'} ₾</span>
                         <button
-                          className="text-purple-600 hover:text-purple-800"
+                          className="text-sky-600 hover:text-sky-800"
                           onClick={() => setActiveSection('balance')}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -659,7 +659,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => handleSectionChange('orders')}
                     className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${activeSection === 'orders'
-                        ? 'bg-purple-100 font-bold text-purple-700'
+                        ? 'bg-sky-100 font-bold text-sky-700'
                         : 'text-gray-600 hover:bg-gray-100'
                       }`}
                   >
@@ -672,7 +672,7 @@ export default function ProfilePage() {
                 <button
                   onClick={() => handleSectionChange('personal')}
                   className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${activeSection === 'personal'
-                      ? 'bg-purple-100 font-bold text-purple-700'
+                      ? 'bg-sky-100 font-bold text-sky-700'
                       : 'text-gray-600 hover:bg-gray-100'
                     }`}
                 >
@@ -684,7 +684,7 @@ export default function ProfilePage() {
                 <button
                   onClick={() => handleSectionChange('addresses')}
                   className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${activeSection === 'addresses'
-                      ? 'bg-purple-100 font-bold text-purple-700'
+                      ? 'bg-sky-100 font-bold text-sky-700'
                       : 'text-gray-600 hover:bg-gray-100'
                     }`}
                 >
@@ -697,7 +697,7 @@ export default function ProfilePage() {
                 <button
                   onClick={() => handleSectionChange('cards')}
                   className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${activeSection === 'cards'
-                      ? 'bg-purple-100 font-bold text-purple-700'
+                      ? 'bg-sky-100 font-bold text-sky-700'
                       : 'text-gray-600 hover:bg-gray-100'
                     }`}
                 >
