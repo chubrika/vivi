@@ -270,9 +270,9 @@ const FiltersPage = () => {
             <li className="px-4 py-4">No filters found.</li>
           ) : (
             filters.map((filter) => (
-              <li key={filter._id} className="px-4 py-4 hover:bg-gray-50">
+              <li key={filter._id} className="px-4 py-4 hover:bg-gray-100">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex gap-2">
                     <p className="text-sm font-medium text-gray-900">{filter.name}</p>
                     <p className="text-sm text-gray-500">{filter.description}</p>
                     <p className="text-sm text-gray-500">Category: {filter.category.name}</p>
