@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../utils/authContext';
 import { authService } from '../services/authService';
 import { X, Mail, Lock, Eye, EyeOff, User, Building, LogIn } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface LoginSidebarProps {
   isOpen: boolean;
@@ -51,13 +52,24 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
     setLoading(true);
 
     try {
+      console.log(`${activeTab === 'login' ? 'Login' : 'Registration'} attempt for:`, formData.email);
+      
       const data = activeTab === 'login' 
         ? await authService.login({ email: formData.email, password: formData.password })
         : await authService.register(formData);
 
+      console.log(`${activeTab === 'login' ? 'Login' : 'Registration'} successful:`, data);
+      
       const cleanToken = data.token.replace('Bearer ', '');
       login(cleanToken, data.user);
-      console.log('User logged in successfully');
+      console.log('User logged in successfully after', activeTab);
+      
+      // Show success notification
+      if (activeTab === 'register') {
+        toast.success(`🎉 რეგისტრაცია წარმატებით დასრულდა! მოგესალმებთ ${data.user.firstName}!`);
+      } else {
+        toast.success(`👋 კეთილი იყოს თქვენი დაბრუნება, ${data.user.firstName}!`);
+      }
       
       // Close sidebar
       onClose();
@@ -125,8 +137,8 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                <LogIn className="h-5 w-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
+                <LogIn className="h-5 w-5 text-sky-600" />
               </div>
             </div>
             <button
@@ -143,7 +155,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
               onClick={() => handleTabChange('login')}
               className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
                 activeTab === 'login'
-                  ? 'text-purple-600 border-b-2 border-purple-600'
+                  ? 'text-sky-600 border-b-2 border-sky-600'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -153,7 +165,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
               onClick={() => handleTabChange('register')}
               className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
                 activeTab === 'register'
-                  ? 'text-purple-600 border-b-2 border-purple-600'
+                  ? 'text-sky-600 border-b-2 border-sky-600'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -189,7 +201,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                           name="firstName"
                           type="text"
                           required
-                          className="block text-gray-900 w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="block text-gray-900 w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                           placeholder="სახელი"
                           value={formData.firstName}
                           onChange={handleChange}
@@ -205,7 +217,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                         name="lastName"
                         type="text"
                         required
-                        className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                         placeholder="გვარი"
                         value={formData.lastName}
                         onChange={handleChange}
@@ -223,7 +235,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                       name="phoneNumber"
                       type="tel"
                       required
-                      className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                       placeholder="+995 5XX XX XX XX"
                       value={formData.phoneNumber}
                       onChange={handleChange}
@@ -241,7 +253,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                         onClick={() => handleRoleChange('customer')}
                         className={`p-3 border rounded-lg text-sm font-medium transition-colors ${
                           formData.role === 'customer'
-                            ? 'border-purple-500 bg-purple-50 text-purple-700'
+                            ? 'border-sky-500 bg-sky-50 text-sky-700'
                             : 'border-gray-300 text-gray-700 hover:border-gray-400'
                         }`}
                       >
@@ -252,7 +264,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                         onClick={() => handleRoleChange('seller')}
                         className={`p-3 border rounded-lg text-sm font-medium transition-colors ${
                           formData.role === 'seller'
-                            ? 'border-purple-500 bg-purple-50 text-purple-700'
+                            ? 'border-sky-500 bg-sky-50 text-sky-700'
                             : 'border-gray-300 text-gray-700 hover:border-gray-400'
                         }`}
                       >
@@ -274,7 +286,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                           name="businessName"
                           type="text"
                           required
-                          className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                           placeholder="თქვენი ბიზნესის სახელი"
                           value={formData.businessName}
                           onChange={handleChange}
@@ -289,7 +301,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                           name="businessAddress"
                           type="text"
                           required
-                          className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                           placeholder="ბიზნესის მისამართი"
                           value={formData.businessAddress}
                           onChange={handleChange}
@@ -314,7 +326,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                     name="email"
                     type="email"
                     required
-                    className="block text-gray-900 w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="block text-gray-900 w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                     placeholder="თქვენი ელ-ფოსტა"
                     value={formData.email}
                     onChange={handleChange}
@@ -336,7 +348,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="block text-gray-900 w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="block text-gray-900 w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                     placeholder="თქვენი პაროლი"
                     value={formData.password}
                     onChange={handleChange}
@@ -359,7 +371,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full bg-sky-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? 'მუშაობს...' : activeTab === 'login' ? 'შესვლა' : 'რეგისტრაცია'}
               </button>
@@ -371,7 +383,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                 {activeTab === 'login' ? 'პირველად შოპინგობ?' : 'უკვე ხარ რეგისტრირებული?'}{' '}
                 <button
                   onClick={() => handleTabChange(activeTab === 'login' ? 'register' : 'login')}
-                  className="font-medium text-purple-600 hover:text-purple-500 transition-colors"
+                  className="font-medium text-sky-600 hover:text-sky-500 transition-colors"
                 >
                   {activeTab === 'login' ? 'დარეგისტრირდი' : 'შესვლა'}
                 </button>

@@ -36,7 +36,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
       </div>
     );
   }
@@ -48,7 +48,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <p className="text-red-500 mb-4">{error || 'Product not found'}</p>
           <button
             onClick={() => router.back()}
-            className="text-purple-600 hover:text-purple-800"
+            className="text-sky-600 hover:text-sky-800"
           >
             Go Back
           </button>
@@ -95,7 +95,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   {product.images.map((image, index) => (
                     <div
                       key={index}
-                      className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer w-20 h-20 ${index === activeImageIndex ? 'ring-2 ring-purple-500' : ''}`}
+                      className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer w-20 h-20 ${index === activeImageIndex ? 'ring-2 ring-sky-500' : ''}`}
                       onClick={() => setActiveImageIndex(index)}
                     >
                       <img
@@ -112,7 +112,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             {/* Product details */}
             <div className="space-y-6">
               <div>
-                <p className="text-3xl font-semibold text-purple-600">
+                <p className="text-3xl font-semibold text-sky-600">
                   ${product.price.toFixed(2)}
                 </p>
               </div>

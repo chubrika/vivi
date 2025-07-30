@@ -11,7 +11,7 @@ const ProductSlider = dynamic(() => import('../components/ProductSlider'), {
   ssr: false,
   loading: () => (
     <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-600"></div>
     </div>
   ),
 });
@@ -21,7 +21,7 @@ const HomeSlider = dynamic(() => import('../components/HomeSlider'), {
   ssr: false,
   loading: () => (
     <div className="flex justify-center items-center h-[500px]">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-600"></div>
     </div>
   ),
 });
@@ -71,7 +71,7 @@ export default function Home() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-600"></div>
         </div>
       </div>
     );
@@ -99,7 +99,7 @@ export default function Home() {
                   <div
                     key={category.categoryId}
                     onClick={() => handleCategoryClick(category.slug)}
-                    className="relative w-full h-[200px] bg-purple-200 hover:bg-purple-300 rounded-lg cursor-pointer transition duration-300 overflow-hidden group"
+                    className="relative w-full h-[200px] bg-sky-200 hover:bg-sky-300 rounded-lg cursor-pointer transition duration-300 overflow-hidden group"
                   >
                     {category.image ? (
                       <img
@@ -109,7 +109,7 @@ export default function Home() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-gray-700 group-hover:text-purple-600 font-medium">
+                        <span className="text-gray-700 group-hover:text-sky-600 font-medium">
                           {category.name}
                         </span>
                       </div>
@@ -145,28 +145,28 @@ export default function Home() {
       <section className="py-6 md:py-10 px-3 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl md:text-4xl font-bold text-center mb-8 md:mb-16">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-blue-600">
               როგორ მუშაობს?
             </span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
             <div className="bg-gray-50 p-6 md:p-8 rounded-xl md:rounded-2xl text-center">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4 md:mb-6 mx-auto">
-                <Search className="text-purple-600" size={20} />
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-sky-100 rounded-full flex items-center justify-center mb-4 md:mb-6 mx-auto">
+                <Search className="text-sky-600" size={20} />
               </div>
               <h3 className="text-lg md:text-2xl text-gray-900 font-semibold mb-3 md:mb-4">1. დაათვალიერე & მოძებნე</h3>
               <p className="text-sm md:text-base text-gray-600 leading-relaxed">აარჩიე პროდუქცია სხვადასხვა მაღაზიიდან ერთ სივრცეში</p>
             </div>
             <div className="bg-gray-50 p-6 md:p-8 rounded-xl md:rounded-2xl text-center">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4 md:mb-6 mx-auto">
-                <ShoppingCart className="text-purple-600" size={20} />
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-sky-100 rounded-full flex items-center justify-center mb-4 md:mb-6 mx-auto">
+                <ShoppingCart className="text-sky-600" size={20} />
               </div>
               <h3 className="text-lg md:text-2xl text-gray-900 font-semibold mb-3 md:mb-4">2. დაამატე კალათაში</h3>
               <p className="text-sm md:text-base text-gray-600 leading-relaxed">აირჩიე შენი სასურველი პროდუქტი და დაამატე კალათაში</p>
             </div>
             <div className="bg-gray-50 p-6 md:p-8 rounded-xl md:rounded-2xl text-center">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4 md:mb-6 mx-auto">
-                <Package className="text-purple-600" size={20} />
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-sky-100 rounded-full flex items-center justify-center mb-4 md:mb-6 mx-auto">
+                <Package className="text-sky-600" size={20} />
               </div>
               <h3 className="text-lg md:text-2xl text-gray-900 font-semibold mb-3 md:mb-4">3. დაელოდეთ კურიერს</h3>
               <p className="text-sm md:text-base text-gray-600 leading-relaxed">მიიღეთ ამანათი თქვენს მისამართზე</p>
@@ -180,21 +180,21 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex items-center gap-4">
-              <Truck className="text-purple-600" size={32} />
+              <Truck className="text-sky-600" size={32} />
               <div>
                 <h3 className="font-semibold text-gray-900">სწრაფი მიტანა</h3>
                 <p className="text-gray-600">სწრაფი მიტანა თქვენს მიმართზე</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Shield className="text-purple-600" size={32} />
+              <Shield className="text-sky-600" size={32} />
               <div>
                 <h3 className="font-semibold text-gray-900">დაცული გადახდები</h3>
                 <p className="text-gray-600">100% დაცული გადახდები</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Package className="text-purple-600" size={32} />
+              <Package className="text-sky-600" size={32} />
               <div>
                 <h3 className="font-semibold text-gray-900">ხარისხიანი პროდუქცია</h3>
                 <p className="text-gray-600">ვერიფიცირებული მაღაზიები და პროდუქტები</p>
@@ -214,9 +214,9 @@ export default function Home() {
               <input
                 type="email"
                 placeholder="შეიყვანეთ თქვენი ელ-ფოსტა"
-                className="flex-1 px-4 py-3 md:py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm md:text-base"
+                className="flex-1 px-4 py-3 md:py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm md:text-base"
               />
-              <button className="bg-purple-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-purple-700 transition duration-300 text-sm md:text-base whitespace-nowrap">
+              <button className="bg-sky-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-sky-700 transition duration-300 text-sm md:text-base whitespace-nowrap">
                 გამოწერა
               </button>
             </div>

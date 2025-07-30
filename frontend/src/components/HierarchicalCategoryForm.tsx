@@ -112,7 +112,7 @@ const HierarchicalCategoryForm: React.FC<HierarchicalCategoryFormProps> = ({
             onChange={handleChange}
             required
             placeholder="Category Name"
-            className="w-full px-3 py-2 border-b border-gray-300 focus:border-purple-500 focus:outline-none text-gray-600"
+            className="w-full px-3 py-2 border-b border-gray-300 focus:border-sky-500 focus:outline-none text-gray-600"
           />
 
           <input
@@ -122,7 +122,7 @@ const HierarchicalCategoryForm: React.FC<HierarchicalCategoryFormProps> = ({
             onChange={handleChange}
             required
             placeholder="Category Slug (e.g., electronics)"
-            className="w-full px-3 py-2 border-b border-gray-300 focus:border-purple-500 focus:outline-none text-gray-600"
+            className="w-full px-3 py-2 border-b border-gray-300 focus:border-sky-500 focus:outline-none text-gray-600"
           />
 
           <textarea
@@ -130,14 +130,14 @@ const HierarchicalCategoryForm: React.FC<HierarchicalCategoryFormProps> = ({
             value={formData.description}
             onChange={handleChange}
             placeholder="Description"
-            className="w-full px-3 py-2 border-b border-gray-300 focus:border-purple-500 focus:outline-none text-gray-600"
+            className="w-full px-3 py-2 border-b border-gray-300 focus:border-sky-500 focus:outline-none text-gray-600"
           />
 
           <select
             name="parentId"
             value={formData.parentId || ''}
             onChange={handleChange}
-            className="w-full px-3 py-2 border-b border-gray-300 focus:border-purple-500 focus:outline-none text-gray-600"
+            className="w-full px-3 py-2 border-b border-gray-300 focus:border-sky-500 focus:outline-none text-gray-600"
           >
             <option value="">Select Parent Category</option>
             {renderCategoryOptions(parentCategories)}
@@ -150,7 +150,7 @@ const HierarchicalCategoryForm: React.FC<HierarchicalCategoryFormProps> = ({
               name="isActive"
               checked={formData.isActive}
               onChange={handleChange}
-              className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+              className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
             />
             <label htmlFor="isActive" className="text-sm text-gray-600">
               Active
@@ -168,7 +168,7 @@ const HierarchicalCategoryForm: React.FC<HierarchicalCategoryFormProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm text-white bg-purple-600 rounded hover:bg-purple-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm text-white bg-sky-600 rounded hover:bg-sky-700 disabled:opacity-50"
             >
               {isSubmitting ? 'Saving...' : category ? 'Update' : 'Create'}
             </button>

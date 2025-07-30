@@ -70,7 +70,7 @@ export default function OrderConfirmationPage() {
         return (
             <div className="container mx-auto px-4 py-8">
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
                 </div>
             </div>
         );
@@ -139,7 +139,7 @@ export default function OrderConfirmationPage() {
                     <div className="text-center">
                         <Link 
                             href="/products"
-                            className="inline-block bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-200"
+                            className="inline-block bg-sky-600 text-white py-3 px-6 rounded-lg hover:bg-sky-700 transition-colors duration-200"
                         >
                             გაგრძელება შოპინგი
                         </Link>

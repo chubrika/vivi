@@ -49,7 +49,7 @@ export default function SellerLayout({
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
       </div>
     );
   }
@@ -79,7 +79,7 @@ export default function SellerLayout({
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link href="/seller/dashboard" className="text-xl font-bold text-purple-600">
+                <Link href="/seller/dashboard" className="text-xl font-bold text-sky-600">
                   Seller Portal
                 </Link>
               </div>
@@ -90,7 +90,7 @@ export default function SellerLayout({
                     href={item.href}
                     className={`${
                       pathname === item.href
-                        ? 'border-purple-500 text-gray-900'
+                        ? 'border-sky-500 text-gray-900'
                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >

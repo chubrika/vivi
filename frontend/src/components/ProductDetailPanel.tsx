@@ -115,7 +115,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                         <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition duration-300">
                                             <ShoppingCart className="h-5 w-5" />
                                             {totalItems > 0 && (
-                                                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                                <span className="absolute -top-1 -right-1 bg-sky-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                                                     {totalItems}
                                                 </span>
                                             )}
@@ -152,7 +152,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                         {product.images.map((image, index) => (
                                             <div
                                                 key={index}
-                                                className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer w-10 h-10 ${index === activeImageIndex ? 'ring-2 ring-purple-500' : ''
+                                                className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer w-10 h-10 ${index === activeImageIndex ? 'ring-2 ring-sky-500' : ''
                                                     }`}
                                                 onClick={() => handleImageClick(index)}
                                             >
@@ -186,7 +186,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                         dangerouslySetInnerHTML={{ __html: product.description }}
                                     />
                                     <button
-                                        className="mt-2 text-purple-600 hover:text-purple-700"
+                                        className="mt-2 text-sky-600 hover:text-sky-700"
                                         onClick={() => setShowFullDescription(!showFullDescription)}
                                     >
                                         {showFullDescription ? 'ნაკლების ნახვა' : 'მეტის ნახვა'}
@@ -198,7 +198,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                             <div className="w-full md:w-1/5 border border-gray-200 p-3">
                                 {/* Price */}
                                 <div>
-                                    <p className="text-2xl font-semibold text-purple-600">
+                                    <p className="text-2xl font-semibold text-sky-600">
                                         {product.price.toFixed(2)} ₾
                                     </p>
                                 </div>
@@ -209,7 +209,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                     <div className="flex items-center">
                                         <button
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-purple-600"
+                                            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-sky-600"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
@@ -225,7 +225,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                         />
                                         <button
                                             onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                                            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-purple-600"
+                                            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-sky-600"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -241,7 +241,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                             <div className="pt-4 flex gap-4">
                                                 <button
                                                     onClick={handleBuyNow}
-                                                    className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className="w-full bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     ყიდვა
                                                 </button>

@@ -48,12 +48,12 @@ export default function AddressForm({ onSave, onCancel, initialAddress }: Addres
           type="text"
           value={address.title}
           onChange={(e) => setAddress(prev => ({ ...prev, title: e.target.value }))}
-          className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+          className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
           placeholder=" "
           required
         />
         <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-          address.title ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+          address.title ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
         }`}>
           Address Title
         </label>
@@ -67,7 +67,7 @@ export default function AddressForm({ onSave, onCancel, initialAddress }: Addres
           id="isDefault"
           checked={address.isDefault}
           onChange={(e) => setAddress(prev => ({ ...prev, isDefault: e.target.checked }))}
-          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+          className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
         />
         <label htmlFor="isDefault" className="ml-2 block text-sm text-gray-900">
           Set as default address
@@ -78,7 +78,7 @@ export default function AddressForm({ onSave, onCancel, initialAddress }: Addres
       
         <button
           type="submit"
-          className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+          className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
         >
           Save Address
         </button>

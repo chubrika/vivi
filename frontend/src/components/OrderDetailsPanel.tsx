@@ -217,7 +217,7 @@ export default function OrderDetailsPanel({
                   <select
                     value={localOrder.status}
                     onChange={(e) => handleStatusUpdate(e.target.value as Order['status'])}
-                    className="ml-2 text-black block w-40 px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
+                    className="ml-2 text-black block w-40 px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md"
                   >
                     {allowedStatuses.map((status) => (
                       <option key={status} value={status}>
@@ -250,7 +250,7 @@ export default function OrderDetailsPanel({
                 ) : (
                   <select
                     onChange={(e) => handleAssignCourier(e.target.value)}
-                    className="block text-gray-600 w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
+                    className="block text-gray-600 w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md"
                   >
                     <option value="">კურიერის მინიჭება</option>
                     {couriers.map((courier) => (

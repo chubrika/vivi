@@ -121,7 +121,7 @@ export default function SearchResults({ searchTerm, onClose }: SearchResultsProp
                   <p className="text-sm text-gray-500 truncate">
                     {product.category?.name}
                   </p>
-                  <p className="text-sm font-medium text-purple-600">
+                  <p className="text-sm font-medium text-sky-600">
                     ${product.price.toFixed(2)}
                   </p>
                 </div>

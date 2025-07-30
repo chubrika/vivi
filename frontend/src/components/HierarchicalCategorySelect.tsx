@@ -32,7 +32,7 @@ const HierarchicalCategorySelect: React.FC<HierarchicalCategorySelectProps> = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       required={required}
-      className={`w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800 ${className}`}
+      className={`w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800 ${className}`}
     >
       <option value="">Select a category</option>
       {renderCategoryOptions(categories)}

@@ -385,7 +385,7 @@ export default function CheckoutPage() {
         return (
             <div className="container mx-auto px-4 py-8">
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
                 </div>
             </div>
         );
@@ -423,11 +423,11 @@ export default function CheckoutPage() {
                                         value={formData.firstName}
                                         onChange={handleInputChange}
                                         required
-                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.firstName ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.firstName ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                                        formData.firstName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                                        formData.firstName ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                                     }`}>
                                         სახელი
                                     </label>
@@ -442,11 +442,11 @@ export default function CheckoutPage() {
                                         value={formData.lastName}
                                         onChange={handleInputChange}
                                         required
-                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.lastName ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.lastName ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                                        formData.lastName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                                        formData.lastName ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                                     }`}>
                                         გვარი
                                     </label>
@@ -460,15 +460,15 @@ export default function CheckoutPage() {
                                 <div className="relative">
                                     <input
                                         type="tel"
-                                        name="mobile"
+                                        name="phoneNumber"
                                         value={formData.phoneNumber}
                                         onChange={handleInputChange}
                                         required
-                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.phoneNumber ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.phoneNumber ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                                        formData.phoneNumber ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                                        formData.phoneNumber ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                                     }`}>
                                        ტელეფონის ნომერი
                                     </label>
@@ -483,11 +483,11 @@ export default function CheckoutPage() {
                                         value={formData.personalNumber}
                                         onChange={handleInputChange}
                                         required
-                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.personalNumber ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.personalNumber ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                                        formData.personalNumber ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                                        formData.personalNumber ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                                     }`}>
                                         პირადი ნომერი
                                     </label>
@@ -504,17 +504,17 @@ export default function CheckoutPage() {
                                     value={formData.address}
                                     onChange={handleInputChange}
                                     required
-                                    className={`w-full px-4 py-3 rounded-lg border ${formErrors.address ? 'border-red-500' : 'border-gray-200'} focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                    className={`w-full px-4 py-3 rounded-lg border ${formErrors.address ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
                                     placeholder=" "
                                 />
                                 <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                                    formData.address ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                                    formData.address ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                                 }`}>
                                     მისამართი
                                 </label>
                                 <label 
                                     onClick={() => setShowAddressModal(true)}
-                                    className="absolute right-4 top-3 text-sm text-purple-600 cursor-pointer hover:text-purple-800 transition-colors duration-200"
+                                    className="absolute right-4 top-3 text-sm text-sky-600 cursor-pointer hover:text-sky-800 transition-colors duration-200"
                                 >
                                     მისამართის შეცვლა
                                 </label>
@@ -529,11 +529,11 @@ export default function CheckoutPage() {
                                     value={formData.comment}
                                     onChange={handleInputChange}
                                     rows={3}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none resize-none peer text-gray-800"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none resize-none peer text-gray-800"
                                     placeholder=" "
                                 />
                                 <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-                                    formData.comment ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                                    formData.comment ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
                                 }`}>
                                     კომენტარი
                                 </label>
@@ -547,8 +547,8 @@ export default function CheckoutPage() {
                                             type="button"
                                             onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'card' }))}
                                             className={`w-full flex items-center justify-between p-4 ${
-                                                formData.paymentMethod === 'card' ? 'bg-purple-50' : 'bg-white'
-                                            } hover:bg-purple-50 transition-all duration-200`}
+                                                formData.paymentMethod === 'card' ? 'bg-sky-50' : 'bg-white'
+                                            } hover:bg-sky-50 transition-all duration-200`}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -557,7 +557,7 @@ export default function CheckoutPage() {
                                                 <span className="text-gray-800">ბარათით გადახდა</span>
                                             </div>
                                             {formData.paymentMethod === 'card' && (
-                                                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                                 </svg>
                                             )}
@@ -572,7 +572,7 @@ export default function CheckoutPage() {
                                                                 id="tbc"
                                                                 name="bankType"
                                                                 value="tbc"
-                                                                className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                                                className="h-4 w-4 text-sky-600 focus:ring-sky-500"
                                                             />
                                                             <label htmlFor="tbc" className="text-gray-800">თიბისი ბანკი</label>
                                                         </div>
@@ -585,7 +585,7 @@ export default function CheckoutPage() {
                                                                 id="bog"
                                                                 name="bankType"
                                                                 value="bog"
-                                                                className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                                                className="h-4 w-4 text-sky-600 focus:ring-sky-500"
                                                             />
                                                             <label htmlFor="bog" className="text-gray-800">საქართველოს ბანკი</label>
                                                         </div>
@@ -596,7 +596,7 @@ export default function CheckoutPage() {
                                                             type="checkbox"
                                                             id="saveCard"
                                                             name="saveCard"
-                                                            className="h-4 w-4 text-purple-600 focus:ring-purple-500 rounded"
+                                                            className="h-4 w-4 text-sky-600 focus:ring-sky-500 rounded"
                                                         />
                                                         <label htmlFor="saveCard" className="text-gray-800">ბარათის დამახსოვრება</label>
                                                     </div>
@@ -611,8 +611,8 @@ export default function CheckoutPage() {
                                             type="button"
                                             onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'balance' }))}
                                             className={`w-full flex items-center justify-between p-4 ${
-                                                formData.paymentMethod === 'balance' ? 'bg-purple-50' : 'bg-white'
-                                            } hover:bg-purple-50 transition-all duration-200`}
+                                                formData.paymentMethod === 'balance' ? 'bg-sky-50' : 'bg-white'
+                                            } hover:bg-sky-50 transition-all duration-200`}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -621,7 +621,7 @@ export default function CheckoutPage() {
                                                 <span className="text-gray-800">ბალანსით გადახდა</span>
                                             </div>
                                             {formData.paymentMethod === 'balance' && (
-                                                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                                 </svg>
                                             )}
@@ -634,8 +634,8 @@ export default function CheckoutPage() {
                                             type="button"
                                             onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'cash' }))}
                                             className={`w-full flex items-center justify-between p-4 ${
-                                                formData.paymentMethod === 'cash' ? 'bg-purple-50' : 'bg-white'
-                                            } hover:bg-purple-50 transition-all duration-200`}
+                                                formData.paymentMethod === 'cash' ? 'bg-sky-50' : 'bg-white'
+                                            } hover:bg-sky-50 transition-all duration-200`}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -644,7 +644,7 @@ export default function CheckoutPage() {
                                                 <span className="text-gray-800">კურიერთან გადახდა</span>
                                             </div>
                                             {formData.paymentMethod === 'cash' && (
-                                                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                                 </svg>
                                             )}
@@ -676,13 +676,13 @@ export default function CheckoutPage() {
                                 </div>
                                 <div className="flex justify-between font-semibold text-lg border-t text-gray-600 pt-4">
                                     <span>სულ თანხა</span>
-                                    <span className="text-purple-600">${isCartCheckout ? cartTotalPrice.toFixed(2) : (product?.price ? product.price * quantity : 0).toFixed(2)}</span>
+                                    <span className="text-sky-600">${isCartCheckout ? cartTotalPrice.toFixed(2) : (product?.price ? product.price * quantity : 0).toFixed(2)}</span>
                                 </div>
                             </div>
 
                             <button
                                 onClick={handleSubmit}
-                                className="w-full bg-purple-600 text-white py-4 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium text-sm shadow-md hover:shadow-lg"
+                                className="w-full bg-sky-600 text-white py-4 px-6 rounded-lg hover:bg-sky-700 transition-colors duration-200 font-medium text-sm shadow-md hover:shadow-lg"
                             >
                                 შეკვეთის დასრულება
                             </button>
@@ -702,7 +702,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center justify-between pb-2 border-t pt-2 border-gray-200">
                         <button
                             onClick={handleAddAddress}
-                            className="flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
+                            className="flex items-center text-sky-600 hover:text-sky-800 transition-colors duration-200"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -720,8 +720,8 @@ export default function CheckoutPage() {
                                     key={address._id} 
                                     className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
                                         selectedAddressId === address._id 
-                                            ? 'border-purple-500 bg-purple-50' 
-                                            : 'border-gray-200 hover:border-purple-300'
+                                            ? 'border-sky-500 bg-sky-50' 
+                                            : 'border-gray-200 hover:border-sky-300'
                                     }`}
                                     onClick={() => handleAddressSelect(address)}
                                 >
@@ -733,7 +733,7 @@ export default function CheckoutPage() {
                                                 name="address"
                                                 checked={selectedAddressId === address._id}
                                                 onChange={() => handleAddressSelect(address)}
-                                                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                                                className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300"
                                             />
                                         </div>
                                         <div className="ml-3">
@@ -741,7 +741,7 @@ export default function CheckoutPage() {
                                                 {address.title}
                                             </label>
                                             {address.isDefault && (
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mt-1 ml-2">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800 mt-1 ml-2">
                                                     ძირითადი მისამართი
                                                 </span>
                                             )}
@@ -756,7 +756,7 @@ export default function CheckoutPage() {
                         <button
                             type="button"
                             onClick={handleAddressModalClose}
-                            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
                         >
                             დახურვა
                         </button>

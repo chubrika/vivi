@@ -49,14 +49,14 @@ const MobileBottomNav = () => {
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
       <div className="flex items-center justify-around py-2">
-        <Link href="/" className="flex flex-col items-center p-2 text-gray-600 hover:text-purple-600 transition-colors">
+        <Link href="/" className="flex flex-col items-center p-2 text-gray-600 hover:text-sky-600 transition-colors">
           <Home className="w-5 h-5" />
           <span className="text-xs mt-1">მთავარი</span>
         </Link>
         
         <button
           onClick={toggleCategoryMenu}
-          className="flex flex-col items-center p-2 text-gray-600 hover:text-purple-600 transition-colors"
+          className="flex flex-col items-center p-2 text-gray-600 hover:text-sky-600 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -64,10 +64,10 @@ const MobileBottomNav = () => {
           <span className="text-xs mt-1">კატეგორიები</span>
         </button>
         
-        <Link href="/cart" className="flex flex-col items-center p-2 text-gray-600 hover:text-purple-600 transition-colors relative">
+        <Link href="/cart" className="flex flex-col items-center p-2 text-gray-600 hover:text-sky-600 transition-colors relative">
           <ShoppingCart className="w-5 h-5" />
           {totalItems > 0 && (
-            <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 bg-sky-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
               {totalItems}
             </span>
           )}
@@ -79,7 +79,7 @@ const MobileBottomNav = () => {
             <>
               <button
                 onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                className="flex flex-col items-center p-2 text-gray-600 hover:text-purple-600 transition-colors"
+                className="flex flex-col items-center p-2 text-gray-600 hover:text-sky-600 transition-colors"
               >
                 <User className="w-5 h-5" />
                 <span className="text-xs mt-1">ანგარიში</span>
@@ -89,7 +89,7 @@ const MobileBottomNav = () => {
                 <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-xl shadow-lg py-2 z-10 border border-gray-100">
                   <Link
                     href="/profile?section=personal"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
                     onClick={() => setAccountDropdownOpen(false)}
                   >
                     <svg className="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +99,7 @@ const MobileBottomNav = () => {
                   </Link>
                   <Link
                     href="/profile?section=orders"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
                     onClick={() => setAccountDropdownOpen(false)}
                   >
                     <svg className="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +109,7 @@ const MobileBottomNav = () => {
                   </Link>
                   <Link
                     href="/profile?section=addresses"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
                     onClick={() => setAccountDropdownOpen(false)}
                   >
                     <svg className="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@ const MobileBottomNav = () => {
                   </Link>
                   <Link
                     href="/profile?section=cards"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
                     onClick={() => setAccountDropdownOpen(false)}
                   >
                     <svg className="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,7 +131,7 @@ const MobileBottomNav = () => {
                   <div className="border-t border-gray-100 my-1"></div>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                    className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
                   >
                     <svg className="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -144,7 +144,7 @@ const MobileBottomNav = () => {
           ) : (
             <button 
               onClick={openLoginSidebar}
-              className="flex flex-col items-center p-2 text-gray-600 hover:text-purple-600 transition-colors"
+              className="flex flex-col items-center p-2 text-gray-600 hover:text-sky-600 transition-colors"
             >
               <User className="w-5 h-5" />
               <span className="text-xs mt-1">შესვლა</span>

@@ -61,7 +61,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
       <div 
         key={category._id} 
         className={`bg-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer ${
-          isSelected ? 'ring-2 ring-purple-500 border border-purple-500' : 'border-2 border-transparent'
+          isSelected ? 'ring-2 ring-sky-500 border border-sky-500' : 'border-2 border-transparent'
         }`}
         onClick={() => handleCategoryClick(category)}
       >
@@ -106,8 +106,8 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                       key={category._id}
                       className={`flex items-center p-3 rounded cursor-pointer transition-colors duration-200 hover:bg-gray-50 ${
                         selectedCategory?._id === category._id
-                          ? 'bg-purple-50 text-purple-700'
-                          : 'text-gray-700 hover:text-purple-600'
+                          ? 'bg-sky-50 text-sky-700'
+                          : 'text-gray-700 hover:text-sky-600'
                       }`}
                       onClick={() => setSelectedCategory(category)}
                     >
@@ -134,7 +134,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                     {selectedCategory.children.map(child => (
                       <div key={child._id}>
                         <div
-                          className="flex items-center p-3 rounded cursor-pointer text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors duration-200"
+                          className="flex items-center p-3 rounded cursor-pointer text-gray-700 hover:bg-gray-50 hover:text-sky-600 transition-colors duration-200"
                           onClick={() => {
                             if (child.children && child.children.length > 0) {
                               setSelectedCategory(child);
@@ -155,7 +155,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                             {child.children.map(grandchild => (
                               <div
                                 key={grandchild._id}
-                                className="flex items-center p-2 rounded cursor-pointer text-gray-600 hover:bg-gray-50 hover:text-purple-600 transition-colors duration-200"
+                                className="flex items-center p-2 rounded cursor-pointer text-gray-600 hover:bg-gray-50 hover:text-sky-600 transition-colors duration-200"
                                 onClick={() => {
                                   router.push(`/products?category=${grandchild.slug}`);
                                   onClose();
@@ -189,7 +189,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                       className="flex items-center p-3 rounded-lg border border-gray-200 cursor-pointer transition-colors duration-200 hover:bg-gray-50"
                       onClick={() => setSelectedCategory(category)}
                     >
-                      <svg className="w-5 h-5 mr-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 mr-3 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
                       <span className="text-base font-medium text-gray-700">{category.name}</span>
@@ -208,7 +208,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                 <div className="flex items-center mb-4">
                   <button
                     onClick={() => setSelectedCategory(null)}
-                    className="flex items-center text-purple-600 hover:text-purple-700 font-medium mr-3"
+                    className="flex items-center text-sky-600 hover:text-sky-700 font-medium mr-3"
                   >
                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

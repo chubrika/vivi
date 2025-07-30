@@ -133,17 +133,17 @@ export default function GoogleMap({ onLocationSelect, initialLocation }: GoogleM
           type="text"
           value={searchValue}
           onChange={handleSearchChange}
-          className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+          className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
           placeholder=" "
         />
         <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
-          searchValue ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+          searchValue ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
         }`}>
           Search Location
         </label>
         <button 
           type="submit"
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-purple-600 hover:text-purple-800"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sky-600 hover:text-sky-800"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

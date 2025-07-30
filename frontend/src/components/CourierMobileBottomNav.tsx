@@ -39,8 +39,8 @@ const CourierMobileBottomNav = () => {
           href="/courier/dashboard" 
           className={`flex flex-col items-center p-2 transition-colors ${
             pathname === '/courier/dashboard' 
-              ? 'text-purple-600' 
-              : 'text-gray-600 hover:text-purple-600'
+              ? 'text-sky-600' 
+              : 'text-gray-600 hover:text-sky-600'
           }`}
         >
           <Home className="w-5 h-5" />
@@ -51,8 +51,8 @@ const CourierMobileBottomNav = () => {
           href="/courier/orders" 
           className={`flex flex-col items-center p-2 transition-colors ${
             pathname === '/courier/orders' 
-              ? 'text-purple-600' 
-              : 'text-gray-600 hover:text-purple-600'
+              ? 'text-sky-600' 
+              : 'text-gray-600 hover:text-sky-600'
           }`}
         >
           <Package className="w-5 h-5" />
@@ -63,8 +63,8 @@ const CourierMobileBottomNav = () => {
           href="/courier/earnings" 
           className={`flex flex-col items-center p-2 transition-colors ${
             pathname === '/courier/earnings' 
-              ? 'text-purple-600' 
-              : 'text-gray-600 hover:text-purple-600'
+              ? 'text-sky-600' 
+              : 'text-gray-600 hover:text-sky-600'
           }`}
         >
           <DollarSign className="w-5 h-5" />
@@ -74,7 +74,7 @@ const CourierMobileBottomNav = () => {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-            className="flex flex-col items-center p-2 text-gray-600 hover:text-purple-600 transition-colors"
+            className="flex flex-col items-center p-2 text-gray-600 hover:text-sky-600 transition-colors"
           >
             <User className="w-5 h-5" />
             <span className="text-xs mt-1">პროფილი</span>
@@ -84,7 +84,7 @@ const CourierMobileBottomNav = () => {
             <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-xl shadow-lg py-2 z-10 border border-gray-100">
               <Link
                 href="/profile?section=personal"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
                 onClick={() => setAccountDropdownOpen(false)}
               >
                 <svg className="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,7 +94,7 @@ const CourierMobileBottomNav = () => {
               </Link>
               <Link
                 href="/"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
                 onClick={() => setAccountDropdownOpen(false)}
               >
                 <svg className="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,7 @@ const CourierMobileBottomNav = () => {
               <div className="border-t border-gray-100 my-1"></div>
               <button
                 onClick={handleLogout}
-                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
               >
                 <svg className="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

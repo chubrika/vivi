@@ -30,7 +30,6 @@ interface UpdateUserData {
   password?: string;
   phoneNumber?: string;
   personalNumber?: string;
-  bio?: string;
 }
 
 export const userService = {

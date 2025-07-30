@@ -174,7 +174,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by name or description..."
-            className="mt-1 block w-full rounded-md border text-gray-500 border-gray-300 px-3 py-2 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border text-gray-500 border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
           />
         </div>
         <div className="flex-1">
@@ -185,7 +185,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
             id="category"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="mt-1 text-gray-500 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+            className="mt-1 text-gray-500 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
           >
             <option value="">All Categories</option>
             {categories.map((category) => (
@@ -204,7 +204,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
             value={selectedFilter}
             onChange={(e) => setSelectedFilter(e.target.value)}
             disabled={!selectedCategory || availableFilters.length === 0}
-            className="mt-1 text-gray-500 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-1 text-gray-500 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="">All Filters</option>
             {availableFilters.map((filter) => (
@@ -223,7 +223,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
         <div className="flex flex-wrap gap-2">
           <button
             onClick={resetFilters}
-            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
           >
             Clear All Filters
           </button>
@@ -239,11 +239,11 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
             </span>
           )}
           {selectedFilter && (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
               Filter: {filters.find(f => f._id === selectedFilter)?.name || selectedFilter}
               <button
                 onClick={() => setSelectedFilter('')}
-                className="ml-1 text-purple-600 hover:text-purple-800"
+                className="ml-1 text-sky-600 hover:text-sky-800"
               >
                 ×
               </button>
@@ -371,7 +371,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => onEdit(product)}
-                          className="text-purple-600 hover:text-purple-900 mr-4"
+                          className="text-sky-600 hover:text-sky-900 mr-4"
                         >
                           Edit
                         </button>
@@ -514,7 +514,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
                         {product.filters.map((filter) => (
                           <span 
                             key={filter._id} 
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800"
                           >
                             {filter.name}
                           </span>

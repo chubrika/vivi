@@ -148,7 +148,7 @@ export default function Navbar() {
                 <input
                   type="text"
                   placeholder="ძიება..."
-                  className="w-full text-gray-500 px-4 py-2.5 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-50"
+                  className="w-full text-gray-500 px-4 py-2.5 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-gray-50"
                   value={searchTerm}
                   onChange={handleSearchChange}
                 />
@@ -169,7 +169,7 @@ export default function Navbar() {
             {/* Chat Icon - Mobile Only */}
             <button
               onClick={openChat}
-              className="md:hidden p-2 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors"
+              className="md:hidden p-2 rounded-full bg-sky-100 text-sky-600 hover:bg-sky-200 transition-colors"
               title="Chat with us"
             >
               <MessageCircle className="h-5 w-5" />
@@ -181,7 +181,7 @@ export default function Navbar() {
                 <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition duration-300">
                   <ShoppingCart className="h-5 w-5" />
                   {totalItems > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-sky-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                       {totalItems}
                     </span>
                   )}
@@ -196,7 +196,7 @@ export default function Navbar() {
                   className="flex items-center focus:outline-none"
                   aria-expanded={dropdownOpen}
                 >
-                  <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white hover:bg-purple-700 transition duration-300">
+                  <div className="w-10 h-10 rounded-full bg-sky-600 flex items-center justify-center text-white hover:bg-sky-700 transition duration-300">
                     <User className="h-5 w-5" />
                   </div>
                 </button>
@@ -205,19 +205,19 @@ export default function Navbar() {
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-10 border border-gray-100">
                     <Link
                       href="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
                       onClick={() => setDropdownOpen(false)}
                     >
-                      My Account
+                      პროფილი
                     </Link>
                     <button
                       onClick={() => {
                         setDropdownOpen(false);
                         handleLogout();
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
                     >
-                      Logout
+                      გასვლა
                     </button>
                   </div>
                 )}
@@ -226,7 +226,7 @@ export default function Navbar() {
               <div className="flex items-center gap-4 hidden md:flex">
                 <button
                   onClick={openLoginSidebar}
-                  className="px-4 py-2 text-sm font-medium rounded-full text-purple-600 hover:bg-purple-50 transition duration-300"
+                  className="px-4 py-2 text-sm font-medium rounded-full text-sky-600 hover:bg-sky-50 transition duration-300"
                 >
                   შესვლა
                 </button>
@@ -279,7 +279,7 @@ export default function Navbar() {
               href={item.href}
               className={`${
                 pathname === item.href
-                  ? 'bg-purple-50 border-purple-500 text-purple-700'
+                  ? 'bg-sky-50 border-sky-500 text-sky-700'
                   : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
               } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
             >

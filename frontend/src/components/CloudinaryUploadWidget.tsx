@@ -134,7 +134,7 @@ export default function CloudinaryUploadWidget({
               <button
                 type="button"
                 onClick={() => handleOpenUploader(open)}
-                className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center text-gray-500 hover:border-purple-500 hover:text-purple-500 transition-colors"
+                className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center text-gray-500 hover:border-sky-500 hover:text-sky-500 transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
