@@ -1,5 +1,20 @@
 // API base URL from environment variables
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// For production, use the same domain as the frontend but with /api path
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // If running in production (on vivi.ge domain), use the same domain for API
+  if (typeof window !== 'undefined' && window.location.hostname === 'www.vivi.ge') {
+    return 'https://www.vivi.ge';
+  }
+  
+  // Default to localhost for development
+  return 'http://localhost:5000';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to clean token format
 const cleanToken = (token: string): string => {

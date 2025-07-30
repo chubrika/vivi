@@ -40,20 +40,61 @@ const allowedOrigins = [
   'https://www.vivi.ge',
   'https://vivi.ge', // optional, for non-www
   'http://localhost:3000', // for development
+  'http://localhost:3001', // for development alternative port
+  'http://127.0.0.1:3000', // for development
+  'http://127.0.0.1:3001', // for development alternative port
 ];
+
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) {
+    // Log all incoming requests for debugging
+    console.log('CORS request from origin:', origin);
+    
     // Allow requests with no origin (like mobile apps, curl, etc.)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) {
+      console.log('Allowing request with no origin');
       callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+      return;
     }
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      console.log('Allowing request from:', origin);
+      callback(null, true);
+      return;
+    }
+    
+    // Log blocked origins for debugging
+    console.log('CORS blocked origin:', origin);
+    console.log('Allowed origins:', allowedOrigins);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
 };
+
 app.use(cors(corsOptions));
+
+// Additional CORS headers for preflight requests
+app.use((req, res, next) => {
+  // Log all requests for debugging
+  console.log(`${req.method} ${req.path} from ${req.headers.origin}`);
+  
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS preflight request');
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 app.use(express.json());
 
 // MongoDB connection
