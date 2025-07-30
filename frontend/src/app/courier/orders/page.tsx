@@ -165,7 +165,7 @@ export default function CourierOrders() {
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div className="px-4 py-6 sm:px-0">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Orders</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">შეკვეთები</h1>
 
         {error && (
           <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -176,7 +176,7 @@ export default function CourierOrders() {
         {/* Filters Bar */}
         <div className="bg-white p-4 rounded-lg shadow mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-900">Filters</h2>
+            <h2 className="text-lg font-medium text-gray-900">ფილტრები</h2>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
@@ -196,7 +196,7 @@ export default function CourierOrders() {
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-                Clear Filters
+                ფილტრების გასუფთავება
               </button>
             )}
           </div>
@@ -204,7 +204,7 @@ export default function CourierOrders() {
             {/* Order ID Search */}
             <div>
               <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 mb-1">
-                Search Order ID
+                შეკვეთის ID ძებნა
               </label>
               <input
                 type="text"
@@ -214,7 +214,7 @@ export default function CourierOrders() {
                   setSearchOrderId(e.target.value);
                   setCurrentPage(1);
                 }}
-                placeholder="Enter order ID"
+                placeholder="შეკვეთის ID შეყვანა"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
               />
             </div>
@@ -222,7 +222,7 @@ export default function CourierOrders() {
             {/* Status Filter */}
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                Status
+                სტატუსი
               </label>
               <select
                 id="status"
@@ -233,7 +233,7 @@ export default function CourierOrders() {
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-gray-600"
               >
-                <option value="">All Statuses</option>
+                <option value="">ყველა სტატუსი</option>
                 {statuses.map((status) => (
                   <option key={status} value={status}>
                     {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -246,7 +246,7 @@ export default function CourierOrders() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Date
+                  დაწყების თარიღი
                 </label>
                 <input
                   type="date"
@@ -261,7 +261,7 @@ export default function CourierOrders() {
               </div>
               <div>
                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
-                  End Date
+                  დასრულების თარიღი
                 </label>
                 <input
                   type="date"
@@ -294,8 +294,8 @@ export default function CourierOrders() {
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No orders</h3>
-            <p className="mt-1 text-sm text-gray-500">No orders match your filters.</p>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">შეკვეთები არ მოიძებნა</h3>
+            <p className="mt-1 text-sm text-gray-500">შეკვეთები არ მოიძებნა ფილტრების მიხედვით.</p>
           </div>
         ) : (
           <div className="flex flex-col">
@@ -309,37 +309,37 @@ export default function CourierOrders() {
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Order ID
+                          შეკვეთის ID
                         </th>
                         <th
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Customer
+                          მომხმარებელი
                         </th>
                         <th
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Items
+                          პროდუქტები
                         </th>
                         <th
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Total
+                              ჯამი
                         </th>
                         <th
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Status
+                          სტატუსი
                         </th>
                         <th
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Date
+                          თარიღი
                         </th>
                       </tr>
                     </thead>
@@ -403,7 +403,7 @@ export default function CourierOrders() {
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
                   >
-                    <span className="sr-only">Previous</span>
+                    <span className="sr-only">წინა</span>
                     <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -434,7 +434,7 @@ export default function CourierOrders() {
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
                   >
-                    <span className="sr-only">Next</span>
+                    <span className="sr-only">შემდეგი</span>
                     <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                     </svg>
