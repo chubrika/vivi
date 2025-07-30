@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../utils/authContext';
 import { authService } from '../services/authService';
 import { X, Mail, Lock, Eye, EyeOff, User, Building, LogIn } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface LoginSidebarProps {
   isOpen: boolean;
@@ -51,13 +52,24 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
     setLoading(true);
 
     try {
+      console.log(`${activeTab === 'login' ? 'Login' : 'Registration'} attempt for:`, formData.email);
+      
       const data = activeTab === 'login' 
         ? await authService.login({ email: formData.email, password: formData.password })
         : await authService.register(formData);
 
+      console.log(`${activeTab === 'login' ? 'Login' : 'Registration'} successful:`, data);
+      
       const cleanToken = data.token.replace('Bearer ', '');
       login(cleanToken, data.user);
-      console.log('User logged in successfully');
+      console.log('User logged in successfully after', activeTab);
+      
+      // Show success notification
+      if (activeTab === 'register') {
+        toast.success(`🎉 რეგისტრაცია წარმატებით დასრულდა! მოგესალმებთ ${data.user.firstName}!`);
+      } else {
+        toast.success(`👋 კეთილი იყოს თქვენი დაბრუნება, ${data.user.firstName}!`);
+      }
       
       // Close sidebar
       onClose();

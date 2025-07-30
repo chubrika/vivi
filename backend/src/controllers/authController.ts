@@ -39,29 +39,47 @@ export const register = async (req: Request, res: Response) => {
 
     await user.save();
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    // Get JWT_SECRET from environment variables (consistent with login)
+    const jwtSecret = process.env.JWT_SECRET;
+    
+    if (!jwtSecret) {
+      console.error('JWT_SECRET is not defined in environment variables');
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
 
-    // Return user data and token
-    res.status(201).json({
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        ...(role === 'seller' && {
-          businessName: user.businessName,
-          businessAddress: user.businessAddress,
-          phoneNumber: user.phoneNumber
-        })
-      }
-    });
+    try {
+      // Generate JWT token (consistent with login format)
+      const token = jwt.sign(
+        { 
+          userId: user._id.toString(), 
+          role: user.role || 'user' // Ensure role is defined
+        },
+        jwtSecret,
+        { expiresIn: '24h' }
+      );
+
+      console.log('Registration successful for user:', email);
+      
+      // Return user data and token (consistent with login format)
+      res.status(201).json({
+        token,
+        user: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role || 'user',
+          ...(role === 'seller' && {
+            businessName: user.businessName,
+            businessAddress: user.businessAddress,
+            phoneNumber: user.phoneNumber
+          })
+        }
+      });
+    } catch (jwtError) {
+      console.error('JWT Signing Error:', jwtError);
+      return res.status(500).json({ message: 'Error creating authentication token' });
+    }
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Error registering user' });

@@ -208,7 +208,7 @@ export default function Navbar() {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
                       onClick={() => setDropdownOpen(false)}
                     >
-                      My Account
+                      პროფილი
                     </Link>
                     <button
                       onClick={() => {
@@ -217,7 +217,7 @@ export default function Navbar() {
                       }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition duration-300"
                     >
-                      Logout
+                      გასვლა
                     </button>
                   </div>
                 )}

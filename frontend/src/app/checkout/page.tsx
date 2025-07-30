@@ -460,7 +460,7 @@ export default function CheckoutPage() {
                                 <div className="relative">
                                     <input
                                         type="tel"
-                                        name="mobile"
+                                        name="phoneNumber"
                                         value={formData.phoneNumber}
                                         onChange={handleInputChange}
                                         required

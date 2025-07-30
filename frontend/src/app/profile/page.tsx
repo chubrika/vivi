@@ -21,7 +21,7 @@ interface UserProfile {
   email: string;
   role: 'user' | 'admin' | 'seller' | 'courier' | 'customer';
   phoneNumber?: string;
-  bio?: string;
+  personalNumber?: string;
   balance: number;
   createdAt?: string;
   updatedAt?: string;
@@ -49,7 +49,7 @@ export default function ProfilePage() {
     lastName: '',
     email: '',
     phoneNumber: '',
-    bio: ''
+    personalNumber: ''
   });
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [updateError, setUpdateError] = useState('');
@@ -138,7 +138,7 @@ export default function ProfilePage() {
           lastName: userData.lastName || '',
           email: userData.email || '',
           phoneNumber: userData.phoneNumber || '',
-          bio: userData.bio || ''
+          personalNumber: userData.personalNumber || ''
         });
       } catch (err) {
         setError('Failed to load profile');
@@ -221,7 +221,7 @@ export default function ProfilePage() {
         lastName: formData.lastName,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
-        bio: formData.bio
+        personalNumber: formData.personalNumber
       });
 
       setProfile({
@@ -314,7 +314,7 @@ export default function ProfilePage() {
                   <div className="relative">
                     <input
                       type="text"
-                      name="name"
+                      name="firstName"
                       value={formData.firstName}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
@@ -328,18 +328,33 @@ export default function ProfilePage() {
 
                   <div className="relative">
                     <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
                       placeholder=" "
                     />
-                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.email ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.lastName ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
                       }`}>
-                      ელ-ფოსტა
+                      გვარი
                     </label>
                   </div>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
+                    placeholder=" "
+                  />
+                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.email ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                    }`}>
+                    ელ-ფოსტა
+                  </label>
                 </div>
 
                 <div className="relative">
@@ -358,17 +373,17 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="relative">
-                  <textarea
-                    name="bio"
-                    value={formData.bio}
+                  <input
+                    type="text"
+                    name="personalNumber"
+                    value={formData.personalNumber}
                     onChange={handleInputChange}
-                    rows={4}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none resize-none peer text-gray-800"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none peer text-gray-800"
                     placeholder=" "
                   />
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.bio ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
+                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.personalNumber ? '-top-2 text-xs text-purple-500' : 'top-3 text-base text-gray-500'
                     }`}>
-                    Bio
+                    პირადი ნომერი
                   </label>
                 </div>
 

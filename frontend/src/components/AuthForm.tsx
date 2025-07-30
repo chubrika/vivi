@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../utils/authContext';
 import { authService } from '../services/authService';
+import toast from 'react-hot-toast';
 
 interface AuthFormProps {
   type: 'login' | 'register';
@@ -32,13 +33,24 @@ export default function AuthForm({ type }: AuthFormProps) {
     setLoading(true);
 
     try {
+      console.log(`${type === 'login' ? 'Login' : 'Registration'} attempt for:`, formData.email);
+      
       const data = type === 'login' 
         ? await authService.login(formData)
         : await authService.register(formData);
 
+      console.log(`${type === 'login' ? 'Login' : 'Registration'} successful:`, data);
+      
       const cleanToken = data.token.replace('Bearer ', '');
       login(cleanToken, data.user);
-      console.log('User logged in successfully');
+      console.log('User logged in successfully after', type);
+      
+      // Show success notification
+      if (type === 'register') {
+        toast.success(`🎉 რეგისტრაცია წარმატებით დასრულდა! მოგესალმებთ ${data.user.firstName}!`);
+      } else {
+        toast.success(`👋 კეთილი იყოს თქვენი დაბრუნება, ${data.user.firstName}!`);
+      }
       
       // Redirect based on role
       if (data.user.role === 'admin') {
