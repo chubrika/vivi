@@ -24,6 +24,10 @@ export interface Product {
     name: string;
     description: string;
   }[];
+  discountedPercent?: number;
+  discountStartDate?: string;
+  discountEndDate?: string;
+  discountedPrice?: number;
   createdAt: string;
   updatedAt?: string;
 }

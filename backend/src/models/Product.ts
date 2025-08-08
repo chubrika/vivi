@@ -31,6 +31,10 @@ export interface IProduct extends Document {
   isActive: boolean;
   productFeatureValues: IFeatureGroup[];
   filters: IFilter['_id'][];
+  discountedPercent?: number;
+  discountStartDate?: Date;
+  discountEndDate?: Date;
+  discountedPrice?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -115,9 +119,64 @@ const productSchema = new Schema({
   filters: [{
     type: Schema.Types.ObjectId,
     ref: 'Filter'
-  }]
+  }],
+  discountedPercent: {
+    type: Number,
+    min: [0, 'Discount percent cannot be negative'],
+    max: [100, 'Discount percent cannot exceed 100'],
+    default: 0
+  },
+  discountStartDate: {
+    type: Date
+  },
+  discountEndDate: {
+    type: Date
+  },
+  discountedPrice: {
+    type: Number,
+    min: [0, 'Discounted price cannot be negative']
+  }
 }, {
   timestamps: true
+});
+
+// Pre-save middleware to calculate discounted price
+productSchema.pre('save', function(next) {
+  // Calculate discounted price if discount percent is provided
+  if (this.discountedPercent && this.discountedPercent > 0) {
+    this.discountedPrice = this.price - (this.price * (this.discountedPercent / 100));
+  } else {
+    // If no discount, set discounted price to null or undefined
+    this.discountedPrice = undefined;
+  }
+  next();
+});
+
+// Pre-update middleware for findOneAndUpdate operations
+productSchema.pre('findOneAndUpdate', function(this: any, next: any) {
+  const update = this.getUpdate();
+  
+  // If price or discountedPercent is being updated, calculate new discounted price
+  if (update.price !== undefined || update.discountedPercent !== undefined) {
+    const currentDoc = this.getQuery();
+    
+    // Get the current document to access existing values
+    this.model.findOne(currentDoc).then((doc: any) => {
+      if (doc) {
+        const newPrice = update.price !== undefined ? update.price : doc.price;
+        const newDiscountPercent = update.discountedPercent !== undefined ? update.discountedPercent : doc.discountedPercent;
+        
+        if (newDiscountPercent && newDiscountPercent > 0) {
+          update.discountedPrice = newPrice - (newPrice * (newDiscountPercent / 100));
+        } else {
+          update.discountedPrice = undefined;
+        }
+      }
+      next();
+    }).catch(next);
+  } else {
+    next();
+  }
 });
 
 // Create indexes for better query performance

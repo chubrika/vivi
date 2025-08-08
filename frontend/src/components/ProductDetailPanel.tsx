@@ -197,10 +197,31 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                             {/* Price and Actions */}
                             <div className="w-full md:w-1/5 border border-gray-200 p-3">
                                 {/* Price */}
-                                <div>
-                                    <p className="text-2xl font-semibold text-sky-600">
-                                        {product.price.toFixed(2)} ₾
-                                    </p>
+                                <div className="relative">
+                                    {/* Discount Ribbon */}
+                                    {product.discountedPercent && product.discountedPercent > 0 && (
+                                        <div className="absolute -top-2 -right-2 z-10">
+                                            <div className="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-md shadow-md">
+                                                -{product.discountedPercent}%
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {/* Price Display */}
+                                    {product.discountedPrice && product.discountedPrice > 0 ? (
+                                        <div className="flex items-center gap-3">
+                                            <p className="text-lg font-semibold text-sky-600">
+                                                {product.discountedPrice.toFixed(2)} ₾
+                                            </p>
+                                            <p className="text-sm text-gray-500 line-through">
+                                                {product.price.toFixed(2)} ₾
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-2xl font-semibold text-sky-600">
+                                            {product.price.toFixed(2)} ₾
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Quantity Input */}

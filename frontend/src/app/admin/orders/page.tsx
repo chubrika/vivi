@@ -206,7 +206,7 @@ export default function AdminOrders() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Orders Management</h1>
+      <h1 className="text-2xl text-gray-600 font-bold mb-6">შეკვეთების მართვა</h1>
       
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
