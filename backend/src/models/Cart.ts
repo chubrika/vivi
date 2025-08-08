@@ -41,6 +41,18 @@ const cartSchema = new mongoose.Schema({
     sellerId: {
       type: String,
       required: true
+    },
+    discountedPercent: {
+      type: Number
+    },
+    discountStartDate: {
+      type: String
+    },
+    discountEndDate: {
+      type: String
+    },
+    discountedPrice: {
+      type: Number
     }
   }],
   createdAt: {

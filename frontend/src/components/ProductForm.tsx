@@ -61,6 +61,10 @@ interface ProductFormProps {
     images: string[];
     isActive: boolean;
     productFeatureValues?: FeatureGroup[];
+    discountedPercent?: number;
+    discountStartDate?: string;
+    discountEndDate?: string;
+    discountedPrice?: number;
   };
   categories: Category[];
   sellers: User[];
@@ -149,6 +153,12 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   });
   const [isActive, setIsActive] = useState(product?.isActive ?? true);
   const [stock, setStock] = useState<number>(product?.stock || 0);
+  const [discountedPercent, setDiscountedPercent] = useState<number>(product?.discountedPercent || 0);
+  const [discountStartDate, setDiscountStartDate] = useState<string>(product?.discountStartDate ? new Date(product.discountStartDate).toISOString().split('T')[0] : '');
+  const [discountEndDate, setDiscountEndDate] = useState<string>(product?.discountEndDate ? new Date(product.discountEndDate).toISOString().split('T')[0] : '');
+  
+  // Calculate discounted price for display
+  const calculatedDiscountedPrice = discountedPercent > 0 ? price - (price * (discountedPercent / 100)) : null;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -334,7 +344,10 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         seller: sellerId,
         isActive,
         productFeatureValues: featureGroups, // Only include the actual feature groups
-        filters: filterValues.map(fv => fv.filterId) // Only include filter IDs
+        filters: filterValues.map(fv => fv.filterId), // Only include filter IDs
+        discountedPercent,
+        discountStartDate: discountStartDate || undefined,
+        discountEndDate: discountEndDate || undefined
       };
 
       if (product?._id) {
@@ -477,6 +490,60 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
             min="0"
             required
+          />
+        </div>
+      </div>
+
+      {/* Discount Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label htmlFor="discountedPercent" className="block text-sm font-medium text-gray-700 mb-1">
+            ფასდაკლების პროცენტი (%)
+          </label>
+          <input
+            type="number"
+            id="discountedPercent"
+            value={discountedPercent}
+            onChange={(e) => setDiscountedPercent(Number(e.target.value))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+            min="0"
+            max="100"
+            step="0.01"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            გამოთვლილი ფასდაკლებული ფასი
+          </label>
+          <div className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600">
+            {calculatedDiscountedPrice !== null ? `₾${calculatedDiscountedPrice.toFixed(2)}` : '0'}
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="discountStartDate" className="block text-sm font-medium text-gray-700 mb-1">
+            ფასდაკლების დაწყების თარიღი
+          </label>
+          <input
+            type="date"
+            id="discountStartDate"
+            value={discountStartDate}
+            onChange={(e) => setDiscountStartDate(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="discountEndDate" className="block text-sm font-medium text-gray-700 mb-1">
+            ფასდაკლების დასრულების თარიღი
+          </label>
+          <input
+            type="date"
+            id="discountEndDate"
+            value={discountEndDate}
+            onChange={(e) => setDiscountEndDate(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
           />
         </div>
       </div>

@@ -19,7 +19,11 @@ export default function AddToCartButton({ product, quantity = 1, className = '' 
       price: product.price,
       quantity: quantity,
       image: product.images[0],
-      sellerId: typeof product.seller === 'string' ? product.seller : product.seller._id
+      sellerId: typeof product.seller === 'string' ? product.seller : product.seller._id,
+      discountedPercent: product.discountedPercent,
+      discountStartDate: product.discountStartDate,
+      discountEndDate: product.discountEndDate,
+      discountedPrice: product.discountedPrice
     });
   };
 

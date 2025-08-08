@@ -12,6 +12,10 @@ export interface CartItem {
   quantity: number;
   image?: string;
   sellerId: string;
+  discountedPercent?: number;
+  discountStartDate?: string;
+  discountEndDate?: string;
+  discountedPrice?: number;
 }
 
 // Define the CartContext interface
@@ -47,7 +51,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Calculate total items and price
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
-  const totalPrice = items.reduce((total, item) => total + item.price * item.quantity, 0);
+  const totalPrice = items.reduce((total, item) => {
+    const itemPrice = item.discountedPrice || item.price;
+    return total + itemPrice * item.quantity;
+  }, 0);
 
   // Load cart data from localStorage or API when component mounts
   useEffect(() => {

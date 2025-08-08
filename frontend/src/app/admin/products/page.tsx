@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '../../../utils/api';
-import { useAuth } from '../../../utils/authContext';
+import { useAuth, User } from '../../../utils/authContext';
 import Modal from '../../../components/Modal';
 import ProductForm from '../../../components/ProductForm';
 import ProductsGrid from '../../../components/ProductsGrid';
@@ -102,7 +102,8 @@ export default function AdminProductsPage() {
           'Authorization': `Bearer ${token}`
         }
       });
-      const data = await response.json();
+      let data = await response.json();
+      data = data.filter((seller: User) => seller.role === 'seller');
       setSellers(data);
     } catch (err) {
       setError('Failed to fetch sellers');
@@ -197,7 +198,7 @@ export default function AdminProductsPage() {
     <div className="p-4">
       <Toaster position="top-right" />
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <h1 className="text-2xl text-gray-600 font-bold">პროდუქტები</h1>
         <button
           onClick={handleAddNewProduct}
           className="bg-blue-500 text-white px-4 py-2 rounded"

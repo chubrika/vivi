@@ -803,8 +803,34 @@ function ProductsPageContent() {
                           className="object-cover w-full h-full"
                         />
                       </div>
-                      <div className="p-3 sm:p-4">
-                        <p className="text-gray-900 font-semibold text-sm sm:text-base">{product.price.toFixed(2)} ₾</p>
+                      <div className="p-3 sm:p-4 relative">
+                        {/* Discount Ribbon */}
+                        {product.discountedPercent && product.discountedPercent > 0 && (
+                          <div className="absolute top-2 right-2 z-10">
+                            <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+                              -{product.discountedPercent}%
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Price Display */}
+                        <div className="mb-2">
+                          {product.discountedPrice && product.discountedPrice > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <p className="text-gray-900 font-semibold text-sm sm:text-base">
+                                {product.discountedPrice.toFixed(2)} ₾
+                              </p>
+                              <p className="text-gray-500 text-xs sm:text-sm line-through">
+                                {product.price.toFixed(2)} ₾
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-gray-900 font-semibold text-sm sm:text-base">
+                              {product.price.toFixed(2)} ₾
+                            </p>
+                          )}
+                        </div>
+                        
                         <h2 className="text-xs sm:text-sm text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
                         <div className="mt-2 flex items-center justify-between">
                           <span className="text-xs text-gray-500 truncate">

@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
+import TestingBanner from './TestingBanner';
 
 export default function NavbarWrapper() {
   const pathname = usePathname();
@@ -11,5 +12,10 @@ export default function NavbarWrapper() {
     return null;
   }
   
-  return <Navbar />;
+  return (
+    <>
+      <TestingBanner />
+      <Navbar />
+    </>
+  );
 } 
