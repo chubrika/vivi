@@ -75,7 +75,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-0 md:top-[121px] inset-0 z-50 bg-white border-t border-gray-200 w-full">
+    <div className="absolute top-0 md:top-[145px] inset-0 z-50 bg-white border-t border-gray-200 w-full">
       {loading ? (
         <div className="text-center py-8">Loading...</div>
       ) : error ? (
