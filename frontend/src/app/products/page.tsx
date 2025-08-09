@@ -8,6 +8,7 @@ import { filtersService, Filter } from '../../services/filtersService';
 import { Product } from '../../types/product';
 import CategoryNavigation from '../../components/CategoryNavigation';
 import { Category } from '../../types/category';
+import AddToCartButton from '../../components/AddToCartButton';
 
 // Product Skeleton Loader Component
 const ProductSkeleton = () => (
@@ -832,12 +833,18 @@ function ProductsPageContent() {
                         </div>
                         
                         <h2 className="text-xs sm:text-sm text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
-                        <div className="mt-2 flex items-center justify-between">
+                        <div className="mt-2 flex items-center justify-between mb-3">
                           <span className="text-xs text-gray-500 truncate">
                             {typeof product.seller === 'object' && product.seller !== null
                               ? product.seller.businessName
                               : ''}
                           </span>
+                        </div>
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <AddToCartButton 
+                            product={product} 
+                            className="text-xs py-1.5 px-2"
+                          />
                         </div>
                       </div>
                     </div>

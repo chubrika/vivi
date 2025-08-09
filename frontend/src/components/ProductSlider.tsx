@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -19,6 +21,8 @@ const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const swiperRef = useRef<SwiperType>();
+  const [showArrows, setShowArrows] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -37,6 +41,30 @@ const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
 
     fetchProducts();
   }, []);
+
+  // Function to check if arrows should be shown
+  const checkShowArrows = () => {
+    if (!swiperRef.current) return;
+    
+    const swiper = swiperRef.current;
+    const slidesPerView = swiper.params.slidesPerView as number;
+    const totalSlides = products.length;
+    
+    // Show arrows only if there are more slides than can be displayed
+    setShowArrows(totalSlides > slidesPerView);
+  };
+
+  // Effect to check arrows visibility when products change or window resizes
+  useEffect(() => {
+    checkShowArrows();
+    
+    const handleResize = () => {
+      checkShowArrows();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [products]);
 
   const handleProductSelect = (product: Product) => {
     setSelectedProduct(product);
@@ -92,41 +120,50 @@ const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
           {title}
         </span>
       </h2>
-      <Swiper
-        modules={[Navigation, Pagination, Autoplay]}
-        spaceBetween={10}
-        slidesPerView={1}
-        navigation
-        pagination={{ clickable: true, el: '.swiper-pagination' }}
-        autoplay={{ delay: 5000, disableOnInteraction: false }}
-        breakpoints={{
-          320: {
-            slidesPerView: 2,
-            spaceBetween: 10,
-          },
-          640: {
-            slidesPerView: 2,
-            spaceBetween: 20,
-          },
-          768: {
-            slidesPerView: 3,
-            spaceBetween: 20,
-          },
-          1024: {
-            slidesPerView: 4,
-            spaceBetween: 20,
-          },
-        }}
-        className="product-swiper"
-      >
-        <div className="hidden md:block swiper-pagination"></div>
+      <div className="relative">
+        <Swiper
+          modules={[Navigation, Pagination, Autoplay]}
+          spaceBetween={10}
+          slidesPerView={1}
+          navigation={false}
+          pagination={false}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          onBeforeInit={(swiper) => {
+            swiperRef.current = swiper;
+          }}
+          onAfterInit={() => {
+            checkShowArrows();
+          }}
+          onBreakpoint={() => {
+            checkShowArrows();
+          }}
+          breakpoints={{
+            320: {
+              slidesPerView: 2,
+              spaceBetween: 10,
+            },
+            640: {
+              slidesPerView: 2,
+              spaceBetween: 10,
+            },
+            768: {
+              slidesPerView: 4,
+              spaceBetween: 15,
+            },
+            1024: {
+              slidesPerView: 6,
+              spaceBetween: 15,
+            },
+          }}
+          className="product-swiper"
+        >
         {products.map((product) => {
           const isDiscounted = hasActiveDiscount(product);
           
           return (
             <SwiperSlide key={product._id}>
               <div
-                                 className="bg-white p-2 md:p-10 shadow-md overflow-hidden h-full flex flex-col cursor-pointer hover:shadow-lg transition-shadow relative"
+                                 className="bg-white p-2 md:p-5 shadow-md overflow-hidden h-full flex flex-col cursor-pointer hover:shadow-lg transition-shadow relative"
                 onClick={() => handleProductSelect(product)}
               >
                 {/* Discount Ribbon */}
@@ -177,7 +214,29 @@ const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
             </SwiperSlide>
           );
         })}
-      </Swiper>
+        </Swiper>
+        
+        {/* Custom Navigation Arrows */}
+        {showArrows && (
+          <>
+            <button
+              onClick={() => swiperRef.current?.slidePrev()}
+              className="hidden md:flex absolute left-4 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-white/80 hover:bg-white rounded-full items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft size={20} className="text-gray-700" />
+            </button>
+            
+            <button
+              onClick={() => swiperRef.current?.slideNext()}
+              className="hidden md:flex absolute right-4 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-white/80 hover:bg-white rounded-full items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+              aria-label="Next slide"
+            >
+              <ChevronRight size={20} className="text-gray-700" />
+            </button>
+          </>
+        )}
+      </div>
 
       {/* Product Detail Panel */}
       <ProductDetailPanel

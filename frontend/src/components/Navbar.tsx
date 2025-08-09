@@ -9,7 +9,7 @@ import { useCategoryMenu } from '../contexts/CategoryMenuContext';
 import { useLoginSidebar } from '../contexts/LoginSidebarContext';
 import Image from 'next/image';
 import SearchResults from './SearchResults';
-import { Search, ShoppingCart, User, Menu, X, MessageCircle } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, MessageCircle, ChevronDown, ChevronUp, SquareMenu } from 'lucide-react';
 import CategoryMenu from './CategoryMenu';
 import { Category } from '../types/category';
 
@@ -236,16 +236,19 @@ export default function Navbar() {
         </div>
         
         {/* Bottom row with navigation items */}
-        <div className="hidden md:flex items-center h-10 border-t border-gray-100">
+        <div className="hidden md:flex items-center h-[65px] border-t border-gray-100">
           <div className="flex gap-8">
             <button
               onClick={toggleCategoryMenu}
-              className="inline-flex items-center px-1 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none"
+              className="inline-flex items-center px-1 text-sm font-medium text-gray-500 hover:text-blue-500 focus:outline-none"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-              </svg>
-              კატეგორიები
+             <SquareMenu className="h-5 w-5 ml-1 mr-1 text-blue-500" />
+              <span>კატეგორიები</span>
+              {isCategoryMenuOpen ? (
+                <ChevronUp className="h-4 w-4 ml-1" />
+              ) : (
+                <ChevronDown className="h-4 w-4 ml-1" />
+              )}
             </button>
             {navigationItems.map((item) => (
               <Link
@@ -254,7 +257,7 @@ export default function Navbar() {
                 className={`${
                   pathname === item.href
                     ? 'text-gray-900'
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-gray-500 hover:text-blue-500'
                 } inline-flex items-center px-1 text-sm font-medium`}
               >
                 {item.title}
@@ -267,12 +270,17 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} bg-white border-t border-gray-100`}>
         <div className="px-4 py-3 space-y-2">
-          <button
-            onClick={toggleCategoryMenu}
-            className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300"
-          >
-            ყველა კატეგორია
-          </button>
+                     <button
+             onClick={toggleCategoryMenu}
+             className="flex items-center justify-between w-full pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+           >
+             <span>ყველა კატეგორია</span>
+             {isCategoryMenuOpen ? (
+               <ChevronUp className="h-4 w-4" />
+             ) : (
+               <ChevronDown className="h-4 w-4" />
+             )}
+           </button>
           {navigationItems.map((item) => (
             <Link
               key={item.href}
