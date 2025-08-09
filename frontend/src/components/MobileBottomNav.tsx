@@ -18,8 +18,9 @@ const MobileBottomNav = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  // Check if we're in courier portal
+  // Check if we're in courier portal or admin panel
   const isInCourierPortal = pathname?.startsWith('/courier');
+  const isInAdminPanel = pathname?.startsWith('/admin');
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -41,8 +42,8 @@ const MobileBottomNav = () => {
     window.location.href = '/';
   };
 
-  // Don't render anything if we're in courier portal
-  if (isInCourierPortal) {
+  // Don't render anything if we're in courier portal or admin panel
+  if (isInCourierPortal || isInAdminPanel) {
     return null;
   }
 
