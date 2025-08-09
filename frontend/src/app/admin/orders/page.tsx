@@ -238,8 +238,8 @@ export default function AdminOrders() {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {order.user.firstName} {order.user.lastName}
-                    <div className="text-xs text-gray-400">{order.user.email}</div>
+                    {order?.user?.firstName} {order?.user?.lastName}
+                    <div className="text-xs text-gray-400">{order?.user?.email}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {order.items.length} items

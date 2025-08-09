@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../utils/authContext';
 import { API_BASE_URL } from '../../utils/api';
+import { Menu, X } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -15,6 +16,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const { isAuthenticated, isAdmin, logout } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -80,13 +82,31 @@ export default function AdminLayout({
     { name: 'კურიერები', href: '/admin/couriers', icon: 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4' },
     { name: 'ვიჯეტები', href: '/admin/home-widgets', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
     { name: 'სლაიდერები', href: '/admin/home-sliders', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
-
   ];
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-white shadow-sm border-b border-gray-200">
+        <div className="flex items-center justify-between px-4 py-3">
+          <Link href="/admin" className="text-lg font-bold text-primary">
+            Admin Panel
+          </Link>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
+      </div>
+
       <div className="flex">
-        {/* Sidebar */}
+        {/* Desktop Sidebar */}
         <div className="hidden md:flex md:w-64 md:flex-col">
           <div className="flex flex-col flex-grow pt-5 bg-white overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4">
@@ -186,9 +206,135 @@ export default function AdminLayout({
           </div>
         </div>
 
+        {/* Mobile Sidebar Overlay */}
+        {mobileMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* Mobile Sidebar */}
+        <div className={`
+          fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:hidden
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          <div className="flex flex-col h-full">
+            {/* Mobile Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+              <Link href="/admin" className="text-lg font-bold text-primary">
+                Admin Panel
+              </Link>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Mobile Navigation */}
+            <div className="flex-1 overflow-y-auto">
+              <nav className="px-2 py-4 space-y-1">
+                {navigation.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`group flex items-center px-3 py-3 text-base font-medium rounded-md ${
+                        isActive
+                          ? 'bg-primary text-white'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <svg
+                        className={`mr-3 flex-shrink-0 h-6 w-6 ${
+                          isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500'
+                        }`}
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
+                      </svg>
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Mobile Bottom Section */}
+            <div className="border-t border-gray-200 p-4 space-y-2">
+              {/* Go to Shop */}
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="group flex items-center px-3 py-3 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              >
+                <svg
+                  className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                მაღაზიაში გადასვლა
+              </Link>
+              
+              {/* Profile */}
+              <Link
+                href="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="group flex items-center px-3 py-3 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              >
+                <svg
+                  className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                პროფილი
+              </Link>
+              
+              {/* Logout */}
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="group flex items-center w-full px-3 py-3 text-base font-medium rounded-md text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <svg
+                  className="mr-3 flex-shrink-0 h-6 w-6 text-red-400 group-hover:text-red-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                გასვლა
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Main content */}
         <div className="flex-1">
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-4 md:p-6">
             {children}
           </main>
         </div>
