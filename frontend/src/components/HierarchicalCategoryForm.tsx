@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../utils/authContext';
-import { Category, CreateCategoryData, UpdateCategoryData } from '../types/category';
+import { categoriesService, Category, CreateCategoryData, UpdateCategoryData } from '../services/categoriesService';
 
 interface HierarchicalCategoryFormProps {
   onClose: () => void;
@@ -51,24 +51,10 @@ const HierarchicalCategoryForm: React.FC<HierarchicalCategoryFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      const url = category 
-        ? `/api/categories/${category._id}` 
-        : '/api/categories';
-      
-      const method = category ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Failed to save category');
+      if (category) {
+        await categoriesService.updateCategory(category._id, formData);
+      } else {
+        await categoriesService.createCategory(formData);
       }
 
       onSuccess();

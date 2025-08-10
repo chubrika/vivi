@@ -2,11 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function ProfileScreen() {
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    router.replace('/login');
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
@@ -18,8 +25,8 @@ export default function ProfileScreen() {
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
           <Ionicons name="person-circle" size={80} color="#007AFF" />
-          <Text style={styles.name}>John Doe</Text>
-          <Text style={styles.email}>john.doe@example.com</Text>
+          <Text style={styles.name}>{user?.name || 'User'}</Text>
+          <Text style={styles.email}>{user?.email || 'No email available'}</Text>
         </View>
 
         <View style={styles.menuContainer}>

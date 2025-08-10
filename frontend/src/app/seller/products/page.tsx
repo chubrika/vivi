@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../utils/authContext';
 import { API_BASE_URL } from '../../../utils/api';
+import { categoriesService } from '../../../services/categoriesService';
 import Modal from '../../../components/Modal';
 import ProductForm from '../../../components/ProductForm';
 import ProductsGrid from '../../../components/ProductsGrid';
@@ -81,17 +82,7 @@ export default function SellerProducts() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch categories');
-      }
-
-      const data = await response.json();
+      const data = await categoriesService.getAllCategories();
       setCategories(data);
     } catch (err) {
       console.error('Error fetching categories:', err);

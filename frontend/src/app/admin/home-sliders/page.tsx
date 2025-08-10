@@ -5,21 +5,7 @@ import { useState, useEffect } from 'react';
 import Modal from '../../../components/Modal';
 import CloudinaryUploadWidget from '../../../components/CloudinaryUploadWidget';
 import { homeSliderService, HomeSlider, CreateHomeSliderData } from '../../../services/homeSliderService';
-
-interface Category {
-  _id: string;
-  name: string;
-  description: string;
-  slug: string;
-  parentId: string | null;
-  hasChildren: boolean;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-  children?: Category[];
-  image?: string;
-}
+import { categoriesService, Category } from '../../../services/categoriesService';
 
 export default function HomeSlidersPage() {
   const [homeSliders, setHomeSliders] = useState<HomeSlider[]>([]);
@@ -42,13 +28,12 @@ export default function HomeSlidersPage() {
 
   const fetchData = async () => {
     try {
-      const [slidersResponse, categoriesResponse] = await Promise.all([
+      const [slidersResponse, categoriesData] = await Promise.all([
         fetch('/api/home-sliders'),
-        fetch('/api/categories')
+        categoriesService.getAllCategories()
       ]);
 
       const slidersData = await slidersResponse.json();
-      const categoriesData = await categoriesResponse.json();
 
       if (slidersData.success) {
         setHomeSliders(slidersData.data);

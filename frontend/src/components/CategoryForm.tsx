@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../utils/authContext';
+import { categoriesService } from '../services/categoriesService';
 
 interface CategoryFormProps {
   onClose: () => void;
@@ -8,6 +9,7 @@ interface CategoryFormProps {
     _id: string;
     name: string;
     description: string;
+    slug?: string;
     isActive: boolean;
   };
 }
@@ -17,6 +19,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onClose, onSuccess, categor
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    slug: '',
     isActive: true
   });
   const [error, setError] = useState('');
@@ -27,6 +30,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onClose, onSuccess, categor
       setFormData({
         name: category.name,
         description: category.description,
+        slug: category.slug || '',
         isActive: category.isActive
       });
     }
@@ -46,24 +50,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onClose, onSuccess, categor
     setIsSubmitting(true);
 
     try {
-      const url = category 
-        ? `/api/categories/${category._id}` 
-        : '/api/categories';
-      
-      const method = category ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Failed to save category');
+      if (category) {
+        await categoriesService.updateCategory(category._id, formData);
+      } else {
+        await categoriesService.createCategory(formData);
       }
 
       onSuccess();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Category } from '../types/category';
+import { categoriesService, Category } from '../services/categoriesService';
 import { useAuth } from '../utils/authContext';
 import { useRouter } from 'next/navigation';
 
@@ -19,17 +19,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/categories', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch categories');
-        }
-        
-        const data = await response.json();
+        const data = await categoriesService.getAllCategories();
         setCategories(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -41,7 +31,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
     if (isOpen) {
       fetchCategories();
     }
-  }, [isOpen, token]);
+  }, [isOpen]);
 
   const handleCategoryClick = (category: Category) => {
     if (category.children && category.children.length > 0) {

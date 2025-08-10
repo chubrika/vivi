@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../utils/authContext';
 import Modal from '../../../components/Modal';
 import HierarchicalCategoryForm from '../../../components/HierarchicalCategoryForm';
-import { Category } from '../../../types/category';
+import { categoriesService, Category } from '../../../services/categoriesService';
 
 const CategoriesPage = () => {
   const { token, isAuthenticated } = useAuth();
@@ -17,18 +17,7 @@ const CategoriesPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/categories', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch categories');
-      }
-      
-      const data = await response.json();
-      setCategories(data);
+      const data = await categoriesService.getAllCategories();
 
       // Automatically expand all categories with children
       const categoriesWithChildren = new Set<string>();
@@ -41,6 +30,7 @@ const CategoriesPage = () => {
         });
       };
       findCategoriesWithChildren(data);
+      setCategories(data);
       setExpandedCategories(categoriesWithChildren);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -75,17 +65,7 @@ const CategoriesPage = () => {
     }
 
     try {
-      const response = await fetch(`/api/categories/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete category');
-      }
-
+      await categoriesService.deleteCategory(id);
       fetchCategories();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

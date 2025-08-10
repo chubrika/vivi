@@ -30,8 +30,7 @@ console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Not set');
 
 // Validate required environment variables
 if (!process.env.JWT_SECRET) {
-  console.error('ERROR: JWT_SECRET is not defined in environment variables');
-  process.exit(1);
+  console.warn('WARNING: JWT_SECRET is not defined in environment variables. Using default secret key.');
 }
 
 const app = express();

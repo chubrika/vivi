@@ -5,13 +5,7 @@ import { useAuth } from '../../../utils/authContext';
 import Modal from '../../../components/Modal';
 import { API_BASE_URL } from '../../../utils/api';
 import { filtersService, Filter, CreateFilterData, UpdateFilterData } from '../../../services/filtersService';
-
-interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-  children?: Category[];
-}
+import { categoriesService, Category } from '../../../services/categoriesService';
 
 type FilterType = 'select' | 'range' | 'color' | 'boolean';
 
@@ -64,17 +58,7 @@ const FiltersPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch categories');
-      }
-      
-      const data = await response.json();
+      const data = await categoriesService.getAllCategories();
       setCategories(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

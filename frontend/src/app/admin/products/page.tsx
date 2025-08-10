@@ -8,7 +8,7 @@ import Modal from '../../../components/Modal';
 import ProductForm from '../../../components/ProductForm';
 import ProductsGrid from '../../../components/ProductsGrid';
 import { Product, FeatureGroup } from '../../../types/product';
-import { Category } from '../../../types/category';
+import { categoriesService, Category } from '../../../services/categoriesService';
 import toast, { Toaster } from 'react-hot-toast';
 import { FiEdit, FiTrash2, FiPlus } from 'react-icons/fi';
 
@@ -112,12 +112,7 @@ export default function AdminProductsPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/categories', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
+      const data = await categoriesService.getAllCategories();
       setCategories(data);
     } catch (err) {
       setError('Failed to fetch categories');

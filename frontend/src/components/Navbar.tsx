@@ -11,7 +11,7 @@ import Image from 'next/image';
 import SearchResults from './SearchResults';
 import { Search, ShoppingCart, User, Menu, X, MessageCircle, ChevronDown, ChevronUp, SquareMenu } from 'lucide-react';
 import CategoryMenu from './CategoryMenu';
-import { Category } from '../types/category';
+import { categoriesService, Category } from '../services/categoriesService';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -34,11 +34,7 @@ export default function Navbar() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/categories');
-        if (!response.ok) {
-          throw new Error('Failed to fetch categories');
-        }
-        const data = await response.json();
+        const data = await categoriesService.getAllCategories();
         // Only get root categories (no parent)
         const rootCategories = data.filter((cat: Category) => !cat.parentId);
         setCategories(rootCategories);
