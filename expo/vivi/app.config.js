@@ -27,9 +27,9 @@ export default {
     bundler: 'metro',
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://vivi-backend-ejes.onrender.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',

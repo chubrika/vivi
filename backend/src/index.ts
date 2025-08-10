@@ -42,8 +42,10 @@ const allowedOrigins = [
   'https://vivi.ge', // optional, for non-www
   'http://localhost:3000', // for development
   'http://localhost:3001', // for development alternative port
+  'http://localhost:8081', // for Expo development server
   'http://127.0.0.1:3000', // for development
   'http://127.0.0.1:3001', // for development alternative port
+  'http://127.0.0.1:8081', // for Expo development server
 ];
 
 const corsOptions = {
