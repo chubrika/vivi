@@ -193,7 +193,10 @@ export default function OrderDetailsScreen() {
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Name:</Text>
               <Text style={styles.infoValue}>
-                {order.user?.firstName || ''} {order.user?.lastName || ''}
+                {order.user?.firstName && order.user?.lastName 
+                  ? `${order.user.firstName} ${order.user.lastName}`
+                  : order.user?.firstName || order.user?.lastName || 'N/A'
+                }
               </Text>
             </View>
             <View style={styles.infoRow}>

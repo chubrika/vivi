@@ -135,7 +135,7 @@ export default function DashboardScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <Text style={styles.welcomeText}>Welcome, {user?.name ? user.name : 'User'}!</Text>
-          <Text style={styles.emailText}>{user?.email || ''}</Text>
+          <Text style={styles.emailText}>{user?.email || 'No email available'}</Text>
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>

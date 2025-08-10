@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View, LogBox } from 'react-native';
+import { ActivityIndicator, View, LogBox, Text } from 'react-native';
 import 'react-native-reanimated';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -21,8 +21,9 @@ function AppContent() {
   if (loading) {
     console.log('AppContent: Showing loading screen');
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8f9fa' }}>
         <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={{ marginTop: 16, fontSize: 16, color: '#666' }}>Loading Vivi...</Text>
       </View>
     );
   }
@@ -58,8 +59,9 @@ export default function RootLayout() {
   if (!loaded) {
     console.log('RootLayout: Fonts not loaded, showing loading screen');
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8f9fa' }}>
         <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={{ marginTop: 16, fontSize: 16, color: '#666' }}>Initializing Vivi...</Text>
       </View>
     );
   }

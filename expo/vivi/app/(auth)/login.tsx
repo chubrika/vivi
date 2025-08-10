@@ -47,10 +47,13 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
+      console.log('LoginScreen: Starting login process...');
       await login({ email, password });
-      console.log('Login successful');
+      console.log('LoginScreen: Login successful, waiting for navigation...');
       
       // Navigation will be handled automatically by the auth context
+      // The AuthContext will update the user state, which will trigger
+      // the main layout to show (tabs) instead of (auth)
     } catch (error) {
       console.error('Login error:', error);
       let errorMessage = 'Login failed. Please try again.';
