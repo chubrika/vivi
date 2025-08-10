@@ -32,23 +32,65 @@ export interface CourierEarnings {
   totalDeliveries: number;
 }
 
+// Fallback data for when API calls fail
+const fallbackStats: CourierStats = {
+  totalOrders: 0,
+  pendingOrders: 0,
+  processingOrders: 0,
+  shippedOrders: 0,
+  deliveredOrders: 0,
+  cancelledOrders: 0,
+  todayOrders: 0,
+  totalEarnings: 0,
+  pendingWithdrawal: false,
+  totalDeliveries: 0,
+};
+
+const fallbackEarnings: CourierEarnings = {
+  totalEarnings: 0,
+  pendingWithdrawal: false,
+  payoutHistory: [],
+  deliveryHistory: [],
+  totalDeliveries: 0,
+};
+
+// Helper function to safely get token
+const getAuthToken = async (): Promise<string | null> => {
+  try {
+    return await AsyncStorage.getItem('authToken');
+  } catch (error) {
+    console.error('Error getting auth token:', error);
+    return null;
+  }
+};
+
 export const courierService = {
   // Get courier statistics (includes earnings)
   getStats: async (): Promise<CourierStats> => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getAuthToken();
       if (!token) {
-        throw new Error('No authentication token found');
+        console.log('No authentication token found, returning fallback stats');
+        return fallbackStats;
       }
 
-      const response = await fetch(`${API_URL}/courier/stats`, {
+      console.log('Fetching courier stats from:', `${API_URL}/courier/stats`);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+      
+      const fetchPromise = fetch(`${API_URL}/courier/stats`, {
         method: 'GET',
         headers: getHeaders(true, token),
       });
 
+      const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch courier stats');
+        console.error('Courier stats API error:', response.status, response.statusText);
+        return fallbackStats;
       }
 
       const data = await response.json();
@@ -56,49 +98,70 @@ export const courierService = {
       return data;
     } catch (error) {
       console.error('Error fetching courier stats:', error);
-      throw error;
+      // Return fallback data instead of throwing error
+      return fallbackStats;
     }
   },
 
   // Get courier earnings and delivery history
   getEarnings: async (): Promise<CourierEarnings> => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getAuthToken();
       if (!token) {
-        throw new Error('No authentication token found');
+        console.log('No authentication token found, returning fallback earnings');
+        return fallbackEarnings;
       }
 
-      const response = await fetch(`${API_URL}/courier/earnings`, {
+      console.log('Fetching courier earnings from:', `${API_URL}/courier/earnings`);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+      
+      const fetchPromise = fetch(`${API_URL}/courier/earnings`, {
         method: 'GET',
         headers: getHeaders(true, token),
       });
 
+      const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch courier earnings');
+        console.error('Courier earnings API error:', response.status, response.statusText);
+        return fallbackEarnings;
       }
 
       const data = await response.json();
       return data;
     } catch (error) {
       console.error('Error fetching courier earnings:', error);
-      throw error;
+      // Return fallback data instead of throwing error
+      return fallbackEarnings;
     }
   },
 
   // Request withdrawal
   requestWithdrawal: async (): Promise<{ message: string; pendingAmount: number }> => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getAuthToken();
       if (!token) {
         throw new Error('No authentication token found');
       }
 
-      const response = await fetch(`${API_URL}/courier/withdraw`, {
+      console.log('Requesting withdrawal from:', `${API_URL}/courier/withdraw`);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+      
+      const fetchPromise = fetch(`${API_URL}/courier/withdraw`, {
         method: 'POST',
         headers: getHeaders(true, token),
         body: JSON.stringify({}),
       });
+
+      const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
 
       if (!response.ok) {
         const errorData = await response.json();

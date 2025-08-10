@@ -156,14 +156,18 @@ export const getProfile = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Return user wrapped in user property to match frontend expectations
+    // Return user data directly to match frontend expectations
     res.json({
-      user: {
-        id: user._id,
-        name: user.firstName || user.businessName || 'User',
-        email: user.email,
-        role: user.role || 'user'
-      }
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      businessName: user.businessName,
+      email: user.email,
+      role: user.role || 'user',
+      phoneNumber: user.phoneNumber,
+      personalNumber: user.personalNumber,
+      balance: user.balance || 0,
+      createdAt: user.createdAt
     });
   } catch (error) {
     console.error('Profile fetch error:', error);

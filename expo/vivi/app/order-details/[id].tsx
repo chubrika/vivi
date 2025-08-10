@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -180,7 +180,7 @@ export default function OrderDetailsScreen() {
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Payment Status:</Text>
               <Text style={[styles.infoValue, { color: order.paymentStatus === 'completed' ? '#34C759' : '#FF9500' }]}>
-                {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                {`${order.paymentStatus.charAt(0).toUpperCase()}${order.paymentStatus.slice(1)}`}
               </Text>
             </View>
           </View>
@@ -256,7 +256,7 @@ export default function OrderDetailsScreen() {
                     order.status === status && styles.activeStatusButtonText,
                   ]}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {`${status.charAt(0).toUpperCase()}${status.slice(1)}`}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -329,14 +329,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+      },
+    }),
   },
   infoRow: {
     flexDirection: 'row',

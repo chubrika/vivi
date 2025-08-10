@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { courierService, CourierStats } from '../../services/courierService';
 import { router } from 'expo-router';
 
@@ -10,6 +10,7 @@ export default function DashboardScreen() {
   const [stats, setStats] = useState<CourierStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
 
   console.log('Dashboard: Rendering with user:', user);
 
@@ -23,13 +24,45 @@ export default function DashboardScreen() {
 
   const fetchCourierStats = async () => {
     try {
+      console.log('Dashboard: Fetching courier stats...');
+      setLoading(true);
+      setError('');
+      
       const data = await courierService.getStats();
+      console.log('Dashboard: Received stats:', data);
       setStats(data);
     } catch (err) {
-      console.error('Error fetching courier stats:', err);
+      console.error('Dashboard: Error fetching courier stats:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      
+      // Set fallback stats to prevent crashes
+      setStats({
+        totalOrders: 0,
+        pendingOrders: 0,
+        processingOrders: 0,
+        shippedOrders: 0,
+        deliveredOrders: 0,
+        cancelledOrders: 0,
+        todayOrders: 0,
+        totalEarnings: 0,
+        pendingWithdrawal: false,
+        totalDeliveries: 0,
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRetry = () => {
+    if (retryCount < 3) {
+      setRetryCount(prev => prev + 1);
+      fetchCourierStats();
+    } else {
+      Alert.alert(
+        'Connection Error',
+        'Unable to connect to the server. Please check your internet connection and try again later.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -40,7 +73,7 @@ export default function DashboardScreen() {
       await fetchCourierStats();
       Alert.alert('Success', 'Withdrawal request submitted successfully!');
     } catch (err) {
-      console.error('Error requesting withdrawal:', err);
+      console.error('Dashboard: Error requesting withdrawal:', err);
       Alert.alert('Error', err instanceof Error ? err.message : 'Failed to request withdrawal');
     }
   };
@@ -61,7 +94,7 @@ export default function DashboardScreen() {
             try {
               await logout();
             } catch (error) {
-              console.error('Logout error:', error);
+              console.error('Dashboard: Logout error:', error);
             }
           },
         },
@@ -78,8 +111,6 @@ export default function DashboardScreen() {
       <Text style={styles.statTitle}>{title}</Text>
     </View>
   );
-
-
 
   if (loading) {
     return (
@@ -103,17 +134,19 @@ export default function DashboardScreen() {
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          <Text style={styles.welcomeText}>Welcome, {user?.name || 'User'}!</Text>
-          <Text style={styles.emailText}>{user?.email}</Text>
-
+          <Text style={styles.welcomeText}>Welcome, {user?.name ? user.name : 'User'}!</Text>
+          <Text style={styles.emailText}>{user?.email || ''}</Text>
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
             </View>
           )}
 
-          {user?.role === 'courier' && stats && (
-            <>
+          {user?.role === 'courier' && stats !== null && (
+            <Fragment>
               {/* Stats Cards */}
               <View style={styles.statsContainer}>
                 <Text style={styles.sectionTitle}>Statistics</Text>
@@ -179,7 +212,6 @@ export default function DashboardScreen() {
                       <Text style={styles.actionSubtitle}>View all orders</Text>
                     </TouchableOpacity>
                   </View>
-
                   <View style={styles.actionCard}>
                     <View style={[styles.actionIcon, { backgroundColor: '#34C759' }]}>
                       <Text style={styles.actionIconText}>💰</Text>
@@ -192,7 +224,6 @@ export default function DashboardScreen() {
                       <Text style={styles.actionSubtitle}>Check earnings</Text>
                     </TouchableOpacity>
                   </View>
-
                   <View style={styles.actionCard}>
                     <View style={[styles.actionIcon, { backgroundColor: '#FF9500' }]}>
                       <Text style={styles.actionIconText}>👤</Text>
@@ -242,7 +273,16 @@ export default function DashboardScreen() {
                   <Text style={styles.activityText}>ბოლო მოქმედებები ვერ მოიძებნა.</Text>
                 </View>
               </View>
-            </>
+            </Fragment>
+          )}
+
+          {user?.role !== 'courier' && (
+            <View style={styles.regularUserContainer}>
+              <Text style={styles.regularUserText}>Welcome to Vivi!</Text>
+              <Text style={styles.regularUserSubtext}>
+                This app is designed for couriers. Please contact support if you need assistance.
+              </Text>
+            </View>
           )}
         </View>
       </ScrollView>
@@ -319,6 +359,19 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#c62828',
     fontSize: 14,
+    marginBottom: 8,
+  },
+  retryButton: {
+    backgroundColor: '#f44336',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 20,
@@ -341,14 +394,21 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     width: '48%',
     borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+      },
+    }),
   },
   statHeader: {
     flexDirection: 'row',
@@ -379,14 +439,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 4,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
+      },
+    }),
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -422,14 +489,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+      },
+    }),
   },
   activityText: {
     color: '#999',
@@ -440,14 +514,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+      },
+    }),
   },
   regularUserText: {
     fontSize: 18,

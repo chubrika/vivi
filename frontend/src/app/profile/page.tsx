@@ -51,6 +51,13 @@ export default function ProfilePage() {
     phoneNumber: '',
     personalNumber: ''
   });
+  const [originalFormData, setOriginalFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    personalNumber: ''
+  });
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [updateError, setUpdateError] = useState('');
   const [addressError, setAddressError] = useState('');
@@ -129,17 +136,21 @@ export default function ProfilePage() {
       try {
         // Use the userService to fetch the profile
         const userData = await userService.getCurrentUser();
+        console.log('Fetched user data:', userData);
         setProfile({
           ...userData,
           balance: userData.balance || 0
         });
-        setFormData({
+        const initialFormData = {
           firstName: userData.firstName || '',
           lastName: userData.lastName || '',
           email: userData.email || '',
           phoneNumber: userData.phoneNumber || '',
           personalNumber: userData.personalNumber || ''
-        });
+        };
+        setFormData(initialFormData);
+        setOriginalFormData(initialFormData);
+        console.log('Set form data:', initialFormData);
       } catch (err) {
         setError('Failed to load profile');
         console.error('Profile fetch error:', err);
@@ -228,6 +239,16 @@ export default function ProfilePage() {
         ...updatedUser,
         balance: updatedUser.balance || 0
       });
+      
+      // Update original form data after successful update
+      setOriginalFormData({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        personalNumber: formData.personalNumber
+      });
+      
       setUpdateSuccess(true);
     } catch (err) {
       console.error('Profile update error:', err);
@@ -237,6 +258,24 @@ export default function ProfilePage() {
 
   const handleChangePassword = () => {
     setShowPasswordModal(true);
+  };
+
+  // Check if form has been modified
+  const isFormModified = () => {
+    return (
+      formData.firstName !== originalFormData.firstName ||
+      formData.lastName !== originalFormData.lastName ||
+      formData.email !== originalFormData.email ||
+      formData.phoneNumber !== originalFormData.phoneNumber ||
+      formData.personalNumber !== originalFormData.personalNumber
+    );
+  };
+
+  // Reset form to original values
+  const handleCancel = () => {
+    setFormData(originalFormData);
+    setUpdateError('');
+    setUpdateSuccess(false);
   };
 
   const handleAddFunds = async (e: React.FormEvent) => {
@@ -288,6 +327,9 @@ export default function ProfilePage() {
   }
 
   const renderContent = () => {
+    console.log('Current form data:', formData);
+    console.log('Current profile:', profile);
+    
     switch (activeSection) {
       case 'personal':
         return (
@@ -391,13 +433,24 @@ export default function ProfilePage() {
                   <div className="flex justify-end space-x-4">
                     <button
                       type="button"
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+                      onClick={handleCancel}
+                      disabled={!isFormModified()}
+                      className={`inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 ${
+                        isFormModified()
+                          ? 'text-gray-700 bg-white hover:bg-gray-50'
+                          : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                      }`}
                     >
                       გაუქმება
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+                      disabled={!isFormModified()}
+                      className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 ${
+                        isFormModified()
+                          ? 'text-white bg-sky-600 hover:bg-sky-700'
+                          : 'text-gray-400 bg-gray-300 cursor-not-allowed'
+                      }`}
                     >
                       პროფილის განახლება
                     </button>
