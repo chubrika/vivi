@@ -20,6 +20,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkUser();
   }, []);
 
+  // Monitor user state changes
+  useEffect(() => {
+    console.log('AuthContext: User state changed:', user);
+  }, [user]);
+
   const checkUser = async () => {
     try {
       const currentUser = await authService.getCurrentUser();
@@ -32,8 +37,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (credentials: { email: string; password: string }) => {
-    const response = await authService.login(credentials);
-    setUser(response.user);
+    try {
+      console.log('AuthContext: Starting login process');
+      const response = await authService.login(credentials);
+      console.log('AuthContext: Login successful, setting user:', response.user);
+      setUser(response.user);
+      console.log('AuthContext: User state updated, should trigger navigation');
+    } catch (error) {
+      console.error('AuthContext: Login error:', error);
+      throw error;
+    }
   };
 
   const register = async (data: { name: string; email: string; password: string }) => {

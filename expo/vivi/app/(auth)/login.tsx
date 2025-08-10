@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { Link, router } from 'expo-router';
-import { authService } from '../../services/authService';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginScreen() {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,11 +48,10 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       console.log('Attempting login with:', { email });
-      const response = await authService.login({ email, password });
-      console.log('Login successful:', response);
+      await login({ email, password });
+      console.log('Login successful');
       
-      // Navigate to main app
-      router.replace('/(tabs)');
+      // Navigation will be handled automatically by the auth context
     } catch (error) {
       console.error('Login error:', error);
       let errorMessage = 'Login failed. Please try again.';
@@ -127,12 +127,14 @@ export default function LoginScreen() {
           )}
         </TouchableOpacity>
 
+
+
         <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
           <Text style={styles.forgotPassword}>Forgot Password?</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Text style={styles.footerText}>Don&apos;t have an account? </Text>
           <Link href="/(auth)/register" asChild>
             <TouchableOpacity>
               <Text style={styles.footerLink}>Sign Up</Text>
