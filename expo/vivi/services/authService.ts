@@ -1,7 +1,21 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Use relative path for web proxy
-const API_URL = '/api';
+// Use production backend URL with CORS workaround
+const API_URL = 'https://vivi-backend-ejes.onrender.com/api';
+
+// Add CORS headers for mobile requests
+const getHeaders = (requireAuth = false, token?: string) => {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+  
+  if (requireAuth && token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+};
 
 export interface LoginCredentials {
   email: string;
@@ -33,10 +47,7 @@ export const authService = {
       console.log('Sending login request to:', `${API_URL}/auth/login`);
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers: getHeaders(),
         body: JSON.stringify(credentials),
       });
 
