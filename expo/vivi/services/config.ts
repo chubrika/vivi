@@ -2,16 +2,20 @@ import Constants from 'expo-constants';
 
 // Get the development server URL from Expo
 const getDevelopmentServerUrl = () => {
-  if (__DEV__ && Constants.expoConfig?.hostUri) {
-    // Extract the IP address from the development server
-    const hostUri = Constants.expoConfig.hostUri;
-    const ipMatch = hostUri.match(/(\d+\.\d+\.\d+\.\d+):(\d+)/);
-    
-    if (ipMatch) {
-      const [, ip, port] = ipMatch;
-      // Use the same IP but port 5000 for the backend
-      return `http://${ip}:5000`;
+  try {
+    if (__DEV__ && Constants.expoConfig?.hostUri) {
+      // Extract the IP address from the development server
+      const hostUri = Constants.expoConfig.hostUri;
+      const ipMatch = hostUri.match(/(\d+\.\d+\.\d+\.\d+):(\d+)/);
+      
+      if (ipMatch) {
+        const [, ip, port] = ipMatch;
+        // Use the same IP but port 5000 for the backend
+        return `http://${ip}:5000`;
+      }
     }
+  } catch (error) {
+    console.warn('Error getting development server URL:', error);
   }
   return null;
 };

@@ -33,6 +33,8 @@ export default function OrderDetailsScreen() {
   }, [id, orderData]);
 
   const fetchOrderDetails = async () => {
+    if (!id) return;
+    
     try {
       setLoading(true);
       const data = await orderService.getOrderDetails(id);
@@ -98,14 +100,18 @@ export default function OrderDetailsScreen() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (err) {
+      return 'Invalid date';
+    }
   };
 
   if (loading) {
@@ -187,12 +193,12 @@ export default function OrderDetailsScreen() {
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Name:</Text>
               <Text style={styles.infoValue}>
-                {order.user.firstName} {order.user.lastName}
+                {order.user?.firstName || ''} {order.user?.lastName || ''}
               </Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Email:</Text>
-              <Text style={styles.infoValue}>{order.user.email}</Text>
+              <Text style={styles.infoValue}>{order.user?.email || 'N/A'}</Text>
             </View>
           </View>
         </View>
@@ -201,7 +207,7 @@ export default function OrderDetailsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Shipping Address</Text>
           <View style={styles.infoCard}>
-            <Text style={styles.addressText}>{order.shippingAddress}</Text>
+            <Text style={styles.addressText}>{order.shippingAddress || 'No address provided'}</Text>
           </View>
         </View>
 
@@ -209,19 +215,23 @@ export default function OrderDetailsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Items</Text>
           <View style={styles.infoCard}>
-            {order.items.map((item, index) => (
-              <View key={index} style={styles.itemRow}>
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemName}>{item.name}</Text>
-                  <Text style={styles.itemDetails}>
-                    Qty: {item.quantity} × {item.price} ₾
+            {order.items && order.items.length > 0 ? (
+              order.items.map((item, index) => (
+                <View key={index} style={styles.itemRow}>
+                  <View style={styles.itemInfo}>
+                    <Text style={styles.itemName}>{item.name || 'Unknown Product'}</Text>
+                    <Text style={styles.itemDetails}>
+                      Qty: {item.quantity} × {item.price} ₾
+                    </Text>
+                  </View>
+                  <Text style={styles.itemTotal}>
+                    {((item.price || 0) * (item.quantity || 0)).toFixed(2)} ₾
                   </Text>
                 </View>
-                <Text style={styles.itemTotal}>
-                  {(item.price * item.quantity).toFixed(2)} ₾
-                </Text>
-              </View>
-            ))}
+              ))
+            ) : (
+              <Text style={styles.errorText}>No items found</Text>
+            )}
           </View>
         </View>
 

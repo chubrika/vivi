@@ -77,7 +77,7 @@ export const orderService = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
         throw new Error(errorData.message || 'Failed to fetch orders');
       }
 
@@ -113,7 +113,7 @@ export const orderService = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
         throw new Error(errorData.message || 'Failed to update order status');
       }
 
@@ -137,12 +137,12 @@ export const orderService = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
         throw new Error(errorData.message || 'Failed to fetch order details');
       }
 
       const data = await response.json();
-      return data.order;
+      return data.order || data;
     } catch (error) {
       console.error('Error fetching order details:', error);
       throw error;
