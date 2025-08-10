@@ -2,12 +2,15 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, LogBox } from 'react-native';
 import 'react-native-reanimated';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+
+// Suppress pointerEvents deprecation warning
+LogBox.ignoreLogs(['props.pointerEvents is deprecated. Use style.pointerEvents']);
 
 function AppContent() {
   const { user, loading } = useAuth();

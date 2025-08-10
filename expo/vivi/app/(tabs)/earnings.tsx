@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, ActivityIndicator, RefreshControl, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { courierService, CourierEarnings } from '../../services/courierService';
@@ -295,14 +295,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+      },
+    }),
   },
   summaryLabel: {
     fontSize: 14,
@@ -353,14 +360,21 @@ const styles = StyleSheet.create({
   historyList: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+      },
+    }),
   },
   payoutCard: {
     padding: 16,
