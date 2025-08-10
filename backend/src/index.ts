@@ -67,6 +67,19 @@ const corsOptions = {
       return;
     }
     
+    // Allow local network IPs for development (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+    if (origin && (
+      origin.startsWith('http://192.168.') ||
+      origin.startsWith('http://10.') ||
+      origin.match(/^http:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./) ||
+      origin.startsWith('http://127.') ||
+      origin.startsWith('http://localhost')
+    )) {
+      console.log('Allowing local network request from:', origin);
+      callback(null, true);
+      return;
+    }
+    
     // Log blocked origins for debugging
     console.log('CORS blocked origin:', origin);
     console.log('Allowed origins:', allowedOrigins);
@@ -127,7 +140,10 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const PORT = parseInt(process.env.PORT || '5000', 10);
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`Server accessible at:`);
+  console.log(`  - Local: http://localhost:${PORT}`);
+  console.log(`  - Network: http://0.0.0.0:${PORT}`);
 }); 

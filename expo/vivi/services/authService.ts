@@ -1,21 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Use production backend URL with CORS workaround
-const API_URL = 'https://vivi-backend-ejes.onrender.com/api';
-
-// Add CORS headers for mobile requests
-const getHeaders = (requireAuth = false, token?: string) => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
-  
-  if (requireAuth && token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  
-  return headers;
-};
+import { API_URL, getHeaders } from './config';
 
 export interface LoginCredentials {
   email: string;
@@ -29,11 +13,16 @@ export interface RegisterData extends LoginCredentials {
 export interface AuthResponse {
   token: string;
   user: {
-    id: string;
-    name: string;
+    id?: string;
+    _id?: string;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
     email: string;
+    role?: string;
     isEmailVerified?: boolean;
   };
+  status?: number;
 }
 
 export interface SocialLoginData {
@@ -42,6 +31,107 @@ export interface SocialLoginData {
 }
 
 export const authService = {
+  async getCurrentUser(): Promise<AuthResponse['user'] | null> {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const userData = await AsyncStorage.getItem('userData');
+      
+      if (!token || !userData) {
+        console.log('No token or user data found');
+        return null;
+      }
+      
+      console.log('Validating token with server...');
+      // Optionally validate token with server
+      const response = await fetch(`${API_URL}/auth/profile`, {
+        method: 'GET',
+        headers: getHeaders(true, token),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Token validation successful:', data);
+        return data.user;
+      } else {
+        console.log('Token validation failed, clearing storage');
+        // Token is invalid, clear storage
+        await AsyncStorage.removeItem('authToken');
+        await AsyncStorage.removeItem('userData');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      // On network error, try to use cached user data
+      try {
+        const userData = await AsyncStorage.getItem('userData');
+        if (userData) {
+          console.log('Using cached user data due to network error');
+          return JSON.parse(userData);
+        }
+      } catch (parseError) {
+        console.error('Error parsing cached user data:', parseError);
+      }
+      return null;
+    }
+  },
+
+  async register(data: RegisterData): Promise<AuthResponse> {
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed');
+      }
+
+      const responseData = await response.json();
+      const { token, user } = responseData;
+      
+      // Format user data to match frontend expectations
+      const formattedUser = {
+        id: user._id || user.id,
+        name: user.firstName || user.name || 'User',
+        email: user.email,
+        role: user.role || 'user'
+      };
+      
+      // Store the token and user data
+      await AsyncStorage.setItem('authToken', token);
+      await AsyncStorage.setItem('userData', JSON.stringify(formattedUser));
+      
+      return {
+        token,
+        user: formattedUser
+      };
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  },
+
+  async logout(): Promise<void> {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (token) {
+        // Optionally call logout endpoint
+        await fetch(`${API_URL}/auth/logout`, {
+          method: 'POST',
+          headers: getHeaders(true, token),
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local storage
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('userData');
+    }
+  },
+
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       console.log('Sending login request to:', `${API_URL}/auth/login`);
@@ -87,11 +177,23 @@ export const authService = {
 
       const { token, user } = data;
       
+      // Format user data to match frontend expectations
+      const formattedUser = {
+        id: user._id || user.id,
+        name: user.firstName || user.name || 'User',
+        email: user.email,
+        role: user.role || 'user'
+      };
+      
       // Store the token and user data
       await AsyncStorage.setItem('authToken', token);
-      await AsyncStorage.setItem('userData', JSON.stringify(user));
+      await AsyncStorage.setItem('userData', JSON.stringify(formattedUser));
       
-      return data;
+      return {
+        token,
+        user: formattedUser,
+        status: response.status
+      };
     } catch (error) {
       console.error('Login error details:', error);
       if (error instanceof Error) {

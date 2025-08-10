@@ -1,23 +1,32 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { Link, router } from 'expo-router';
-import { authService } from '../services/authService';
+import { useAuth } from '../../contexts/AuthContext';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
+  const { register } = useAuth();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({
+    name: '',
     email: '',
     password: '',
   });
 
   const validateForm = () => {
     const newErrors = {
+      name: '',
       email: '',
       password: '',
     };
     let isValid = true;
+
+    if (!name) {
+      newErrors.name = 'Name is required';
+      isValid = false;
+    }
 
     if (!email) {
       newErrors.email = 'Email is required';
@@ -39,43 +48,33 @@ export default function LoginScreen() {
     return isValid;
   };
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
     try {
-      console.log('Starting login process...');
-      console.log('Email:', email);
+      console.log('Attempting registration with:', { name, email });
+      await register({ name, email, password });
+      console.log('Registration successful');
       
-      const response = await authService.login({ email, password });
-      console.log('Login response received:', response);
-      
-      if (response) {
-        console.log('Login successful, navigating to dashboard');
-        router.replace('/dashboard');
-      } else {
-        console.log('Login successful, navigating to tabs');
-        router.replace('/(tabs)');
-      }
+      // Navigation will be handled automatically by the auth context
     } catch (error) {
-      console.error('Login error details:', error);
-      let errorMessage = 'Login failed. Please try again.';
+      console.error('Registration error:', error);
+      let errorMessage = 'Registration failed. Please try again.';
       
       if (error instanceof Error) {
-        if (error.message.includes('credentials')) {
-          errorMessage = 'Invalid email or password';
+        if (error.message.includes('already exists')) {
+          errorMessage = 'An account with this email already exists';
         } else if (error.message.includes('network')) {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        } else if (error.message.includes('fetch')) {
-          errorMessage = 'Cannot connect to server. Please check your internet connection.';
+          errorMessage = 'Network error. Please check your connection';
         } else {
           errorMessage = error.message;
         }
       }
       
-      Alert.alert('Login Error', errorMessage);
+      Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -83,10 +82,25 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
+      <Text style={styles.title}>Create Account</Text>
+      <Text style={styles.subtitle}>Sign up to get started</Text>
 
       <View style={styles.form}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={[styles.input, errors.name && styles.inputError]}
+            placeholder="Full Name"
+            value={name}
+            onChangeText={(text) => {
+              setName(text);
+              setErrors({ ...errors, name: '' });
+            }}
+            autoCapitalize="words"
+            editable={!loading}
+          />
+          {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
+        </View>
+
         <View style={styles.inputContainer}>
           <TextInput
             style={[styles.input, errors.email && styles.inputError]}
@@ -120,25 +134,21 @@ export default function LoginScreen() {
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
+          onPress={handleRegister}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Sign In</Text>
+            <Text style={styles.buttonText}>Sign Up</Text>
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
-        </TouchableOpacity>
-
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don&apos;t have an account? </Text>
-          <Link href="/(auth)/register" asChild>
+          <Text style={styles.footerText}>Already have an account? </Text>
+          <Link href="/(auth)/login" asChild>
             <TouchableOpacity>
-              <Text style={styles.footerLink}>Sign Up</Text>
+              <Text style={styles.footerLink}>Sign In</Text>
             </TouchableOpacity>
           </Link>
         </View>
@@ -201,12 +211,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  forgotPassword: {
-    color: '#007AFF',
-    textAlign: 'center',
-    marginTop: 16,
-    fontSize: 14,
   },
   footer: {
     flexDirection: 'row',
