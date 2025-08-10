@@ -47,7 +47,6 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      console.log('Attempting login with:', { email });
       await login({ email, password });
       console.log('Login successful');
       
