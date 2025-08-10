@@ -244,13 +244,6 @@ export default function DashboardScreen() {
               </View>
             </>
           )}
-
-          {user?.role !== 'courier' && (
-            <View style={styles.regularUserContainer}>
-              <Text style={styles.regularUserText}>მოგესალმებით თქვენს დეშბორდზე</Text>
-              <Text style={styles.regularUserSubtext}>აქ ნახავთ თქვენს ყველა სტატისტიკას.</Text>
-            </View>
-          )}
         </View>
       </ScrollView>
     </SafeAreaView>

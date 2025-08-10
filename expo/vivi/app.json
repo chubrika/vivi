@@ -12,11 +12,18 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.mycompany.vivi",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +44,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a554a96f-dc38-4896-9ecb-1b76cf4a4178",
+        "package": "com.mycompany.vivi"
+      }
     }
   }
 }
