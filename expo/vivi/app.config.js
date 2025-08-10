@@ -20,7 +20,9 @@ export default {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#ffffff'
-    }
+    },
+    // Allow cleartext traffic for development
+    usesCleartextTraffic: true,
   },
   web: {
     favicon: './assets/favicon.png',
@@ -37,5 +39,13 @@ export default {
         }
       }
     }
+  },
+  // Add network configuration for development
+  extra: {
+    apiUrl: process.env.API_URL || 'https://vivi-backend-ejes.onrender.com',
+  },
+  // Configure development server
+  developmentClient: {
+    silentLaunch: true,
   }
 }; 

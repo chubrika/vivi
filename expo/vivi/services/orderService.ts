@@ -1,21 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Use production backend URL
-const API_URL = 'https://vivi-backend-ejes.onrender.com/api';
-
-// Add CORS headers for mobile requests
-const getHeaders = (requireAuth = false, token?: string) => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
-  
-  if (requireAuth && token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  
-  return headers;
-};
+import { API_URL, getHeaders } from './config';
 
 export interface OrderItem {
   id: string;

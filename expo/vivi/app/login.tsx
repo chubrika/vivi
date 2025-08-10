@@ -46,28 +46,36 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
+      console.log('Starting login process...');
+      console.log('Email:', email);
+      
       const response = await authService.login({ email, password });
+      console.log('Login response received:', response);
       
       if (response) {
+        console.log('Login successful, navigating to dashboard');
         router.replace('/dashboard');
       } else {
+        console.log('Login successful, navigating to tabs');
         router.replace('/(tabs)');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login error details:', error);
       let errorMessage = 'Login failed. Please try again.';
       
       if (error instanceof Error) {
         if (error.message.includes('credentials')) {
           errorMessage = 'Invalid email or password';
         } else if (error.message.includes('network')) {
-          errorMessage = 'Network error. Please check your connection';
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else if (error.message.includes('fetch')) {
+          errorMessage = 'Cannot connect to server. Please check your internet connection.';
         } else {
           errorMessage = error.message;
         }
       }
       
-      Alert.alert('Error', errorMessage);
+      Alert.alert('Login Error', errorMessage);
     } finally {
       setLoading(false);
     }
