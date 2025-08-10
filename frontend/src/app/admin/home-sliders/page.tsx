@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Modal from '../../../components/Modal';
 import CloudinaryUploadWidget from '../../../components/CloudinaryUploadWidget';
 import { homeSliderService, HomeSlider, CreateHomeSliderData } from '../../../services/homeSliderService';
+import { categoriesService } from '../../../services/categoriesService';
 
 interface Category {
   _id: string;

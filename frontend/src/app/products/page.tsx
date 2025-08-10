@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, ReactNode, Suspense } from 'react';
 import ProductDetailPanel from '../../components/ProductDetailPanel';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../utils/api';
+import { categoriesService } from '../../services/categoriesService';
 import { filtersService, Filter } from '../../services/filtersService';
 import { Product } from '../../types/product';
 import CategoryNavigation from '../../components/CategoryNavigation';
@@ -130,7 +131,7 @@ function ProductsPageContent() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await api.get('/api/categories', undefined, false);
+        const data = await categoriesService.getAllCategories();
         console.log(data);
         setCategories(data);
       } catch (err) {
