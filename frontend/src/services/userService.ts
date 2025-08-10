@@ -14,10 +14,10 @@ interface User {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: 'user' | 'admin';
+  businessName?: string;
+  role: 'user' | 'admin' | 'customer' | 'seller' | 'courier';
   phoneNumber?: string;
   personalNumber?: string;
-  bio?: string;
   balance?: number;
   createdAt?: string;
   updatedAt?: string;
