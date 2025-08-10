@@ -30,17 +30,60 @@ export interface SocialLoginData {
   token: string;
 }
 
+// Helper function to safely handle AsyncStorage operations
+const safeAsyncStorage = {
+  async getItem(key: string): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(key);
+    } catch (error) {
+      console.error(`Error reading from AsyncStorage (${key}):`, error);
+      return null;
+    }
+  },
+  
+  async setItem(key: string, value: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (error) {
+      console.error(`Error writing to AsyncStorage (${key}):`, error);
+    }
+  },
+  
+  async removeItem(key: string): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Error removing from AsyncStorage (${key}):`, error);
+    }
+  }
+};
+
 export const authService = {
   async getCurrentUser(): Promise<AuthResponse['user'] | null> {
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      const userData = await AsyncStorage.getItem('userData');
+      const token = await safeAsyncStorage.getItem('authToken');
+      const userData = await safeAsyncStorage.getItem('userData');
       
       if (!token || !userData) {
         console.log('No token or user data found');
         return null;
       }
       
+      // For now, just use cached data to prevent network issues
+      try {
+        const parsedUserData = JSON.parse(userData);
+        console.log('Using cached user data:', parsedUserData);
+        return parsedUserData;
+      } catch (parseError) {
+        console.error('Error parsing cached user data:', parseError);
+        // Clear corrupted data
+        await safeAsyncStorage.removeItem('authToken');
+        await safeAsyncStorage.removeItem('userData');
+        return null;
+      }
+      
+      // TODO: Re-enable server validation when network issues are resolved
+      /*
       console.log('Validating token with server...');
       // Optionally validate token with server
       const response = await fetch(`${API_URL}/auth/profile`, {
@@ -55,15 +98,16 @@ export const authService = {
       } else {
         console.log('Token validation failed, clearing storage');
         // Token is invalid, clear storage
-        await AsyncStorage.removeItem('authToken');
-        await AsyncStorage.removeItem('userData');
+        await safeAsyncStorage.removeItem('authToken');
+        await safeAsyncStorage.removeItem('userData');
         return null;
       }
+      */
     } catch (error) {
       console.error('Error getting current user:', error);
       // On network error, try to use cached user data
       try {
-        const userData = await AsyncStorage.getItem('userData');
+        const userData = await safeAsyncStorage.getItem('userData');
         if (userData) {
           console.log('Using cached user data due to network error');
           return JSON.parse(userData);
@@ -100,8 +144,8 @@ export const authService = {
       };
       
       // Store the token and user data
-      await AsyncStorage.setItem('authToken', token);
-      await AsyncStorage.setItem('userData', JSON.stringify(formattedUser));
+      await safeAsyncStorage.setItem('authToken', token);
+      await safeAsyncStorage.setItem('userData', JSON.stringify(formattedUser));
       
       return {
         token,
@@ -115,20 +159,25 @@ export const authService = {
 
   async logout(): Promise<void> {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await safeAsyncStorage.getItem('authToken');
       if (token) {
         // Optionally call logout endpoint
-        await fetch(`${API_URL}/auth/logout`, {
-          method: 'POST',
-          headers: getHeaders(true, token),
-        });
+        try {
+          await fetch(`${API_URL}/auth/logout`, {
+            method: 'POST',
+            headers: getHeaders(true, token),
+          });
+        } catch (networkError) {
+          console.error('Network error during logout:', networkError);
+          // Continue with local logout even if network fails
+        }
       }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       // Always clear local storage
-      await AsyncStorage.removeItem('authToken');
-      await AsyncStorage.removeItem('userData');
+      await safeAsyncStorage.removeItem('authToken');
+      await safeAsyncStorage.removeItem('userData');
     }
   },
 
@@ -186,8 +235,8 @@ export const authService = {
       };
       
       // Store the token and user data
-      await AsyncStorage.setItem('authToken', token);
-      await AsyncStorage.setItem('userData', JSON.stringify(formattedUser));
+      await safeAsyncStorage.setItem('authToken', token);
+      await safeAsyncStorage.setItem('userData', JSON.stringify(formattedUser));
       
       return {
         token,
@@ -220,8 +269,8 @@ export const authService = {
       const responseData = await response.json();
       const { token, user } = responseData;
       
-      await AsyncStorage.setItem('authToken', token);
-      await AsyncStorage.setItem('userData', JSON.stringify(user));
+      await safeAsyncStorage.setItem('authToken', token);
+      await safeAsyncStorage.setItem('userData', JSON.stringify(user));
       
       return responseData;
     } catch (error) {

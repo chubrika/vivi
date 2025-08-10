@@ -3,10 +3,10 @@ export default {
   slug: 'vivi',
   version: '1.0.0',
   orientation: 'portrait',
-  icon: './assets/icon.png',
+  icon: './assets/images/icon.png',
   userInterfaceStyle: 'light',
   splash: {
-    image: './assets/splash.png',
+    image: './assets/images/splash-icon.png',
     resizeMode: 'contain',
     backgroundColor: '#ffffff'
   },
@@ -18,14 +18,19 @@ export default {
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: './assets/adaptive-icon.png',
+      foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#ffffff'
     },
     // Allow cleartext traffic for development
     usesCleartextTraffic: true,
+    package: "com.mycompany.vivi",
+    permissions: [
+      "INTERNET",
+      "ACCESS_NETWORK_STATE"
+    ]
   },
   web: {
-    favicon: './assets/favicon.png',
+    favicon: './assets/images/favicon.png',
     bundler: 'metro',
     proxy: {
       '/api': {
@@ -43,6 +48,9 @@ export default {
   // Add network configuration for development
   extra: {
     apiUrl: process.env.API_URL || 'https://vivi-backend-ejes.onrender.com',
+    "eas": {
+      "projectId": "a554a96f-dc38-4896-9ecb-1b76cf4a4178"
+    }
   },
   // Configure development server
   developmentClient: {
