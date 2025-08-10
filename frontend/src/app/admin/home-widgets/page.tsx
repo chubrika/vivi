@@ -3,30 +3,20 @@
 import { useState, useEffect } from 'react';
 import Modal from '../../../components/Modal';
 import CloudinaryUploadWidget from '../../../components/CloudinaryUploadWidget';
+import { categoriesService, Category } from '../../../services/categoriesService';
 
-interface Category {
-  _id: string;
-  name: string;
-  description: string;
-  slug: string;
-  parentId: string | null;
-  hasChildren: boolean;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-  children?: Category[];
+interface CategoryWithImage extends Category {
   image?: string;
 }
 
 interface WidgetGroup {
   id: string;
-  categories: Category[];
+  categories: CategoryWithImage[];
 }
 
 export default function HomeWidgetsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<CategoryWithImage[]>([]);
   const [widgetGroups, setWidgetGroups] = useState<WidgetGroup[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -34,12 +24,10 @@ export default function HomeWidgetsPage() {
     // Fetch categories and widget groups from your API
     const fetchData = async () => {
       try {
-        const [categoriesResponse, widgetGroupsResponse] = await Promise.all([
-          fetch('/api/categories'),
+        const [categoriesData, widgetGroupsResponse] = await Promise.all([
+          categoriesService.getAllCategories(),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/widget-groups`)
         ]);
-
-        const categoriesData = await categoriesResponse.json();
         const widgetGroupsData = await widgetGroupsResponse.json();
 
         if (categoriesData) {
@@ -62,7 +50,7 @@ export default function HomeWidgetsPage() {
 
   const handleCategorySelect = (category: Category) => {
     if (selectedCategories.length < 4) {
-      setSelectedCategories([...selectedCategories, { ...category, image: '' }]);
+      setSelectedCategories([...selectedCategories, { ...category, image: '' } as CategoryWithImage]);
     }
   };
 
