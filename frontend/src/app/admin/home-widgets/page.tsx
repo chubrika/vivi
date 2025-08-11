@@ -20,6 +20,7 @@ interface WidgetGroupCategory {
 
 interface WidgetGroup {
   id: string;
+  widgetName: string;
   categories: WidgetGroupCategory[];
 }
 
@@ -29,6 +30,7 @@ export default function HomeWidgetsPage() {
   const [widgetGroups, setWidgetGroups] = useState<WidgetGroup[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<WidgetGroup | null>(null);
+  const [widgetName, setWidgetName] = useState('');
 
   useEffect(() => {
     // Fetch categories and widget groups from your API
@@ -47,6 +49,7 @@ export default function HomeWidgetsPage() {
         if (widgetGroupsData.success) {
           setWidgetGroups(widgetGroupsData.data.map((group: any) => ({
             id: group._id,
+            widgetName: group.widgetName,
             categories: group.categories
           })));
         }
@@ -89,6 +92,11 @@ export default function HomeWidgetsPage() {
   };
 
   const handleSaveWidgetGroup = async () => {
+    if (!widgetName) {
+      alert('Please enter a widget name');
+      return;
+    }
+
     if (selectedCategories.length !== 4) {
       alert('Please select exactly 4 categories');
       return;
@@ -108,6 +116,7 @@ export default function HomeWidgetsPage() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
+          widgetName: widgetName.trim(),
           categories: selectedCategories
         })
       });
@@ -120,6 +129,7 @@ export default function HomeWidgetsPage() {
         if (widgetGroupsData.success) {
           setWidgetGroups(widgetGroupsData.data.map((group: any) => ({
             id: group._id,
+            widgetName: group.widgetName,
             categories: group.categories
           })));
         }
@@ -128,7 +138,8 @@ export default function HomeWidgetsPage() {
         setEditingGroup(null);
         setIsModalOpen(false);
       } else {
-        alert('Failed to save widget group');
+        const errorData = await response.json();
+        alert(`Failed to save widget group: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error saving widget group:', error);
@@ -138,6 +149,7 @@ export default function HomeWidgetsPage() {
 
   const handleEditGroup = (group: WidgetGroup) => {
     setEditingGroup(group);
+    setWidgetName(group.widgetName);
     setSelectedCategories(group.categories.map(cat => ({
       _id: cat.categoryId,
       name: cat.name,
@@ -169,6 +181,7 @@ export default function HomeWidgetsPage() {
         if (widgetGroupsData.success) {
           setWidgetGroups(widgetGroupsData.data.map((group: any) => ({
             id: group._id,
+            widgetName: group.widgetName,
             categories: group.categories
           })));
         }
@@ -184,6 +197,7 @@ export default function HomeWidgetsPage() {
   const handleCloseModal = () => {
     setSelectedCategories([]);
     setEditingGroup(null);
+    setWidgetName('');
     setIsModalOpen(false);
   };
 
@@ -232,10 +246,27 @@ export default function HomeWidgetsPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={editingGroup ? "Edit Widget Group" : "Select Categories (Choose exactly 4)"}
+        title={editingGroup ? "Edit Widget Group" : "Create New Widget Group"}
       >
-        <div className="mt-4 space-y-1 max-h-[60vh] overflow-y-auto pr-2">
-          {categories.map(category => renderCategory(category))}
+        {/* Widget Name Input */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Widget Name *
+          </label>
+          <input
+            type="text"
+            value={widgetName}
+            onChange={(e) => setWidgetName(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-600"
+            placeholder="Enter widget name"
+          />
+        </div>
+
+        <div className="mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Select Categories (Choose exactly 4)</h3>
+          <div className="space-y-1 max-h-[40vh] overflow-y-auto pr-2">
+            {categories.map(category => renderCategory(category))}
+          </div>
         </div>
 
         {/* Selected Categories with Image Upload */}
@@ -297,9 +328,9 @@ export default function HomeWidgetsPage() {
           </button>
           <button
             onClick={handleSaveWidgetGroup}
-            disabled={selectedCategories.length !== 4}
+            disabled={selectedCategories.length !== 4 || !widgetName}
             className={`px-4 py-2 rounded-md transition-colors ${
-              selectedCategories.length !== 4
+              selectedCategories.length !== 4 || !widgetName
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
@@ -313,7 +344,10 @@ export default function HomeWidgetsPage() {
       {widgetGroups.map((group) => (
         <div key={group.id} className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Widget Group</h2>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">{group.widgetName}</h2>
+              <p className="text-sm text-gray-500">Widget Group</p>
+            </div>
             <div className="flex space-x-2">
               <button
                 onClick={() => handleEditGroup(group)}

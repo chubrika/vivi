@@ -30,15 +30,13 @@ export interface UpdateHomeSliderData extends Partial<CreateHomeSliderData> {
 export const homeSliderService = {
   // Get all home sliders
   async getHomeSliders(): Promise<HomeSlider[]> {
-    const token = getToken();
-    const response = await api.get('/api/home-sliders', token || undefined);
+    const response = await api.get('/api/home-sliders', undefined, false);
     return response.data;
   },
 
   // Get home slider by ID
   async getHomeSliderById(id: string): Promise<HomeSlider> {
-    const token = getToken();
-    const response = await api.get(`/api/home-sliders/${id}`, token || undefined);
+    const response = await api.get(`/api/home-sliders/${id}`, undefined, false);
     return response.data;
   },
 

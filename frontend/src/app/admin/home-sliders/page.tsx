@@ -28,16 +28,12 @@ export default function HomeSlidersPage() {
 
   const fetchData = async () => {
     try {
-      const [slidersResponse, categoriesData] = await Promise.all([
-        fetch('/api/home-sliders'),
+      const [slidersData, categoriesData] = await Promise.all([
+        homeSliderService.getHomeSliders(),
         categoriesService.getAllCategories()
       ]);
 
-      const slidersData = await slidersResponse.json();
-
-      if (slidersData.success) {
-        setHomeSliders(slidersData.data);
-      }
+      setHomeSliders(slidersData);
 
       if (categoriesData) {
         setCategories(categoriesData);

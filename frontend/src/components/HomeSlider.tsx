@@ -11,8 +11,37 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
-// Custom styles for pagination dots
-const customPaginationStyles = `
+// Custom styles for Rakuten-style slider
+const customSliderStyles = `
+  .rakuten-swiper {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  .rakuten-swiper .swiper-wrapper {
+    align-items: flex-start !important;
+  }
+  
+  .rakuten-swiper .swiper-slide {
+    width: 85% !important;
+    margin-right: 20px !important;
+    transition: all 0.3s ease !important;
+    overflow: hidden !important;
+  }
+  
+  .rakuten-swiper .swiper-slide:first-child {
+    margin-left: 0 !important;
+  }
+  
+  .rakuten-swiper .swiper-slide-active {
+    z-index: 2 !important;
+  }
+  
+  .rakuten-swiper .swiper-slide-next {
+    opacity: 0.8 !important;
+  }
+  
   .swiper-pagination {
     bottom: 20px !important;
     background: rgba(0, 0, 0, 0.6) !important;
@@ -38,8 +67,32 @@ const customPaginationStyles = `
     background: rgba(255, 255, 255, 1) !important;
     transform: scale(1.2) !important;
   }
-  .swiper-pagination-bullets{
+  
+  .swiper-pagination-bullets {
     width: auto !important;
+  }
+  
+  @media (max-width: 768px) {
+    .rakuten-swiper .swiper-slide {
+      width: 85% !important;
+      margin-right: 20px !important;
+    }
+    
+    .swiper-pagination {
+      display: none !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .rakuten-swiper .swiper-slide {
+      width: 85% !important;
+      margin-right: 20px !important;
+    }
+    
+    .swiper-pagination {
+      bottom: 10px !important;
+      padding: 4px 10px !important;
+    }
   }
 `;
 
@@ -73,7 +126,7 @@ const HomeSlider = () => {
 
   if (loading) {
     return (
-      <div className="w-full h-[400px] sm:h-[250px] md:h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
+      <div className="w-full h-[200px] sm:h-[180px] md:h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     );
@@ -81,7 +134,7 @@ const HomeSlider = () => {
 
   if (error) {
     return (
-      <div className="w-full h-[400px] sm:h-[250px] md:h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
+      <div className="w-full h-[200px] sm:h-[180px] md:h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
         <p className="text-gray-600">Failed to load slider content</p>
       </div>
     );
@@ -89,7 +142,7 @@ const HomeSlider = () => {
 
   if (sliders.length === 0) {
     return (
-      <div className="w-full h-[400px] sm:h-[250px] md:h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
+      <div className="w-full h-[200px] sm:h-[180px] md:h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
         <p className="text-gray-600">No slider content available</p>
       </div>
     );
@@ -107,15 +160,16 @@ const HomeSlider = () => {
   };
 
   return (
-    <div className="w-full relative">
-      <style jsx>{customPaginationStyles}</style>
+    <div className="w-full relative overflow-hidden">
+      <style jsx>{customSliderStyles}</style>
       <Swiper
         modules={[Autoplay, Pagination, Navigation]}
-        spaceBetween={30}
-        centeredSlides={true}
+        spaceBetween={0}
+        slidesPerView="auto"
+        centeredSlides={false}
         loop={sliders.length > 1}
         autoplay={{
-          delay: 3000,
+          delay: 4000,
           disableOnInteraction: false,
         }}
         pagination={{
@@ -125,34 +179,60 @@ const HomeSlider = () => {
         onBeforeInit={(swiper) => {
           swiperRef.current = swiper;
         }}
-                 className="rounded-lg h-[400px] sm:h-[250px] md:h-[300px]"
+        className="rakuten-swiper h-[200px] sm:h-[180px] md:h-[300px]"
+        breakpoints={{
+          320: {
+            slidesPerView: 'auto',
+            spaceBetween: 10,
+            centeredSlides: false,
+          },
+          768: {
+            slidesPerView: 'auto',
+            spaceBetween: 20,
+            centeredSlides: false,
+          },
+          1024: {
+            slidesPerView: 'auto',
+            spaceBetween: 20,
+            centeredSlides: false,
+          },
+        }}
       >
         {sliders.map((slider) => (
           <SwiperSlide key={slider._id}>
             <div 
-              className={`relative h-full w-full ${(slider.slug || slider.categorySlug) ? 'cursor-pointer' : ''}`}
+              className={`relative h-full w-full rounded-lg overflow-hidden shadow-lg ${(slider.slug || slider.categorySlug) ? 'cursor-pointer' : ''}`}
               onClick={() => handleSliderClick(slider)}
             >
               {/* Desktop Image */}
               <img
                 src={slider.desktopImage}
                 alt={slider.name}
-                className="hidden md:block w-full h-full object-fill rounded-lg"
+                className="hidden md:block w-full h-full object-cover"
               />
               {/* Mobile Image */}
               <img
                 src={slider.mobileImage}
                 alt={slider.name}
-                className="md:hidden w-full h-full object-fill rounded-lg"
+                className="md:hidden w-full h-full object-cover"
               />
+              
+              {/* Gradient overlay for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+              
               {/* Click indicator */}
               {(slider.slug || slider.categorySlug) && (
-                <div className="absolute top-4 right-4 bg-white bg-opacity-20 rounded-full p-2">
+                <div className="absolute top-4 right-4 bg-white bg-opacity-20 backdrop-blur-sm rounded-full p-2 hover:bg-opacity-30 transition-all duration-200">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                 </div>
               )}
+              
+              {/* Optional: Add text overlay */}
+              {/* <div className="absolute bottom-4 left-4 text-white">
+                <h3 className="text-lg font-semibold drop-shadow-lg">{slider.name}</h3>
+              </div> */}
             </div>
           </SwiperSlide>
         ))}
@@ -163,18 +243,18 @@ const HomeSlider = () => {
         <>
           <button
             onClick={() => swiperRef.current?.slidePrev()}
-            className="hidden md:flex absolute left-4 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-black/60 hover:bg-black/80 rounded-full items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+            className="hidden md:flex absolute left-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
             aria-label="Previous slide"
           >
-            <ChevronLeft size={20} className="text-white" />
+            <ChevronLeft size={24} className="text-white" />
           </button>
           
           <button
             onClick={() => swiperRef.current?.slideNext()}
-            className="hidden md:flex absolute right-4 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-black/60 hover:bg-black/80 rounded-full items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+            className="hidden md:flex absolute right-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
             aria-label="Next slide"
           >
-            <ChevronRight size={20} className="text-white" />
+            <ChevronRight size={24} className="text-white" />
           </button>
         </>
       )}

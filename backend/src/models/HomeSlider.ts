@@ -14,7 +14,7 @@ export interface IHomeSlider extends Document {
 
 const homeSliderSchema = new Schema({
   name: { type: String, required: true },
-  slug: { type: String, required: false, unique: true },
+  slug: { type: String, required: false },
   desktopImage: { type: String, required: true },
   mobileImage: { type: String, required: true },
   categorySlug: { type: String, required: false },

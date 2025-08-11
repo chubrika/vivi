@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IWidgetGroup extends Document {
   groupNumber: number;
+  widgetName: string;
   categories: {
     categoryId: string;
     name: string;
@@ -15,6 +16,7 @@ export interface IWidgetGroup extends Document {
 
 const widgetGroupSchema = new Schema({
   groupNumber: { type: Number, required: false },
+  widgetName: { type: String, required: true },
   categories: [{
     categoryId: { type: String, required: true },
     name: { type: String, required: true },
