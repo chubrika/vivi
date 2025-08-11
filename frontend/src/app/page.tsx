@@ -30,6 +30,7 @@ interface Category {
   categoryId: string;
   name: string;
   image: string;
+  mobileImage: string;
   slug: string;
 }
 
@@ -101,12 +102,32 @@ export default function Home() {
                     onClick={() => handleCategoryClick(category.slug)}
                     className="relative w-full h-[200px] bg-sky-200 hover:bg-sky-300 rounded-lg cursor-pointer transition duration-300 overflow-hidden group"
                   >
-                    {category.image ? (
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        className="w-full h-full object-cover"
-                      />
+                    {(category.image || category.mobileImage) ? (
+                      <picture>
+                        {/* Mobile image */}
+                        {category.mobileImage && (
+                          <source
+                            media="(max-width: 768px)"
+                            srcSet={category.mobileImage}
+                          />
+                        )}
+                        {/* Desktop image */}
+                        {category.image && (
+                          <img
+                            src={category.image}
+                            alt={category.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                        {/* Fallback to mobile image if no desktop image */}
+                        {!category.image && category.mobileImage && (
+                          <img
+                            src={category.mobileImage}
+                            alt={category.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </picture>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span className="text-gray-700 group-hover:text-sky-600 font-medium">
