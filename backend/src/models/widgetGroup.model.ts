@@ -6,6 +6,7 @@ export interface IWidgetGroup extends Document {
     categoryId: string;
     name: string;
     image: string;
+    mobileImage: string;
     slug: string;
   }[];
   createdAt: Date;
@@ -18,6 +19,7 @@ const widgetGroupSchema = new Schema({
     categoryId: { type: String, required: true },
     name: { type: String, required: true },
     image: { type: String, default: '' },
+    mobileImage: { type: String, default: '' },
     slug: { type: String, required: true }
   }],
   createdAt: { type: Date, default: Date.now },
