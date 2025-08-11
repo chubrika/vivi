@@ -37,6 +37,7 @@ interface Category {
 interface WidgetGroup {
   _id: string;
   groupNumber: number;
+  widgetName: string;
   categories: Category[];
 }
 
@@ -92,15 +93,15 @@ export default function Home() {
         <div className="container mx-auto">
           {widgetGroups.map((group) => (
             <div key={group._id} className="mb-12">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                Group {group.groupNumber}
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-6">
+                 {group.widgetName}
               </h2>
               <div className="grid grid-cols-2 gap-4">
                 {group.categories.map((category) => (
                   <div
                     key={category.categoryId}
                     onClick={() => handleCategoryClick(category.slug)}
-                    className="relative w-full h-[200px] bg-sky-200 hover:bg-sky-300 rounded-lg cursor-pointer transition duration-300 overflow-hidden group"
+                    className="relative w-full h-[160px] bg-sky-200 hover:bg-sky-300 rounded-lg cursor-pointer transition duration-300 overflow-hidden group"
                   >
                     {(category.image || category.mobileImage) ? (
                       <picture>

@@ -13,28 +13,33 @@ export const createHomeSlider = async (req: Request, res: Response) => {
     }
 
     // Check if either slug or categorySlug is provided
-    if (!slug && !categorySlug) {
+    if ((!slug || slug.trim() === '') && (!categorySlug || categorySlug.trim() === '')) {
       return res.status(400).json({
         success: false,
         message: 'Either slug or categorySlug must be provided'
       });
     }
 
-    // Check if slug already exists
-    const existingSlider = await HomeSlider.findOne({ slug });
-    if (existingSlider) {
-      return res.status(400).json({
-        success: false,
-        message: 'Slider with this slug already exists'
-      });
+    // Determine the final values - ensure only one is used
+    let finalSlug = null;
+    let finalCategorySlug = null;
+    
+    if (slug && slug.trim() !== '') {
+      // If slug is provided, use it and set categorySlug to null
+      finalSlug = slug.trim();
+      finalCategorySlug = null;
+    } else if (categorySlug && categorySlug.trim() !== '') {
+      // If categorySlug is provided, use it and set slug to null
+      finalSlug = null;
+      finalCategorySlug = categorySlug.trim();
     }
 
     const homeSlider = new HomeSlider({
       name,
-      slug,
+      slug: finalSlug,
       desktopImage,
       mobileImage,
-      categorySlug
+      categorySlug: finalCategorySlug
     });
 
     await homeSlider.save();
@@ -45,6 +50,18 @@ export const createHomeSlider = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error creating home slider:', error);
+    
+    // Handle specific MongoDB errors
+    if (error instanceof Error) {
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation error',
+          details: error.message
+        });
+      }
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Failed to create home slider'
@@ -108,25 +125,28 @@ export const updateHomeSlider = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if slug already exists (excluding current slider)
-    if (slug && slug !== homeSlider.slug) {
-      const existingSlider = await HomeSlider.findOne({ slug, _id: { $ne: id } });
-      if (existingSlider) {
-        return res.status(400).json({
-          success: false,
-          message: 'Slider with this slug already exists'
-        });
-      }
+    // Determine the final values - ensure only one is used
+    let finalSlug = null;
+    let finalCategorySlug = null;
+    
+    if (slug && slug.trim() !== '') {
+      // If slug is provided, use it and set categorySlug to null
+      finalSlug = slug.trim();
+      finalCategorySlug = null;
+    } else if (categorySlug && categorySlug.trim() !== '') {
+      // If categorySlug is provided, use it and set slug to null
+      finalSlug = null;
+      finalCategorySlug = categorySlug.trim();
     }
 
     const updatedSlider = await HomeSlider.findByIdAndUpdate(
       id,
       {
         name,
-        slug,
+        slug: finalSlug,
         desktopImage,
         mobileImage,
-        categorySlug,
+        categorySlug: finalCategorySlug,
         isActive,
         order,
         updatedAt: new Date()

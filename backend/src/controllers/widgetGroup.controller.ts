@@ -3,7 +3,14 @@ import { WidgetGroup } from '../models/widgetGroup.model';
 
 export const createWidgetGroup = async (req: Request, res: Response) => {
   try {
-    const { categories } = req.body;
+    const { widgetName, categories } = req.body;
+
+    if (!widgetName || typeof widgetName !== 'string' || widgetName.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Widget name is required.'
+      });
+    }
 
     if (!categories || !Array.isArray(categories) || categories.length !== 4) {
       return res.status(400).json({
@@ -13,6 +20,7 @@ export const createWidgetGroup = async (req: Request, res: Response) => {
     }
 
     const widgetGroup = new WidgetGroup({
+      widgetName: widgetName.trim(),
       categories: categories.map(category => ({
         categoryId: category._id,
         name: category.name,
@@ -58,7 +66,14 @@ export const getWidgetGroups = async (req: Request, res: Response) => {
 export const updateWidgetGroup = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { categories } = req.body;
+    const { widgetName, categories } = req.body;
+
+    if (!widgetName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Widget name is required.'
+      });
+    }
 
     if (!categories || !Array.isArray(categories) || categories.length !== 4) {
       return res.status(400).json({
@@ -75,6 +90,7 @@ export const updateWidgetGroup = async (req: Request, res: Response) => {
       });
     }
 
+    widgetGroup.widgetName = widgetName.trim();
     widgetGroup.categories = categories.map(category => ({
       categoryId: category._id,
       name: category.name,
