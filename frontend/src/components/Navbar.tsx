@@ -123,7 +123,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-12 left-0 right-0 bg-white/80 backdrop-blur-lg z-40 border-b border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+    <nav className="fixed top-[45px] left-0 right-0 bg-white/80 backdrop-blur-lg z-40 border-b border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
       <div className="container mx-auto px-4">
         {/* Top row with logo, search, and user controls */}
         <div className="flex items-center justify-between h-20">
@@ -132,9 +132,9 @@ export default function Navbar() {
               <Image
                 src="/img/logo.png"
                 alt="Logo"
-                width={80}
-                height={80}
-                className="mr-2 w-12 h-12 md:w-auto md:h-auto"
+                width={40}
+                height={40}
+                className="w-12 h-12 md:w-auto md:h-auto"
               />
             </Link>
             
@@ -236,7 +236,7 @@ export default function Navbar() {
           <div className="flex gap-8">
             <button
               onClick={toggleCategoryMenu}
-              className="inline-flex items-center px-1 text-sm font-medium text-gray-500 hover:text-blue-500 focus:outline-none"
+              className="inline-flex items-center px-1 text-sm font-medium text-gray-900 hover:text-blue-900 focus:outline-none"
             >
              <SquareMenu className="h-5 w-5 ml-1 mr-1 text-blue-500" />
               <span>კატეგორიები</span>
@@ -253,7 +253,7 @@ export default function Navbar() {
                 className={`${
                   pathname === item.href
                     ? 'text-gray-900'
-                    : 'text-gray-500 hover:text-blue-500'
+                    : 'text-gray-900 hover:text-blue-900'
                 } inline-flex items-center px-1 text-sm font-medium`}
               >
                 {item.title}

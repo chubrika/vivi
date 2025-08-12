@@ -101,7 +101,7 @@ export default function Home() {
                   <div
                     key={category.categoryId}
                     onClick={() => handleCategoryClick(category.slug)}
-                    className="relative w-full h-[160px] bg-sky-200 hover:bg-sky-300 rounded-lg cursor-pointer transition duration-300 overflow-hidden group"
+                                         className="relative w-full h-[160px] md:h-[200px] bg-sky-200 hover:bg-sky-300 rounded-lg cursor-pointer transition duration-300 overflow-hidden group"
                   >
                     {(category.image || category.mobileImage) ? (
                       <picture>

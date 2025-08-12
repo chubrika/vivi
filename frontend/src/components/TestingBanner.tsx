@@ -8,7 +8,7 @@ export default function TestingBanner() {
       <div className="container mx-auto flex items-center justify-center gap-2">
         <AlertTriangle className="h-5 w-5 flex-shrink-0" />
         <span className="text-sm md:text-base text-gray-900">
-          საიტი ტესტირების რეჟიმშია !
+          საიტი სატესტო რეჟიმშია !
         </span>
       </div>
     </div>
