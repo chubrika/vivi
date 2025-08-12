@@ -236,7 +236,7 @@ export default function Navbar() {
           <div className="flex gap-8">
             <button
               onClick={toggleCategoryMenu}
-              className="inline-flex items-center px-1 text-sm font-medium text-gray-500 hover:text-blue-500 focus:outline-none"
+              className="inline-flex items-center px-1 text-sm font-medium text-gray-900 hover:text-blue-900 focus:outline-none"
             >
              <SquareMenu className="h-5 w-5 ml-1 mr-1 text-blue-500" />
               <span>კატეგორიები</span>
@@ -253,7 +253,7 @@ export default function Navbar() {
                 className={`${
                   pathname === item.href
                     ? 'text-gray-900'
-                    : 'text-gray-500 hover:text-blue-500'
+                    : 'text-gray-900 hover:text-blue-900'
                 } inline-flex items-center px-1 text-sm font-medium`}
               >
                 {item.title}

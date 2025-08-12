@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuth } from '../../utils/authContext';
 import { API_BASE_URL } from '../../utils/api';
 import { useCart } from '../../utils/cartContext';
+import { useLoginSidebar } from '../../contexts/LoginSidebarContext';
 import Modal from '../../components/Modal';
 import { addressService, Address } from '../../services/addressService';
 import AddressForm from '../../components/AddressForm';
@@ -44,6 +45,7 @@ export default function CheckoutPage() {
     const quantity = quantityParam ? parseInt(quantityParam) : 1;
     const { user, isAuthenticated } = useAuth();
     const { items: cartItems, totalPrice: cartTotalPrice, isLoading: cartLoading } = useCart();
+    const { openLoginSidebar } = useLoginSidebar();
     
     const [product, setProduct] = useState<Product | null>(null);
     const [cartItemsToCheckout, setCartItemsToCheckout] = useState<CartItem[]>([]);
@@ -64,6 +66,7 @@ export default function CheckoutPage() {
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
     const [showAddressFormModal, setShowAddressFormModal] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+    const [userBalance, setUserBalance] = useState<number>(0);
 
     // Determine if we're doing a cart checkout or direct product checkout
     useEffect(() => {
@@ -211,6 +214,25 @@ export default function CheckoutPage() {
         }
     }, [showAddressModal]);
 
+    // Fetch user balance when authenticated
+    useEffect(() => {
+        const fetchUserBalance = async () => {
+            if (isAuthenticated) {
+                try {
+                    const userData = await userService.getCurrentUser();
+                    setUserBalance(userData.balance || 0);
+                } catch (err) {
+                    console.error('Error fetching user balance:', err);
+                    setUserBalance(0);
+                }
+            } else {
+                setUserBalance(0);
+            }
+        };
+
+        fetchUserBalance();
+    }, [isAuthenticated]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -222,6 +244,12 @@ export default function CheckoutPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        // Check if user is authenticated
+        if (!isAuthenticated) {
+            openLoginSidebar();
+            return;
+        }
 
         // Validate form data
         const errors: Record<string, string> = {};
@@ -410,6 +438,16 @@ export default function CheckoutPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left side - Recipient Information */}
                 <div className="lg:col-span-2 space-y-8">
+                    {!isAuthenticated && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div className="flex items-center">
+                                <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                                <p className="text-yellow-800 font-medium">ყიდვის დასასრულებლად გაიარეთ რეგისტრაცია</p>
+                            </div>
+                        </div>
+                    )}
                     <div className="bg-white p-8 rounded-xl shadow-lg">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-semibold text-gray-600">მიმღები</h2>
@@ -423,7 +461,8 @@ export default function CheckoutPage() {
                                         value={formData.firstName}
                                         onChange={handleInputChange}
                                         required
-                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.firstName ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                        disabled={!isAuthenticated}
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.firstName ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800 ${!isAuthenticated ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''}`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -442,7 +481,8 @@ export default function CheckoutPage() {
                                         value={formData.lastName}
                                         onChange={handleInputChange}
                                         required
-                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.lastName ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                        disabled={!isAuthenticated}
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.lastName ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800 ${!isAuthenticated ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''}`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -464,7 +504,8 @@ export default function CheckoutPage() {
                                         value={formData.phoneNumber}
                                         onChange={handleInputChange}
                                         required
-                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.phoneNumber ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                        disabled={!isAuthenticated}
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.phoneNumber ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800 ${!isAuthenticated ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''}`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -483,7 +524,8 @@ export default function CheckoutPage() {
                                         value={formData.personalNumber}
                                         onChange={handleInputChange}
                                         required
-                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.personalNumber ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                        disabled={!isAuthenticated}
+                                        className={`w-full px-4 py-3 rounded-lg border ${formErrors.personalNumber ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800 ${!isAuthenticated ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''}`}
                                         placeholder=" "
                                     />
                                     <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -504,7 +546,8 @@ export default function CheckoutPage() {
                                     value={formData.address}
                                     onChange={handleInputChange}
                                     required
-                                    className={`w-full px-4 py-3 rounded-lg border ${formErrors.address ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800`}
+                                    disabled={!isAuthenticated}
+                                    className={`w-full px-4 py-3 rounded-lg border ${formErrors.address ? 'border-red-500' : 'border-gray-200'} focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800 ${!isAuthenticated ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''}`}
                                     placeholder=" "
                                 />
                                 <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -513,8 +556,8 @@ export default function CheckoutPage() {
                                     მისამართი
                                 </label>
                                 <label 
-                                    onClick={() => setShowAddressModal(true)}
-                                    className="absolute right-4 top-3 text-sm text-sky-600 cursor-pointer hover:text-sky-800 transition-colors duration-200"
+                                    onClick={() => isAuthenticated && setShowAddressModal(true)}
+                                    className={`absolute right-4 top-3 text-sm ${isAuthenticated ? 'text-sky-600 cursor-pointer hover:text-sky-800' : 'text-gray-400 cursor-not-allowed'} transition-colors duration-200`}
                                 >
                                     მისამართის შეცვლა
                                 </label>
@@ -529,7 +572,8 @@ export default function CheckoutPage() {
                                     value={formData.comment}
                                     onChange={handleInputChange}
                                     rows={3}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none resize-none peer text-gray-800"
+                                    disabled={!isAuthenticated}
+                                    className={`w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none resize-none peer text-gray-800 ${!isAuthenticated ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''}`}
                                     placeholder=" "
                                 />
                                 <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${
@@ -545,10 +589,11 @@ export default function CheckoutPage() {
                                     <div className="border border-gray-200 rounded-lg overflow-hidden">
                                         <button
                                             type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'card' }))}
+                                            onClick={() => isAuthenticated && setFormData(prev => ({ ...prev, paymentMethod: 'card' }))}
+                                            disabled={!isAuthenticated}
                                             className={`w-full flex items-center justify-between p-4 ${
                                                 formData.paymentMethod === 'card' ? 'bg-sky-50' : 'bg-white'
-                                            } hover:bg-sky-50 transition-all duration-200`}
+                                            } ${isAuthenticated ? 'hover:bg-sky-50' : 'cursor-not-allowed opacity-60'} transition-all duration-200`}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -609,16 +654,24 @@ export default function CheckoutPage() {
                                     <div className="border border-gray-200 rounded-lg">
                                         <button
                                             type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'balance' }))}
+                                            onClick={() => isAuthenticated && setFormData(prev => ({ ...prev, paymentMethod: 'balance' }))}
+                                            disabled={!isAuthenticated}
                                             className={`w-full flex items-center justify-between p-4 ${
                                                 formData.paymentMethod === 'balance' ? 'bg-sky-50' : 'bg-white'
-                                            } hover:bg-sky-50 transition-all duration-200`}
+                                            } ${isAuthenticated ? 'hover:bg-sky-50' : 'cursor-not-allowed opacity-60'} transition-all duration-200`}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
-                                                <span className="text-gray-800">ბალანსით გადახდა</span>
+                                                <div className="flex items-center">
+                                                    <span className="text-gray-800">ბალანსით გადახდა</span>
+                                                    {isAuthenticated && (
+                                                        <span className="text-sm ml-2 font-bold text-gray-900 bg-sky-200 rounded-full px-2 py-1">
+                                                            {userBalance.toFixed(2)} ₾
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                             {formData.paymentMethod === 'balance' && (
                                                 <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -632,10 +685,11 @@ export default function CheckoutPage() {
                                     <div className="border border-gray-200 rounded-lg">
                                         <button
                                             type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'cash' }))}
+                                            onClick={() => isAuthenticated && setFormData(prev => ({ ...prev, paymentMethod: 'cash' }))}
+                                            disabled={!isAuthenticated}
                                             className={`w-full flex items-center justify-between p-4 ${
                                                 formData.paymentMethod === 'cash' ? 'bg-sky-50' : 'bg-white'
-                                            } hover:bg-sky-50 transition-all duration-200`}
+                                            } ${isAuthenticated ? 'hover:bg-sky-50' : 'cursor-not-allowed opacity-60'} transition-all duration-200`}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -668,7 +722,7 @@ export default function CheckoutPage() {
                                 </div>
                                 <div className="flex justify-between text-gray-600">
                                     <span>ფასი</span>
-                                    <span>${isCartCheckout ? cartTotalPrice.toFixed(2) : (product?.price ? product.price * quantity : 0).toFixed(2)}</span>
+                                    <span>{isCartCheckout ? cartTotalPrice.toFixed(2) : (product?.price ? product.price * quantity : 0).toFixed(2)} ₾</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
                                     <span>მიტანა</span>
@@ -676,16 +730,25 @@ export default function CheckoutPage() {
                                 </div>
                                 <div className="flex justify-between font-semibold text-lg border-t text-gray-600 pt-4">
                                     <span>სულ თანხა</span>
-                                    <span className="text-sky-600">${isCartCheckout ? cartTotalPrice.toFixed(2) : (product?.price ? product.price * quantity : 0).toFixed(2)}</span>
+                                    <span className="text-sky-600">{isCartCheckout ? cartTotalPrice.toFixed(2) : (product?.price ? product.price * quantity : 0).toFixed(2)} ₾</span>
                                 </div>
                             </div>
 
-                            <button
-                                onClick={handleSubmit}
-                                className="w-full bg-sky-600 text-white py-4 px-6 rounded-lg hover:bg-sky-700 transition-colors duration-200 font-medium text-sm shadow-md hover:shadow-lg"
-                            >
-                                შეკვეთის დასრულება
-                            </button>
+                            {isAuthenticated ? (
+                                <button
+                                    onClick={handleSubmit}
+                                    className="w-full bg-sky-600 text-white py-4 px-6 rounded-lg hover:bg-sky-700 transition-colors duration-200 font-medium text-sm shadow-md hover:shadow-lg"
+                                >
+                                    შეკვეთის დასრულება
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={openLoginSidebar}
+                                    className="w-full bg-sky-600 text-white py-4 px-6 rounded-lg hover:bg-sky-700 transition-colors duration-200 font-medium text-sm shadow-md hover:shadow-lg"
+                                >
+                                    ყიდვის დასასრულებლად გაიარეთ რეგისტრაცია
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
