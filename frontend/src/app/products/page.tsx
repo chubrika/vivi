@@ -634,7 +634,7 @@ function ProductsPageContent() {
         </div>
       </div>
 
-      <div className="flex">
+      <div className="flex h-[100vh]">
         {/* Mobile Sidebar Overlay - Only on mobile */}
         {isSidebarOpen && (
           <div 
