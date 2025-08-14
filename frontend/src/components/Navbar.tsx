@@ -12,6 +12,7 @@ import SearchResults from './SearchResults';
 import { Search, ShoppingCart, User, Menu, X, MessageCircle, ChevronDown, ChevronUp, SquareMenu } from 'lucide-react';
 import CategoryMenu from './CategoryMenu';
 import { categoriesService, Category } from '../services/categoriesService';
+import { CategoriesIcon } from './icons/CategoriesIcon';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -238,7 +239,10 @@ export default function Navbar() {
               onClick={toggleCategoryMenu}
               className="inline-flex items-center px-1 text-sm font-medium text-gray-900 hover:text-blue-900 focus:outline-none"
             >
-             <SquareMenu className="h-5 w-5 ml-1 mr-1 text-blue-500" />
+              <CategoriesIcon 
+                size={20}
+                className="mr-2 text-current"
+              />
               <span>კატეგორიები</span>
               {isCategoryMenuOpen ? (
                 <ChevronUp className="h-4 w-4 ml-1" />
@@ -266,17 +270,23 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} bg-white border-t border-gray-100`}>
         <div className="px-4 py-3 space-y-2">
-                     <button
-             onClick={toggleCategoryMenu}
-             className="flex items-center justify-between w-full pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300"
-           >
-             <span>ყველა კატეგორია</span>
-             {isCategoryMenuOpen ? (
-               <ChevronUp className="h-4 w-4" />
-             ) : (
-               <ChevronDown className="h-4 w-4" />
-             )}
-           </button>
+                                          <button
+              onClick={toggleCategoryMenu}
+              className="flex items-center justify-between w-full pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+            >
+              <div className="flex items-center">
+                <CategoriesIcon 
+                  size={18}
+                  className="mr-2 text-current"
+                />
+                <span>ყველა კატეგორია</span>
+              </div>
+              {isCategoryMenuOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
           {navigationItems.map((item) => (
             <Link
               key={item.href}
