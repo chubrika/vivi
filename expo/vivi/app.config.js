@@ -1,18 +1,18 @@
 export default {
   name: 'vivi',
   slug: 'vivi',
+  scheme: 'vivi',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  userInterfaceStyle: 'light',
+  userInterfaceStyle: 'automatic',
+  newArchEnabled: true,
   splash: {
     image: './assets/images/splash-icon.png',
     resizeMode: 'contain',
     backgroundColor: '#ffffff'
   },
-  assetBundlePatterns: [
-    '**/*'
-  ],
+  assetBundlePatterns: ['**/*'],
   ios: {
     supportsTablet: true
   },
@@ -21,17 +21,15 @@ export default {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#ffffff'
     },
-    // Allow cleartext traffic for development
-    usesCleartextTraffic: true,
-    package: "com.mycompany.vivi",
-    permissions: [
-      "INTERNET",
-      "ACCESS_NETWORK_STATE"
-    ]
+    edgeToEdgeEnabled: true,
+    package: 'com.mycompany.vivi',
+    versionCode: 1,
+    permissions: ['INTERNET', 'ACCESS_NETWORK_STATE']
   },
   web: {
     favicon: './assets/images/favicon.png',
     bundler: 'metro',
+    output: 'static',
     proxy: {
       '/api': {
         target: 'https://vivi-backend-ejes.onrender.com',
@@ -45,15 +43,30 @@ export default {
       }
     }
   },
-  // Add network configuration for development
+  plugins: [
+    'expo-font',
+    'expo-router',
+    'expo-web-browser',
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/images/splash-icon.png',
+        resizeMode: 'contain',
+        backgroundColor: '#ffffff'
+      }
+    ]
+  ],
+  experiments: {
+    typedRoutes: true
+  },
   extra: {
     apiUrl: process.env.API_URL || 'https://vivi-backend-ejes.onrender.com',
-    "eas": {
-      "projectId": "a554a96f-dc38-4896-9ecb-1b76cf4a4178"
+    eas: {
+      projectId: 'a554a96f-dc38-4896-9ecb-1b76cf4a4178',
+      package: 'com.mycompany.vivi'
     }
   },
-  // Configure development server
   developmentClient: {
-    silentLaunch: true,
+    silentLaunch: true
   }
-}; 
+};
