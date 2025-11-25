@@ -19,7 +19,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
+        <Text style={styles.title}>პროფილი</Text>
       </View>
       
       <View style={styles.profileSection}>
@@ -32,26 +32,26 @@ export default function ProfileScreen() {
         <View style={styles.menuContainer}>
           <TouchableOpacity style={styles.menuItem}>
             <Ionicons name="settings-outline" size={24} color="#333" />
-            <Text style={styles.menuText}>Settings</Text>
+            <Text style={styles.menuText}>პარამეტრები</Text>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem}>
             <Ionicons name="card-outline" size={24} color="#333" />
-            <Text style={styles.menuText}>Payment Methods</Text>
+            <Text style={styles.menuText}>გადახდის მეთოდები</Text>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem}>
             <Ionicons name="help-circle-outline" size={24} color="#333" />
-            <Text style={styles.menuText}>Help & Support</Text>
+            <Text style={styles.menuText}>დახმარება</Text>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>გასვლა</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

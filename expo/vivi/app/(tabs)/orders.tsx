@@ -87,7 +87,7 @@ export default function OrdersScreen() {
   const renderOrderItem = ({ item }: { item: Order }) => (
     <View style={styles.orderCard}>
       <View style={styles.orderHeader}>
-        <Text style={styles.orderId}>Order #{item.orderId}</Text>
+        <Text style={styles.orderId}>შეკვეთა #{item.orderId}</Text>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
           <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
         </View>
@@ -106,7 +106,7 @@ export default function OrdersScreen() {
       </View>
 
       <View style={styles.orderItems}>
-        <Text style={styles.itemsTitle}>Items ({item.items.length}):</Text>
+        <Text style={styles.itemsTitle}>პროდუქტები ({item.items.length}):</Text>
         {item.items.slice(0, 3).map((orderItem, index) => (
           <Text key={index} style={styles.itemText}>
             • {orderItem.name} x{orderItem.quantity}
@@ -125,7 +125,7 @@ export default function OrdersScreen() {
             router.push(`/order-details/${item._id}?orderData=${orderData}`);
           }}
         >
-          <Text style={styles.actionButtonText}>View Details</Text>
+          <Text style={styles.actionButtonText}>დეტალურად</Text>
         </TouchableOpacity>
 
         {item.status === 'pending' && (
@@ -133,7 +133,7 @@ export default function OrdersScreen() {
             style={[styles.actionButton, { backgroundColor: '#007AFF' }]}
             onPress={() => updateOrderStatus(item._id, 'processing')}
           >
-            <Text style={styles.actionButtonText}>Start Processing</Text>
+            <Text style={styles.actionButtonText}>პროცესშია</Text>
           </TouchableOpacity>
         )}
 
@@ -142,7 +142,7 @@ export default function OrdersScreen() {
             style={[styles.actionButton, { backgroundColor: '#5856D6' }]}
             onPress={() => updateOrderStatus(item._id, 'shipped')}
           >
-            <Text style={styles.actionButtonText}>Mark as Shipped</Text>
+            <Text style={styles.actionButtonText}>გაგზავნილია</Text>
           </TouchableOpacity>
         )}
 
@@ -151,7 +151,7 @@ export default function OrdersScreen() {
             style={[styles.actionButton, { backgroundColor: '#34C759' }]}
             onPress={() => updateOrderStatus(item._id, 'delivered')}
           >
-            <Text style={styles.actionButtonText}>Mark as Delivered</Text>
+            <Text style={styles.actionButtonText}>მიწოდებულია</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -174,7 +174,7 @@ export default function OrdersScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading orders...</Text>
+          <Text style={styles.loadingText}>შეკვეთების ჩატვირთვა...</Text>
         </View>
       </SafeAreaView>
     );
@@ -183,9 +183,9 @@ export default function OrdersScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Orders</Text>
+        <Text style={styles.title}>შეკვეთები</Text>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backButton}>← Back</Text>
+          <Text style={styles.backButton}>← უკან</Text>
         </TouchableOpacity>
       </View>
 
@@ -198,27 +198,27 @@ export default function OrdersScreen() {
       {/* Filter Buttons */}
       <View style={styles.filterContainer}>
         <FilterButton
-          title="All"
+          title="ყველა"
           active={!filters.status}
           onPress={() => setFilters({ ...filters, status: undefined, page: 1 })}
         />
         <FilterButton
-          title="Pending"
+          title="მოლოდინშია"
           active={filters.status === 'pending'}
           onPress={() => setFilters({ ...filters, status: 'pending', page: 1 })}
         />
         <FilterButton
-          title="Processing"
+          title="პროცესშია"
           active={filters.status === 'processing'}
           onPress={() => setFilters({ ...filters, status: 'processing', page: 1 })}
         />
         <FilterButton
-          title="Shipped"
+          title="გაგზავნილია"
           active={filters.status === 'shipped'}
           onPress={() => setFilters({ ...filters, status: 'shipped', page: 1 })}
         />
         <FilterButton
-          title="Delivered"
+          title="მიწოდებულია"
           active={filters.status === 'delivered'}
           onPress={() => setFilters({ ...filters, status: 'delivered', page: 1 })}
         />
@@ -235,9 +235,9 @@ export default function OrdersScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No orders found</Text>
+            <Text style={styles.emptyText}>შეკვეთები არ მოიძებნა</Text>
             <Text style={styles.emptySubtext}>
-              {filters.status ? `No ${filters.status} orders` : 'No orders available'}
+              {filters.status ? `No ${filters.status} orders` : 'შეყვეთები არ მოიძებნა'}
             </Text>
           </View>
         }

@@ -80,14 +80,14 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
+      <Text style={styles.title}>მოგესალმებით კურიერის სისტემაში</Text>
+      <Text style={styles.subtitle}>გაიარეთ ავტორიზაცია</Text>
 
       <View style={styles.form}>
         <View style={styles.inputContainer}>
           <TextInput
             style={[styles.input, errors.email && styles.inputError]}
-            placeholder="Email"
+            placeholder="ელ-ფოსტა"
             value={email}
             onChangeText={(text) => {
               setEmail(text);
@@ -103,7 +103,7 @@ export default function LoginScreen() {
         <View style={styles.inputContainer}>
           <TextInput
             style={[styles.input, errors.password && styles.inputError]}
-            placeholder="Password"
+            placeholder="პაროლი"
             value={password}
             onChangeText={(text) => {
               setPassword(text);
@@ -123,22 +123,13 @@ export default function LoginScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Sign In</Text>
+            <Text style={styles.buttonText}>შესვლა</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
+          <Text style={styles.forgotPassword}>დაგავიწყდა პაროლი?</Text>
         </TouchableOpacity>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Don&apos;t have an account? </Text>
-          <Link href="/(auth)/register" asChild>
-            <TouchableOpacity>
-              <Text style={styles.footerLink}>Sign Up</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
       </View>
     </View>
   );

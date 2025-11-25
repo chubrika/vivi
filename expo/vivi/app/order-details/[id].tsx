@@ -119,7 +119,7 @@ export default function OrderDetailsScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading order details...</Text>
+          <Text style={styles.loadingText}>შეკვეთის დეტალების ჩატვირთვა...</Text>
         </View>
       </SafeAreaView>
     );
@@ -130,55 +130,55 @@ export default function OrderDetailsScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.backButton}>← Back</Text>
+            <Text style={styles.backButton}>← უკან</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Order Details</Text>
+          <Text style={styles.title}>შეკვეთის დეტალები</Text>
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error || 'Order not found'}</Text>
+          <Text style={styles.errorText}>{error || 'შეკვეთა არ მოიძებნა'}</Text>
         </View>
       </SafeAreaView>
-    );
+    );  
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backButton}>← Back</Text>
+          <Text style={styles.backButton}>← უკან</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Order Details</Text>
+        <Text style={styles.title}>შეკვეთის დეტალები</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Order Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Information</Text>
+          <Text style={styles.sectionTitle}>შეკვეთის ინფორმაცია</Text>
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Order ID:</Text>
+              <Text style={styles.infoLabel}>შეკვეთის ნომერი:</Text>
               <Text style={styles.infoValue}>#{order.orderId}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Status:</Text>
+              <Text style={styles.infoLabel}>სტატუსი:</Text>
               <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
                 <Text style={styles.statusText}>{getStatusText(order.status)}</Text>
               </View>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Date:</Text>
+              <Text style={styles.infoLabel}>თარიღი:</Text>
               <Text style={styles.infoValue}>{formatDate(order.createdAt)}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Total:</Text>
+              <Text style={styles.infoLabel}>ჯამი:</Text>
               <Text style={styles.infoValue}>{order.totalAmount} ₾</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Payment:</Text>
+              <Text style={styles.infoLabel}>გადახდის მეთოდი:</Text>
               <Text style={styles.infoValue}>{order.paymentMethod}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Payment Status:</Text>
+              <Text style={styles.infoLabel}>გადახდის სტატუსი:</Text>
               <Text style={[styles.infoValue, { color: order.paymentStatus === 'completed' ? '#34C759' : '#FF9500' }]}>
                 {`${order.paymentStatus.charAt(0).toUpperCase()}${order.paymentStatus.slice(1)}`}
               </Text>
@@ -188,10 +188,10 @@ export default function OrderDetailsScreen() {
 
         {/* Customer Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Customer Information</Text>
+          <Text style={styles.sectionTitle}>კურიერის ინფორმაცია</Text>
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Name:</Text>
+              <Text style={styles.infoLabel}>სახელი:</Text>
               <Text style={styles.infoValue}>
                 {order.user?.firstName && order.user?.lastName 
                   ? `${order.user.firstName} ${order.user.lastName}`
@@ -200,7 +200,7 @@ export default function OrderDetailsScreen() {
               </Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Email:</Text>
+              <Text style={styles.infoLabel}>ელ-ფოსტა:</Text>
               <Text style={styles.infoValue}>{order.user?.email || 'N/A'}</Text>
             </View>
           </View>
@@ -208,7 +208,7 @@ export default function OrderDetailsScreen() {
 
         {/* Shipping Address */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Shipping Address</Text>
+          <Text style={styles.sectionTitle}>მიწოდების მისამართი</Text>
           <View style={styles.infoCard}>
             <Text style={styles.addressText}>{order.shippingAddress || 'No address provided'}</Text>
           </View>
@@ -216,7 +216,7 @@ export default function OrderDetailsScreen() {
 
         {/* Order Items */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Items</Text>
+          <Text style={styles.sectionTitle}>პროდუქტები</Text>
           <View style={styles.infoCard}>
             {order.items && order.items.length > 0 ? (
               order.items.map((item, index) => (
@@ -233,14 +233,14 @@ export default function OrderDetailsScreen() {
                 </View>
               ))
             ) : (
-              <Text style={styles.errorText}>No items found</Text>
+              <Text style={styles.errorText}>პროდუქტები არ მოიძებნა</Text>
             )}
           </View>
         </View>
 
         {/* Status Update */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Update Status</Text>
+          <Text style={styles.sectionTitle}>სტატუსის განახლება</Text>
           <View style={styles.statusButtons}>
             {['processing', 'shipped', 'delivered'].map((status) => (
               <TouchableOpacity

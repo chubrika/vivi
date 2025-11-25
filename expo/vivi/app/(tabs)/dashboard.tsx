@@ -6,7 +6,7 @@ import { courierService, CourierStats } from '../../services/courierService';
 import { router } from 'expo-router';
 
 export default function DashboardScreen() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState<CourierStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,29 +78,6 @@ export default function DashboardScreen() {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-            } catch (error) {
-              console.error('Dashboard: Logout error:', error);
-            }
-          },
-        },
-      ]
-    );
-  };
 
   const StatCard = ({ title, value, icon, color }: { title: string; value: string | number; icon: string; color: string }) => (
     <View style={[styles.statCard, { borderLeftColor: color }]}>
@@ -117,7 +94,7 @@ export default function DashboardScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={styles.loadingText}>იტვირთება...</Text>
         </View>
       </SafeAreaView>
     );
@@ -126,15 +103,12 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        <Text style={styles.title}>vivi.ge</Text>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          <Text style={styles.welcomeText}>Welcome, {user?.name ? user.name : 'User'}!</Text>
+          <Text style={styles.welcomeText}>გამარჯობა, {user?.name ? user.name : 'მომხმარებელი'}!</Text>
           <Text style={styles.emailText}>{user?.email || 'No email available'}</Text>
           {error && (
             <View style={styles.errorContainer}>
@@ -149,7 +123,7 @@ export default function DashboardScreen() {
             <Fragment>
               {/* Stats Cards */}
               <View style={styles.statsContainer}>
-                <Text style={styles.sectionTitle}>Statistics</Text>
+                <Text style={styles.sectionTitle}>სტატისტიკა</Text>
                 <View style={styles.statsGrid}>
                   <StatCard 
                     title="სულ შეკვეთები" 
@@ -198,7 +172,7 @@ export default function DashboardScreen() {
 
               {/* Quick Actions */}
               <View style={styles.quickActionsContainer}>
-                <Text style={styles.sectionTitle}>Quick Actions</Text>
+                <Text style={styles.sectionTitle}>ქმედებები</Text>
                 <View style={styles.quickActionsGrid}>
                   <View style={styles.actionCard}>
                     <View style={[styles.actionIcon, { backgroundColor: '#007AFF' }]}>
@@ -209,7 +183,6 @@ export default function DashboardScreen() {
                       onPress={() => router.push('/orders')}
                     >
                       <Text style={styles.actionTitle}>ყველა შეკვეთა</Text>
-                      <Text style={styles.actionSubtitle}>View all orders</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.actionCard}>
@@ -221,7 +194,6 @@ export default function DashboardScreen() {
                       onPress={() => router.push('/earnings')}
                     >
                       <Text style={styles.actionTitle}>შემოსავლების ნახვა</Text>
-                      <Text style={styles.actionSubtitle}>Check earnings</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.actionCard}>
@@ -233,7 +205,6 @@ export default function DashboardScreen() {
                       onPress={() => router.push('/profile')}
                     >
                       <Text style={styles.actionTitle}>პროფილის განახლება</Text>
-                      <Text style={styles.actionSubtitle}>Update profile</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -278,9 +249,9 @@ export default function DashboardScreen() {
 
           {user?.role !== 'courier' && (
             <View style={styles.regularUserContainer}>
-              <Text style={styles.regularUserText}>Welcome to Vivi!</Text>
+              <Text style={styles.regularUserText}>მოგესალმებათ, vivi.ge!</Text>
               <Text style={styles.regularUserSubtext}>
-                This app is designed for couriers. Please contact support if you need assistance.
+                ეს აპი კურიერებისთვისაა დაწერილი. თუ გჭირდებათ დახმარება, დაგვიკავშირდით.
               </Text>
             </View>
           )}

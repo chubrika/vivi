@@ -27,30 +27,36 @@ export default function TabLayout() {
         }),
       }}>
       <Tabs.Screen
+        name="index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Dashboard',
+          title: 'დეშბორდი',
           tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="orders"
         options={{
-          title: 'Orders',
+          title: 'შეკვეთები',
           tabBarIcon: ({ color }) => <Ionicons name="list" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="earnings"
         options={{
-          title: 'Earnings',
+          title: 'შემოსავლები',
           tabBarIcon: ({ color }) => <Ionicons name="wallet" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: 'პროფილი',
           tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
         }}
       />
