@@ -3,12 +3,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { orderService, Order, OrderFilters } from '../../services/orderService';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
   const [filters, setFilters] = useState<OrderFilters>({
     page: 1,
     limit: 20,
@@ -84,79 +86,109 @@ export default function OrdersScreen() {
     }
   };
 
-  const renderOrderItem = ({ item }: { item: Order }) => (
-    <View style={styles.orderCard}>
-      <View style={styles.orderHeader}>
-        <Text style={styles.orderId}>შეკვეთა #{item.orderId}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
-        </View>
-      </View>
+  const toggleOrderExpansion = (orderId: string) => {
+    setExpandedOrders((prev) => ({
+      ...prev,
+      [orderId]: !prev[orderId],
+    }));
+  };
 
-      <View style={styles.orderDetails}>
-        <Text style={styles.customerName}>
-          {item.user.firstName} {item.user.lastName}
-        </Text>
-        <Text style={styles.customerEmail}>{item.user.email}</Text>
-        <Text style={styles.shippingAddress}>📍 {item.shippingAddress}</Text>
-        <Text style={styles.totalAmount}>სულ: {item.totalAmount} ₾</Text>
-        <Text style={styles.orderDate}>
-          {new Date(item.createdAt).toLocaleDateString()}
-        </Text>
-      </View>
+  const renderOrderItem = ({ item }: { item: Order }) => {
+    const isExpanded = expandedOrders[item._id];
 
-      <View style={styles.orderItems}>
-        <Text style={styles.itemsTitle}>პროდუქტები ({item.items.length}):</Text>
-        {item.items.slice(0, 3).map((orderItem, index) => (
-          <Text key={index} style={styles.itemText}>
-            • {orderItem.name} x{orderItem.quantity}
-          </Text>
-        ))}
-        {item.items.length > 3 && (
-          <Text style={styles.moreItems}>{`+${item.items.length - 3} more items`}</Text>
-        )}
-      </View>
-
-      <View style={styles.actionButtons}>
+    return (
+      <View style={styles.orderCard}>
         <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => {
-            const orderData = encodeURIComponent(JSON.stringify(item));
-            router.push(`/order-details/${item._id}?orderData=${orderData}`);
-          }}
+          style={styles.orderHeader}
+          activeOpacity={0.8}
+          onPress={() => toggleOrderExpansion(item._id)}
         >
-          <Text style={styles.actionButtonText}>დეტალურად</Text>
+          <View>
+            <Text style={styles.orderId}>#{item.orderId}</Text>
+            <Text style={styles.orderDateSmall}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+          </View>
+          <View style={styles.headerRight}>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+              <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
+            </View>
+            <Ionicons
+              name={isExpanded ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color="#333"
+              style={styles.chevronIcon}
+            />
+          </View>
         </TouchableOpacity>
 
-        {item.status === 'pending' && (
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: '#007AFF' }]}
-            onPress={() => updateOrderStatus(item._id, 'processing')}
-          >
-            <Text style={styles.actionButtonText}>პროცესშია</Text>
-          </TouchableOpacity>
-        )}
+        {isExpanded && (
+          <>
+            <View style={styles.orderDetails}>
+              <Text style={styles.customerName}>
+                {item.user.firstName} {item.user.lastName}
+              </Text>
+              <Text style={styles.customerEmail}>{item.user.email}</Text>
+              <Text style={styles.shippingAddress}>📍 {item.shippingAddress}</Text>
+              <Text style={styles.totalAmount}>სულ: {item.totalAmount} ₾</Text>
+              <Text style={styles.orderDate}>
+                {new Date(item.createdAt).toLocaleDateString()}
+              </Text>
+            </View>
 
-        {item.status === 'processing' && (
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: '#5856D6' }]}
-            onPress={() => updateOrderStatus(item._id, 'shipped')}
-          >
-            <Text style={styles.actionButtonText}>გაგზავნილია</Text>
-          </TouchableOpacity>
-        )}
+            <View style={styles.orderItems}>
+              <Text style={styles.itemsTitle}>პროდუქტები ({item.items.length}):</Text>
+              {item.items.slice(0, 3).map((orderItem, index) => (
+                <Text key={index} style={styles.itemText}>
+                  • {orderItem.name} x{orderItem.quantity}
+                </Text>
+              ))}
+              {item.items.length > 3 && (
+                <Text style={styles.moreItems}>{`+${item.items.length - 3} more items`}</Text>
+              )}
+            </View>
 
-        {item.status === 'shipped' && (
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: '#34C759' }]}
-            onPress={() => updateOrderStatus(item._id, 'delivered')}
-          >
-            <Text style={styles.actionButtonText}>მიწოდებულია</Text>
-          </TouchableOpacity>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  const orderData = encodeURIComponent(JSON.stringify(item));
+                  router.push(`/order-details/${item._id}?orderData=${orderData}`);
+                }}
+              >
+                <Text style={styles.actionButtonText}>დეტალურად</Text>
+              </TouchableOpacity>
+
+              {item.status === 'pending' && (
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: '#007AFF' }]}
+                  onPress={() => updateOrderStatus(item._id, 'processing')}
+                >
+                  <Text style={styles.actionButtonText}>პროცესშია</Text>
+                </TouchableOpacity>
+              )}
+
+              {item.status === 'processing' && (
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: '#5856D6' }]}
+                  onPress={() => updateOrderStatus(item._id, 'shipped')}
+                >
+                  <Text style={styles.actionButtonText}>გაგზავნილია</Text>
+                </TouchableOpacity>
+              )}
+
+              {item.status === 'shipped' && (
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: '#34C759' }]}
+                  onPress={() => updateOrderStatus(item._id, 'delivered')}
+                >
+                  <Text style={styles.actionButtonText}>მიწოდებულია</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </>
         )}
       </View>
-    </View>
-  );
+    );
+  };
 
   const FilterButton = ({ title, active, onPress }: { title: string; active: boolean; onPress: () => void }) => (
     <TouchableOpacity
@@ -349,12 +381,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: 8,
   },
   orderId: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+  },
+  orderDateSmall: {
+    fontSize: 12,
+    color: '#999',
+  },
+  chevronIcon: {
+    marginLeft: 4,
   },
   statusBadge: {
     paddingHorizontal: 8,
