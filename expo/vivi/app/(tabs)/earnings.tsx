@@ -69,9 +69,9 @@ export default function EarningsScreen() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'paid':
-        return 'Paid';
+        return 'ჩარიცხული';
       case 'rejected':
-        return 'Rejected';
+        return 'უარყოფილი';
       default:
         return status;
     }
@@ -150,7 +150,6 @@ export default function EarningsScreen() {
 
                 {/* Withdrawal Section */}
                 <View style={styles.withdrawalContainer}>
-                  <Text style={styles.sectionTitle}>გატანა</Text>
                   {earnings.totalEarnings > 0 && !earnings.pendingWithdrawal && (
                     <TouchableOpacity
                       style={styles.withdrawalButton}
@@ -278,7 +277,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 16,
