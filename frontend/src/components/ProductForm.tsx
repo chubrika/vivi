@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import CloudinaryUploadWidget from './CloudinaryUploadWidget';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
@@ -164,8 +164,10 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   
   // Filters state
   const [filters, setFilters] = useState<Filter[]>([]);
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]); // Keep for UI state
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({}); // Store filter values by filter name/key
   const [filtersLoading, setFiltersLoading] = useState(false);
+  const hasSyncedFiltersRef = useRef(false); // Track if we've synced filters from product data
   
   // Product features state
   const [featureGroups, setFeatureGroups] = useState<FeatureGroup[]>(product?.productFeatureValues || []);
@@ -186,6 +188,11 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
   // Add a state to track if the editor is mounted
   const [editorMounted, setEditorMounted] = useState(false);
+  
+  // Helper function to convert filter name to key
+  const getFilterKey = (filterName: string): string => {
+    return filterName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+  };
   
   // Initialize the editor with proper configuration
   useEffect(() => {
@@ -245,8 +252,11 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         const categoryFilters = await filtersService.getFiltersByCategory(category);
         setFilters(categoryFilters);
         
-        // Reset selected filters when category changes
-        setSelectedFilters([]);
+        // Reset selected filters when category changes (unless editing existing product)
+        if (!product) {
+          setSelectedFilters([]);
+          setFilterValues({});
+        }
       } catch (error) {
         console.error('Error fetching filters:', error);
         setError('Failed to load filters');
@@ -256,7 +266,41 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     };
 
     fetchFilters();
-  }, [category]);
+  }, [category, product]);
+
+  // Sync filterValues with selectedFilters UI state when filters are first loaded (only for editing)
+  // This should only run once when filters are loaded, not on every filterValues change
+  useEffect(() => {
+    // Only sync when:
+    // 1. We have a product (editing mode)
+    // 2. Filters are loaded and not loading
+    // 3. We haven't synced yet
+    if (product && filters.length > 0 && !filtersLoading && !hasSyncedFiltersRef.current) {
+      // Access filterValues from state (it's in the closure)
+      if (Object.keys(filterValues).length > 0) {
+        const syncedFilters: string[] = [];
+        
+        filters.forEach(filter => {
+          // Use filter ID as key (not filter name)
+          const value = filterValues[filter._id];
+          if (value) {
+            syncedFilters.push(`${filter._id}:${value}`);
+          }
+        });
+        
+        if (syncedFilters.length > 0) {
+          setSelectedFilters(syncedFilters);
+          hasSyncedFiltersRef.current = true;
+        }
+      }
+    }
+    
+    // Reset sync flag when product changes or filters are cleared
+    if (!product || filters.length === 0) {
+      hasSyncedFiltersRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.length, filtersLoading, product]); // filterValues intentionally excluded to prevent re-sync on user changes
 
   // Update sellerId when user changes
   useEffect(() => {
@@ -281,6 +325,34 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
       if (product.productFeatureValues) {
         setFeatureGroups(product.productFeatureValues);
       }
+      
+      // Extract filter values from product filters array
+      // Filters array contains objects with { id, value } or just filter IDs
+      const extractedFilterValues: Record<string, string> = {};
+      if (product && (product as any).filters) {
+        const productFilters = (product as any).filters;
+        if (Array.isArray(productFilters)) {
+          productFilters.forEach((filterItem: any) => {
+            // Handle both formats: { id: '...', value: '...' } or just string ID
+            if (typeof filterItem === 'object' && filterItem !== null) {
+              if (filterItem.id && filterItem.value) {
+                // New format: { id, value }
+                extractedFilterValues[filterItem.id] = filterItem.value;
+              } else if (filterItem._id) {
+                // Populated filter object - check if value is stored elsewhere
+                // For now, we'll need to get value from productFeatureValues or other source
+              }
+            } else if (typeof filterItem === 'string') {
+              // Old format: just filter ID, value might be in productFeatureValues
+              // We'll handle this in the sync logic
+            }
+          });
+        }
+      }
+      setFilterValues(extractedFilterValues);
+    } else {
+      // Clear filter values when switching to create mode
+      setFilterValues({});
     }
   }, [product]);
 
@@ -325,16 +397,19 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     setError(null);
 
     try {
-      // Prepare filter values
-      const filterValues = selectedFilters.map(filterStr => {
-        const [filterId, value] = filterStr.split(':');
-        return {
-          filterId,
-          value
-        };
-      });
+      // Prepare filters array with id and value
+      const filtersArray = selectedFilters
+        .map(filterStr => {
+          const [filterId, value] = filterStr.split(':');
+          if (value) {
+            return { id: filterId, value: value };
+          }
+          return null;
+        })
+        .filter((f): f is { id: string; value: string } => f !== null);
 
-      const productData = {
+      // Build product data with filter values stored in filters array
+      const productData: any = {
         name,
         description,
         price,
@@ -343,8 +418,8 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         category,
         seller: sellerId,
         isActive,
-        productFeatureValues: featureGroups, // Only include the actual feature groups
-        filters: filterValues.map(fv => fv.filterId), // Only include filter IDs
+        productFeatureValues: featureGroups,
+        filters: filtersArray, // Array of { id, value } objects
         discountedPercent,
         discountStartDate: discountStartDate || undefined,
         discountEndDate: discountEndDate || undefined
@@ -640,11 +715,24 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                       filter={filter}
                       value={selectedFilters.find(f => f.startsWith(`${filter._id}:`))?.split(':')[1] || ''}
                       onChange={(newValue) => {
+                        // Update selectedFilters for UI state
                         const newFilters = selectedFilters.filter(f => !f.startsWith(`${filter._id}:`));
                         if (newValue) {
                           newFilters.push(`${filter._id}:${newValue}`);
                         }
                         setSelectedFilters(newFilters);
+                        
+                        // Update filterValues for product data (using filter ID as key)
+                        setFilterValues(prev => {
+                          const updated = { ...prev };
+                          if (newValue) {
+                            updated[filter._id] = newValue;
+                          } else {
+                            // Remove filter value if cleared
+                            delete updated[filter._id];
+                          }
+                          return updated;
+                        });
                       }}
                     />
                   </div>

@@ -38,34 +38,26 @@ export const getAllProducts = async (req: Request, res: Response) => {
       }));
 
     if (filterParams.length > 0) {
-      // Get all filters to determine their types
-      const filters = await Filter.find({
-        _id: { $in: filterParams.map(fp => fp.filterId) }
-      });
-
-      // Build filter conditions
+      // Build filter conditions to match products with filters array containing { id, value } objects
       const filterConditions = filterParams.map(fp => {
-        const filter = filters.find(f => f._id.toString() === fp.filterId);
-        if (!filter) return null;
-
-        if (filter.type === 'color') {
-          // For color filters, match products that have any of the selected colors
-          return {
-            'filters': filter._id,
-            'productFeatureValues.features.featureValues.featureValue': { $in: fp.values }
-          };
-        } else if (filter.type === 'select') {
-          // For select filters, match products that have any of the selected options
-          return {
-            'filters': filter._id,
-            'productFeatureValues.features.featureValues.featureValue': { $in: fp.values }
-          };
-        }
-        return null;
+        // Match products where filters array contains an object with matching id and value
+        // Support multiple values (comma-separated)
+        return {
+          filters: {
+            $elemMatch: {
+              id: fp.filterId,
+              value: { $in: fp.values }
+            }
+          }
+        };
       }).filter(Boolean);
 
       if (filterConditions.length > 0) {
-        query.$and = filterConditions;
+        // Use $and to ensure ALL filter conditions are met
+        if (!query.$and) {
+          query.$and = [];
+        }
+        query.$and.push(...filterConditions);
       }
     }
 
@@ -135,12 +127,27 @@ export const createProduct = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'The specified user is not a seller' });
     }
 
-    // Process filters to extract filter IDs
+    // Process filters - accept new format { id, value } or old format (just IDs)
     if (req.body.filters && Array.isArray(req.body.filters)) {
-      req.body.filters = req.body.filters.map((filter: string) => {
-        // Extract filter ID from the format "filterId:value"
-        const [filterId] = filter.split(':');
-        return filterId;
+      // New format: array of { id, value } objects - keep as is
+      // Old format: array of strings or ObjectIds - convert to new format if needed
+      req.body.filters = req.body.filters.map((filter: any) => {
+        if (typeof filter === 'object' && filter !== null && filter.id && filter.value) {
+          // Already in new format { id, value }
+          return filter;
+        } else if (typeof filter === 'string') {
+          // Old format: "filterId:value" or just "filterId"
+          if (filter.includes(':')) {
+            const [id, value] = filter.split(':');
+            return { id, value };
+          } else {
+            // Just filter ID, no value - convert to new format
+            return { id: filter, value: '' };
+          }
+        } else {
+          // ObjectId or other format - convert to new format
+          return { id: filter.toString(), value: '' };
+        }
       });
     }
     
@@ -196,6 +203,30 @@ export const updateProduct = async (req: Request, res: Response) => {
       if (seller.role !== 'seller') {
         return res.status(400).json({ message: 'The specified user is not a seller' });
       }
+    }
+
+    // Process filters - accept new format { id, value } or old format (just IDs)
+    if (req.body.filters && Array.isArray(req.body.filters)) {
+      // New format: array of { id, value } objects - keep as is
+      // Old format: array of strings or ObjectIds - convert to new format if needed
+      req.body.filters = req.body.filters.map((filter: any) => {
+        if (typeof filter === 'object' && filter !== null && filter.id && filter.value) {
+          // Already in new format { id, value }
+          return filter;
+        } else if (typeof filter === 'string') {
+          // Old format: "filterId:value" or just "filterId"
+          if (filter.includes(':')) {
+            const [id, value] = filter.split(':');
+            return { id, value };
+          } else {
+            // Just filter ID, no value - convert to new format
+            return { id: filter, value: '' };
+          }
+        } else {
+          // ObjectId or other format - convert to new format
+          return { id: filter.toString(), value: '' };
+        }
+      });
     }
     
     const product = await Product.findByIdAndUpdate(
