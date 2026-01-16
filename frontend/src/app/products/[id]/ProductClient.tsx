@@ -1,0 +1,71 @@
+'use client';
+
+import { useState } from 'react';
+import AddToCartButton from '../../../components/AddToCartButton';
+import { useAuth } from '../../../utils/authContext';
+import { Product } from '../../../types/product';
+
+interface ProductClientProps {
+  product: Product;
+}
+
+export default function ProductClient({ product }: ProductClientProps) {
+  const { user } = useAuth();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const isSeller = user?.role === 'seller';
+
+  return (
+    <>
+      {/* Interactive image gallery (if multiple images) */}
+      {product.images && product.images.length > 1 && (
+        <div className="mb-6">
+          <div className="relative aspect-square rounded-lg overflow-hidden mb-4">
+            <img
+              src={product.images[activeImageIndex] || product.images[0]}
+              alt={`${product.name} - Image ${activeImageIndex + 1}`}
+              className="object-cover w-full h-full"
+            />
+          </div>
+          <div className="flex flex-wrap gap-4">
+            {product.images.map((image, index) => (
+              <div
+                key={index}
+                className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer w-20 h-20 ${
+                  index === activeImageIndex ? 'ring-2 ring-sky-500' : ''
+                }`}
+                onClick={() => setActiveImageIndex(index)}
+              >
+                <img
+                  src={image}
+                  alt={`${product.name} ${index + 1}`}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Add to Cart Button */}
+      {!isSeller ? (
+        <AddToCartButton product={product} />
+      ) : (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                გამყიდველს არ შეუძლია პროდუქტის ყიდვა ან კალათაში დამატება
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+

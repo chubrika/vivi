@@ -1,61 +1,49 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import AddToCartButton from '../../../components/AddToCartButton';
-import { api } from '../../../utils/api';
-import { useAuth } from '../../../utils/authContext';
+import ProductClient from './ProductClient';
 import { Product } from '../../../types/product';
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const router = useRouter();
-  const { user } = useAuth();
-  const isSeller = user?.role === 'seller';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4800';
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await api.get(`/api/products/${params.id}`);
-        setProduct(response.data);
-      } catch (err) {
-        setError('Failed to load product details');
-        console.error('Error fetching product:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+async function getProduct(id: string): Promise<Product | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      next: { revalidate: 3600 }, // Revalidate every hour
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return null;
+  }
+}
 
-    fetchProduct();
-  }, [params.id]);
+export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+  const product = await getProduct(params.id);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
-      </div>
-    );
+  if (!product) {
+    notFound();
   }
 
-  if (error || !product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error || 'Product not found'}</p>
-          <button
-            onClick={() => router.back()}
-            className="text-sky-600 hover:text-sky-800"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Extract text content for SEO
+  const descriptionText = product.description 
+    ? product.description.replace(/<[^>]*>/g, '').substring(0, 200)
+    : '';
+  
+  const categoryName = typeof product.category === 'object' && product.category !== null
+    ? product.category.name
+    : '';
+  
+  const sellerName = typeof product.seller === 'object' && product.seller !== null
+    ? (product.seller.businessName || product.seller.name || `${product.seller.firstName} ${product.seller.lastName}` || '')
+    : '';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -63,45 +51,62 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
-            <button
-              onClick={() => router.back()}
+            <Link
+              href="/products"
               className="text-gray-500 hover:text-gray-700"
+              aria-label="Back to products"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Main content - Server-rendered for SEO */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <article itemScope itemType="https://schema.org/Product" className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h1>
+            {/* Product Name - H1 for SEO */}
+            <h1 itemProp="name" className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+              {product.name}
+            </h1>
             
+            {/* Hidden structured data for crawlers */}
+            <div className="hidden" itemScope itemType="https://schema.org/Offer">
+              <span itemProp="price" content={String(product.discountedPrice || product.price)}></span>
+              <span itemProp="priceCurrency" content="GEL"></span>
+              <link itemProp="availability" href={product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+            </div>
+
             {/* Image gallery */}
             <div className="mb-8">
               <div className="relative aspect-square rounded-lg overflow-hidden mb-4">
                 <img
-                  src={product.images[activeImageIndex] || 'https://via.placeholder.com/400'}
+                  itemProp="image"
+                  src={product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/400'}
                   alt={product.name}
                   className="object-cover w-full h-full"
+                  loading="eager"
+                  width={800}
+                  height={800}
                 />
               </div>
-              {product.images.length > 1 && (
+              {product.images && product.images.length > 1 && (
                 <div className="flex flex-wrap gap-4">
-                  {product.images.map((image, index) => (
+                  {product.images.slice(1, 5).map((image, index) => (
                     <div
                       key={index}
-                      className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer w-20 h-20 ${index === activeImageIndex ? 'ring-2 ring-sky-500' : ''}`}
-                      onClick={() => setActiveImageIndex(index)}
+                      className="relative aspect-square rounded-lg overflow-hidden w-20 h-20"
                     >
                       <img
                         src={image}
-                        alt={`${product.name} ${index + 1}`}
+                        alt={`${product.name} - Image ${index + 2}`}
                         className="object-cover w-full h-full"
+                        loading="lazy"
+                        width={80}
+                        height={80}
                       />
                     </div>
                   ))}
@@ -111,67 +116,72 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
             {/* Product details */}
             <div className="space-y-6">
+              {/* Price */}
               <div>
-                <p className="text-3xl font-semibold text-sky-600">
-                  ${product.price.toFixed(2)}
+                <p className="text-3xl font-semibold text-sky-600" itemProp="offers" itemScope itemType="https://schema.org/Offer">
+                  <span itemProp="price" content={String(product.discountedPrice || product.price)}>
+                    {(product.discountedPrice || product.price).toFixed(2)} ₾
+                  </span>
+                  {product.discountedPrice && product.price > product.discountedPrice && (
+                    <span className="ml-2 text-lg text-gray-500 line-through">
+                      {product.price.toFixed(2)} ₾
+                    </span>
+                  )}
                 </p>
+                <meta itemProp="priceCurrency" content="GEL" />
+                <link itemProp="availability" href={product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
               </div>
 
+              {/* Stock */}
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Stock</h2>
-                <p className="mt-1 text-gray-600">{product.stock} units available</p>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">Category</h2>
+                <h2 className="text-lg font-semibold text-gray-900">მარაგი</h2>
                 <p className="mt-1 text-gray-600">
-                  {typeof product.category === 'object' && product.category !== null
-                    ? product.category.name
-                    : ''}
+                  {product.stock > 0 ? `${product.stock} ცალი ხელმისაწვდომია` : 'არ არის მარაგში'}
                 </p>
               </div>
 
+              {/* Category */}
+              {categoryName && (
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">კატეგორია</h2>
+                  <p className="mt-1 text-gray-600" itemProp="category">
+                    {categoryName}
+                  </p>
+                </div>
+              )}
+
+              {/* Description */}
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Description</h2>
+                <h2 className="text-lg font-semibold text-gray-900">აღწერა</h2>
                 <div 
-                  className="mt-2 text-gray-600"
+                  className="mt-2 text-gray-600 prose max-w-none"
+                  itemProp="description"
                   dangerouslySetInnerHTML={{ __html: product.description }} 
                 />
-              </div>
-
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">Seller</h2>
-                <p className="mt-1 text-gray-600">
-                  {typeof product.seller === 'object' && product.seller !== null
-                    ? product.seller.name || `${product.seller.firstName} ${product.seller.lastName}` || product.seller.businessName
-                    : ''}
-                </p>
-              </div>
-
-              <div className="pt-6">
-                {!isSeller ? (
-                  <AddToCartButton product={product} />
-                ) : (
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <div className="ml-3">
-                        <p className="text-sm text-yellow-700">
-                          გამყიდველს არ შეუძლია პროდუქტის ყიდვა ან კალათაში დამატება
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                {/* Plain text version for SEO */}
+                {descriptionText && (
+                  <p className="sr-only">{descriptionText}</p>
                 )}
+              </div>
+
+              {/* Seller */}
+              {sellerName && (
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">გამყიდველი</h2>
+                  <p className="mt-1 text-gray-600" itemProp="brand" itemScope itemType="https://schema.org/Brand">
+                    <span itemProp="name">{sellerName}</span>
+                  </p>
+                </div>
+              )}
+
+              {/* Client component for interactive features */}
+              <div className="pt-6">
+                <ProductClient product={product} />
               </div>
             </div>
           </div>
-        </div>
+        </article>
       </div>
     </div>
   );
-} 
+}

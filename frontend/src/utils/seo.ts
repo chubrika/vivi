@@ -116,6 +116,10 @@ export function generateProductStructuredData(product: {
   category?: string;
   sku?: string;
   url: string;
+  aggregateRating?: {
+    ratingValue: number;
+    reviewCount: number;
+  };
 }) {
   const images = Array.isArray(product.image) ? product.image : [product.image];
   
@@ -133,18 +137,28 @@ export function generateProductStructuredData(product: {
       '@type': 'Offer',
       url: product.url,
       priceCurrency: product.currency || 'GEL',
-      price: product.price,
+      price: String(product.price),
       availability: `https://schema.org/${product.availability === 'in stock' ? 'InStock' : product.availability === 'out of stock' ? 'OutOfStock' : 'PreOrder'}`,
       seller: {
         '@type': 'Organization',
         name: 'vivi.ge',
+        url: siteUrl,
       },
+      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 year from now
     },
     ...(product.category && {
       category: product.category,
     }),
     ...(product.sku && {
       sku: product.sku,
+      mpn: product.sku, // Manufacturer Part Number
+    }),
+    ...(product.aggregateRating && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: product.aggregateRating.ratingValue,
+        reviewCount: product.aggregateRating.reviewCount,
+      },
     }),
   };
 }
