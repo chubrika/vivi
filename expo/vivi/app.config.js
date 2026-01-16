@@ -27,7 +27,7 @@ export default {
     permissions: ['INTERNET', 'ACCESS_NETWORK_STATE']
   },
   web: {
-    favicon: './assets/images/favicon.png',
+    favicon: './assets/images/logo.png',
     bundler: 'metro',
     output: 'static',
     proxy: {

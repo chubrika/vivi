@@ -12,21 +12,42 @@ import { LoginSidebarProvider } from '../contexts/LoginSidebarContext';
 import LoginSidebarWrapper from '../components/LoginSidebarWrapper';
 import MainContent from '../components/MainContent';
 import { Toaster } from 'react-hot-toast';
+import { generateMetadata as generateSEOMetadata, generateOrganizationStructuredData, generateWebsiteStructuredData } from '../utils/seo';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'vivi.ge',
-  description: 'Your one-stop shop for all your needs',
-};
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vivi.ge';
+
+export const metadata: Metadata = generateSEOMetadata({
+  title: 'vivi.ge - თქვენი ონლაინ მაღაზია',
+  description: 'vivi.ge - თქვენი ონლაინ მაღაზია. იპოვეთ ყველაზე კარგი პროდუქტები საუკეთესო ფასებით. სწრაფი მიტანა და უსაფრთხო გადახდები.',
+  url: siteUrl,
+});
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationData = generateOrganizationStructuredData();
+  const websiteData = generateWebsiteStructuredData();
+
   return (
-    <html lang="en">
+    <html lang="ka">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationData),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteData),
+          }}
+        />
+      </head>
       <body className={`${inter.className} font-sans`}>
         <AuthProviderWrapper>
           <CartProviderWrapper>

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView, ActivityIndicator, Platform } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect, Fragment } from 'react';
@@ -6,7 +6,7 @@ import { courierService, CourierStats } from '../../services/courierService';
 import { router } from 'expo-router';
 
 export default function DashboardScreen() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState<CourierStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,37 +78,29 @@ export default function DashboardScreen() {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-            } catch (error) {
-              console.error('Dashboard: Logout error:', error);
-            }
-          },
-        },
-      ]
-    );
-  };
 
-  const StatCard = ({ title, value, icon, color }: { title: string; value: string | number; icon: string; color: string }) => (
-    <View style={[styles.statCard, { borderLeftColor: color }]}>
-      <View style={styles.statHeader}>
-        <Text style={styles.statIcon}>{icon}</Text>
-        <Text style={styles.statValue}>{value}</Text>
+  const StatCard = ({
+    title,
+    value,
+    // icon,
+    accentColor,
+    highlight = false,
+  }: {
+    title: string;
+    value: string | number;
+    // icon: string;
+    accentColor: string;
+    highlight?: boolean;
+  }) => (
+    <View style={[styles.statCard, highlight && styles.statCardHighlight]}>
+      <View style={[styles.statAccent, { backgroundColor: accentColor }]} />
+      <View style={styles.statContent}>
+        {/* <View style={[styles.statIconWrap, { backgroundColor: `${accentColor}20` }]}>
+          <Text style={styles.statIcon}>{icon}</Text>
+        </View> */}
+        <Text style={[styles.statValue, highlight && styles.statValueLarge]}>{value}</Text>
+        <Text style={styles.statTitle}>{title}</Text>
       </View>
-      <Text style={styles.statTitle}>{title}</Text>
     </View>
   );
 
@@ -117,7 +109,7 @@ export default function DashboardScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={styles.loadingText}>იტვირთება...</Text>
         </View>
       </SafeAreaView>
     );
@@ -126,16 +118,13 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+        <Text style={styles.emailText}>{user?.email || 'No email available'}</Text>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          <Text style={styles.welcomeText}>Welcome, {user?.name ? user.name : 'User'}!</Text>
-          <Text style={styles.emailText}>{user?.email || 'No email available'}</Text>
+          <Text style={styles.welcomeText}>გამარჯობა, {user?.name ? user.name : 'მომხმარებელი'}!</Text>
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
@@ -149,56 +138,64 @@ export default function DashboardScreen() {
             <Fragment>
               {/* Stats Cards */}
               <View style={styles.statsContainer}>
-                <Text style={styles.sectionTitle}>Statistics</Text>
+                {/* Earnings Banner */}
+                <View style={styles.earningsBanner}>
+                  <Text style={styles.earningsLabel}>სულ შემოსავლები</Text>
+                  <Text style={styles.earningsValue}>{stats.totalEarnings} ₾</Text>
+                </View>
+
+                <View style={styles.statsHeader}>
+                  <Text style={styles.sectionTitle}>შეკვეთები</Text>
+                  <Text style={styles.sectionSubtitle}>ბოლო 30 დღე</Text>
+                </View>
+
+                <View style={styles.statsHighlights}>
+                  <StatCard
+                    title="შეკვეთები"
+                    value={stats.totalOrders}
+                    // icon="📦"
+                    accentColor="#007AFF"
+                    highlight
+                  />
+                </View>
+
                 <View style={styles.statsGrid}>
-                  <StatCard 
-                    title="სულ შეკვეთები" 
-                    value={stats.totalOrders} 
-                    icon="📦" 
-                    color="#007AFF" 
+                  <StatCard
+                    title="მიმდინარე"
+                    value={stats.pendingOrders}
+                    // icon="⏳"
+                    accentColor="#FF9500"
                   />
-                  <StatCard 
-                    title="მიმდინარე შეკვეთები" 
-                    value={stats.pendingOrders} 
-                    icon="⏳" 
-                    color="#FF9500" 
+                  <StatCard
+                    title="დღის"
+                    value={stats.todayOrders}
+                    // icon="📅"
+                    accentColor="#AF52DE"
                   />
-                  <StatCard 
-                    title="დღის შეკვეთები" 
-                    value={stats.todayOrders} 
-                    icon="📅" 
-                    color="#FF9500" 
+                  <StatCard
+                    title="მიტანილი"
+                    value={stats.deliveredOrders}
+                    // icon="✅"
+                    accentColor="#34C759"
                   />
-                  <StatCard 
-                    title="მიტანილი შეკვეთები" 
-                    value={stats.deliveredOrders} 
-                    icon="✅" 
-                    color="#34C759" 
+                  <StatCard
+                    title="გამოგზავნილი"
+                    value={stats.shippedOrders}
+                    // icon="🚚"
+                    accentColor="#007AFF"
                   />
-                  <StatCard 
-                    title="გამოგზავნილი შეკვეთები" 
-                    value={stats.shippedOrders} 
-                    icon="🚚" 
-                    color="#007AFF" 
-                  />
-                  <StatCard 
-                    title="სულ შემოსავლები" 
-                    value={`${stats.totalEarnings} ₾`} 
-                    icon="💰" 
-                    color="#34C759" 
-                  />
-                  <StatCard 
-                    title="სულ მიტანები" 
-                    value={stats.totalDeliveries} 
-                    icon="🎯" 
-                    color="#AF52DE" 
+                  <StatCard
+                    title="შეუსრულებელი"
+                    value={stats.processingOrders}
+                    // icon="🔄"
+                    accentColor="#FF3B30"
                   />
                 </View>
               </View>
 
               {/* Quick Actions */}
               <View style={styles.quickActionsContainer}>
-                <Text style={styles.sectionTitle}>Quick Actions</Text>
+                <Text style={styles.sectionTitle}>ქმედებები</Text>
                 <View style={styles.quickActionsGrid}>
                   <View style={styles.actionCard}>
                     <View style={[styles.actionIcon, { backgroundColor: '#007AFF' }]}>
@@ -209,7 +206,6 @@ export default function DashboardScreen() {
                       onPress={() => router.push('/orders')}
                     >
                       <Text style={styles.actionTitle}>ყველა შეკვეთა</Text>
-                      <Text style={styles.actionSubtitle}>View all orders</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.actionCard}>
@@ -221,7 +217,6 @@ export default function DashboardScreen() {
                       onPress={() => router.push('/earnings')}
                     >
                       <Text style={styles.actionTitle}>შემოსავლების ნახვა</Text>
-                      <Text style={styles.actionSubtitle}>Check earnings</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.actionCard}>
@@ -233,7 +228,6 @@ export default function DashboardScreen() {
                       onPress={() => router.push('/profile')}
                     >
                       <Text style={styles.actionTitle}>პროფილის განახლება</Text>
-                      <Text style={styles.actionSubtitle}>Update profile</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -278,9 +272,9 @@ export default function DashboardScreen() {
 
           {user?.role !== 'courier' && (
             <View style={styles.regularUserContainer}>
-              <Text style={styles.regularUserText}>Welcome to Vivi!</Text>
+              <Text style={styles.regularUserText}>მოგესალმებათ, vivi.ge!</Text>
               <Text style={styles.regularUserSubtext}>
-                This app is designed for couriers. Please contact support if you need assistance.
+                ეს აპი კურიერებისთვისაა დაწერილი. თუ გჭირდებათ დახმარება, დაგვიკავშირდით.
               </Text>
             </View>
           )}
@@ -291,6 +285,10 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
+  logo: {
+    width: 40,
+    height: 40,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
@@ -329,14 +327,13 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 18,
     color: '#666',
-    marginBottom: 8,
+    marginBottom: 20,
     textAlign: 'center',
   },
   emailText: {
     fontSize: 14,
     color: '#999',
     textAlign: 'center',
-    marginBottom: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -377,55 +374,114 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   statsContainer: {
     marginBottom: 24,
+  },
+  earningsBanner: {
+    backgroundColor: '#34C759',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    alignItems: 'center',
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 4px 12px rgba(52, 199, 89, 0.3)',
+      },
+      default: {
+        shadowColor: '#34C759',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
+      },
+    }),
+  },
+  earningsLabel: {
+    fontSize: 14,
+    color: '#fff',
+    opacity: 0.9,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  earningsValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  statsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#999',
+  },
+  statsHighlights: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 12,
   },
   statCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 18,
+    padding: 18,
     width: '48%',
-    borderLeftWidth: 4,
+    minHeight: 100,
+    backgroundColor: '#fff',
     ...Platform.select({
       web: {
-        boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08)',
       },
       default: {
         shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 6,
       },
     }),
   },
-  statHeader: {
-    flexDirection: 'row',
+  statCardHighlight: {
+    flex: 1,
+    width: undefined,
+  },
+  statAccent: {
+    height: 4,
+    borderRadius: 2,
+    marginBottom: 12,
+  },
+  statContent: {
+    flex: 1,
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+  },
+  statIconWrap: {
+    alignSelf: 'flex-start',
+    padding: 10,
+    borderRadius: 12,
+    marginBottom: 12,
   },
   statIcon: {
-    fontSize: 24,
+    fontSize: 20,
   },
   statValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#111',
+  },
+  statValueLarge: {
+    fontSize: 26,
   },
   statTitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666',
     fontWeight: '500',
   },

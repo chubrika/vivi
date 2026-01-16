@@ -30,7 +30,7 @@ export interface IProduct extends Document {
   images: string[];
   isActive: boolean;
   productFeatureValues: IFeatureGroup[];
-  filters: IFilter['_id'][];
+  filters: Array<IFilter['_id'] | { id: string; value: string }>;
   discountedPercent?: number;
   discountStartDate?: Date;
   discountEndDate?: Date;
@@ -117,8 +117,8 @@ const productSchema = new Schema({
   },
   productFeatureValues: [featureGroupSchema],
   filters: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Filter'
+    type: Schema.Types.Mixed,
+    // Can be either ObjectId (for backward compatibility) or { id: string, value: string }
   }],
   discountedPercent: {
     type: Number,

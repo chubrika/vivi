@@ -41,6 +41,10 @@ interface WidgetGroup {
   categories: Category[];
 }
 
+// Note: Since this is a client component, we'll export metadata from a separate file
+// For Next.js 14, we need to create a metadata export in a server component wrapper
+// or use generateMetadata in a parent layout
+
 export default function Home() {
   const router = useRouter();
   const [widgetGroups, setWidgetGroups] = useState<WidgetGroup[]>([]);
@@ -247,4 +251,4 @@ export default function Home() {
       </section>
     </main>
   );
-} 
+}

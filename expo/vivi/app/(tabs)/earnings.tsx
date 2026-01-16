@@ -69,9 +69,9 @@ export default function EarningsScreen() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'paid':
-        return 'Paid';
+        return 'ჩარიცხული';
       case 'rejected':
-        return 'Rejected';
+        return 'უარყოფილი';
       default:
         return status;
     }
@@ -92,11 +92,11 @@ export default function EarningsScreen() {
   const renderDeliveryItem = ({ item }: { item: CourierEarnings['deliveryHistory'][0] }) => (
     <View style={styles.deliveryCard}>
       <View style={styles.deliveryHeader}>
-        <Text style={styles.deliveryOrderId}>Order #{item.orderId}</Text>
+        <Text style={styles.deliveryOrderId}>შეკვეთა #{item.orderId}</Text>
         <Text style={styles.deliveryAmount}>{item.totalAmount} ₾</Text>
       </View>
       <View style={styles.deliveryDetails}>
-        <Text style={styles.deliveryStatus}>Status: {item.status}</Text>
+        <Text style={styles.deliveryStatus}>სტატუსი: {item.status}</Text>
         <Text style={styles.deliveryDate}>{formatDate(item.createdAt)}</Text>
       </View>
     </View>
@@ -107,7 +107,7 @@ export default function EarningsScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading earnings...</Text>
+          <Text style={styles.loadingText}>შემოსავლების ჩატვირთვა...</Text>
         </View>
       </SafeAreaView>
     );
@@ -116,9 +116,9 @@ export default function EarningsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Earnings</Text>
+        <Text style={styles.title}>შემოსავალი</Text>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backButton}>← Back</Text>
+          <Text style={styles.backButton}>← უკან</Text>
         </TouchableOpacity>
       </View>
 
@@ -136,14 +136,13 @@ export default function EarningsScreen() {
               <>
                 {/* Earnings Summary */}
                 <View style={styles.summaryContainer}>
-                  <Text style={styles.sectionTitle}>Earnings Summary</Text>
                   <View style={styles.summaryCards}>
                     <View style={styles.summaryCard}>
-                      <Text style={styles.summaryLabel}>Total Earnings</Text>
+                      <Text style={styles.summaryLabel}>შემოსავალი</Text>
                       <Text style={styles.summaryValue}>{earnings.totalEarnings} ₾</Text>
                     </View>
                     <View style={styles.summaryCard}>
-                      <Text style={styles.summaryLabel}>Total Deliveries</Text>
+                      <Text style={styles.summaryLabel}>მიწოდებული შეკვეთები</Text>
                       <Text style={styles.summaryValue}>{earnings.totalDeliveries}</Text>
                     </View>
                   </View>
@@ -151,34 +150,33 @@ export default function EarningsScreen() {
 
                 {/* Withdrawal Section */}
                 <View style={styles.withdrawalContainer}>
-                  <Text style={styles.sectionTitle}>Withdrawal</Text>
                   {earnings.totalEarnings > 0 && !earnings.pendingWithdrawal && (
                     <TouchableOpacity
                       style={styles.withdrawalButton}
                       onPress={handleWithdrawalRequest}
                     >
                       <Text style={styles.withdrawalButtonText}>
-                        Request Withdrawal ({earnings.totalEarnings} ₾)
+                        გატანის მოთხოვნა ({earnings.totalEarnings} ₾)
                       </Text>
                     </TouchableOpacity>
                   )}
                   {earnings.pendingWithdrawal && (
                     <View style={styles.pendingWithdrawal}>
                       <Text style={styles.pendingWithdrawalText}>
-                        Withdrawal request is pending
+                        გატანის მოთხოვნა მოლოდინშია
                       </Text>
                     </View>
                   )}
                   {earnings.totalEarnings === 0 && (
                     <Text style={styles.noEarningsText}>
-                      No earnings available for withdrawal
+                      შემოსავალი გატანისთვის არ გაქვთ
                     </Text>
                   )}
                 </View>
 
                 {/* Payout History */}
                 <View style={styles.historyContainer}>
-                  <Text style={styles.sectionTitle}>Payout History</Text>
+                  <Text style={styles.sectionTitle}>გატანის ისტორია</Text>
                   {earnings.payoutHistory.length > 0 ? (
                     <FlatList
                       data={earnings.payoutHistory}
@@ -189,14 +187,14 @@ export default function EarningsScreen() {
                     />
                   ) : (
                     <View style={styles.emptyHistory}>
-                      <Text style={styles.emptyHistoryText}>No payout history</Text>
+                      <Text style={styles.emptyHistoryText}>გატანის ისტორია არ მოიძებნა</Text>
                     </View>
                   )}
                 </View>
 
                 {/* Delivery History */}
                 <View style={styles.historyContainer}>
-                  <Text style={styles.sectionTitle}>Recent Deliveries</Text>
+                  <Text style={styles.sectionTitle}>ბოლო მიწოდებები</Text>
                   {earnings.deliveryHistory.length > 0 ? (
                     <FlatList
                       data={earnings.deliveryHistory.slice(0, 10)} // Show only last 10
@@ -207,7 +205,7 @@ export default function EarningsScreen() {
                     />
                   ) : (
                     <View style={styles.emptyHistory}>
-                      <Text style={styles.emptyHistoryText}>No delivery history</Text>
+                      <Text style={styles.emptyHistoryText}>მიწოდების ისტორია არ მოიძებნა</Text>
                     </View>
                   )}
                 </View>
@@ -240,9 +238,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+    fontFamily: 'sans-serif',
   },
   backButton: {
     fontSize: 16,
@@ -278,7 +277,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 16,
