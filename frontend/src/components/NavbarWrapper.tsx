@@ -14,7 +14,7 @@ export default function NavbarWrapper() {
   
   return (
     <>
-      <TestingBanner />
+      {/* <TestingBanner /> */}
       <Navbar />
     </>
   );
