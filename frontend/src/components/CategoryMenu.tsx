@@ -89,25 +89,13 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-0 md:top-[145px] inset-0 z-50 bg-white border-t border-gray-200 w-full">
+    <div className="absolute top-0 md:top-[80px] inset-0 z-50 bg-white border-t border-gray-200 w-full">
       {loading ? (
         <div className="text-center py-8">Loading...</div>
       ) : error ? (
         <div className="text-red-500 text-center py-8">{error}</div>
       ) : (
-        <div className="container mx-auto px-4 py-8 border border-gray-200 border-t-0 bg-white box-shadow-md h-[100vh]">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900">კატეგორიები</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
+        <div className="container mx-auto px-4 py-8 border border-gray-200 border-t-0 bg-white shadow-sm rounded-[10px]">
           {/* Desktop Layout */}
           <div className="hidden md:flex gap-8">
             {/* Left: Main Categories */}
@@ -129,16 +117,16 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
                       <span className="text-sm font-medium">{category.name}</span>
-                      {category.children && category.children.length > 0 && (
+                      {/* {category.children && category.children.length > 0 && (
                         <span className="ml-auto text-xs text-gray-500">({category.children.length})</span>
-                      )}
+                      )} */}
                     </div>
                   ))}
               </div>
             </div>
 
             {/* Right: Subcategories */}
-            <div className="flex-1">
+            <div className="flex-1 pl-4">
               {selectedCategory && selectedCategory.children && selectedCategory.children.length > 0 ? (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -159,9 +147,9 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                           }}
                         >
                           <span className="text-sm font-medium">{child.name}</span>
-                          {child.children && child.children.length > 0 && (
+                          {/* {child.children && child.children.length > 0 && (
                             <span className="ml-auto text-xs text-gray-500">({child.children.length})</span>
-                          )}
+                          )} */}
                         </div>
                         {/* Show children if they exist */}
                         {child.children && child.children.length > 0 && (

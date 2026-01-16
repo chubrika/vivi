@@ -47,15 +47,6 @@ export default function Navbar() {
     fetchCategories();
   }, []);
 
-  const navigationItems = [
-    // { href: '/products', title: 'პროდუქტები' },
-    { href: '/shops', title: 'მაღაზიები' },
-    ...categories.map(category => ({
-      href: `/products?category=${category.slug}`,
-      title: category.name
-    }))
-  ];
-
   // Check authentication status on component mount and when pathname changes
   useEffect(() => {
     // Add event listener for storage changes to detect login/logout from other tabs
@@ -124,7 +115,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-[45px] left-0 right-0 bg-white backdrop-blur-lg z-40 border-b border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+    <nav className="fixed left-0 right-0 bg-white backdrop-blur-lg z-40 border-b border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
       <div className="container mx-auto px-4">
         {/* Top row with logo, search, and user controls */}
         <div className="flex items-center justify-between h-20">
@@ -138,7 +129,23 @@ export default function Navbar() {
                 className="w-12 h-12 md:w-auto md:h-auto"
               />
             </Link>
-            
+            <div className="flex gap-8">
+            <button
+              onClick={toggleCategoryMenu}
+              className="inline-flex items-center px-1 text-sm font-medium text-gray-900 hover:text-blue-900 focus:outline-none"
+            >
+              <CategoriesIcon 
+                size={20}
+                className="mr-2 text-current"
+              />
+              <span>კატეგორიები</span>
+              {isCategoryMenuOpen ? (
+                <ChevronUp className="h-4 w-4 ml-1" />
+              ) : (
+                <ChevronDown className="h-4 w-4 ml-1" />
+              )}
+            </button>
+          </div>
             {/* Search Input */}
             <div className="flex-1 md:w-[400px] md:flex-none">
               <div className="relative" ref={searchRef}>
@@ -233,36 +240,18 @@ export default function Navbar() {
         </div>
         
         {/* Bottom row with navigation items */}
-        <div className="hidden md:flex items-center h-[65px] border-t border-gray-100">
-          <div className="flex gap-8">
-            <button
-              onClick={toggleCategoryMenu}
-              className="inline-flex items-center px-1 text-sm font-medium text-gray-900 hover:text-blue-900 focus:outline-none"
-            >
-              <CategoriesIcon 
-                size={20}
-                className="mr-2 text-current"
-              />
-              <span>კატეგორიები</span>
-              {isCategoryMenuOpen ? (
-                <ChevronUp className="h-4 w-4 ml-1" />
-              ) : (
-                <ChevronDown className="h-4 w-4 ml-1" />
-              )}
-            </button>
-            {navigationItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`${
-                  pathname === item.href
-                    ? 'text-gray-900'
-                    : 'text-gray-900 hover:text-blue-900'
-                } inline-flex items-center px-1 text-sm font-medium`}
-              >
-                {item.title}
-              </Link>
-            ))}
+        <div className="hidden md:flex items-center justify-between h-[50px] border-t border-gray-100">
+          <div className="flex gap-4 md:gap-8">
+            <a href="tel:+995123456789" className="flex items-center gap-2 text-gray-900 hover:text-blue-900 transition-colors">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              <span className="text-sm font-medium text-gray-900 hover:text-blue-900 transition-colors">+995 123 456 789</span>
+            </a>
+          </div>
+       
+          <div className="flex gap-4 md:gap-8">
+            <Link href="/shops" className="text-sm font-medium text-gray-900 hover:text-blue-900">მაღაზიები</Link>
           </div>
         </div>
       </div>
@@ -287,19 +276,6 @@ export default function Navbar() {
                 <ChevronDown className="h-4 w-4" />
               )}
             </button>
-          {navigationItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${
-                pathname === item.href
-                  ? 'bg-sky-50 border-sky-500 text-sky-700'
-                  : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
-              } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
-            >
-              {item.title}
-            </Link>
-          ))}
         </div>
       </div>
 
