@@ -38,6 +38,11 @@ export const getAllFilters = async (req: Request, res: Response) => {
       }
     }
     
+    // Add isActive filter if provided
+    if (req.query.isActive !== undefined) {
+      query.isActive = req.query.isActive === 'true';
+    }
+    
     const filters = await Filter.find(query)
       .populate('category', 'name slug')
       .sort({ createdAt: -1 });

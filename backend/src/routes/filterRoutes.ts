@@ -10,13 +10,13 @@ import {
 
 const router = express.Router();
 
-// Protect all routes after this middleware
-router.use(protect);
-
-// Routes accessible by both admin and seller
+// Public routes - no authentication required
 router.get('/', getAllFilters);
 router.get('/search', getAllFilters);
 router.get('/:id', getFilterById);
+
+// Protected routes - require authentication
+router.use(protect);
 
 // Admin only routes
 router.use(authorize('admin'));

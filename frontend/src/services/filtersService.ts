@@ -124,15 +124,9 @@ export const filtersService = {
    * @returns Promise<Filter[]> Array of filters for the specified category
    */
   async getFiltersByCategory(categorySlug: string): Promise<Filter[]> {
-    const token = getToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     const response = await fetch(`${API_BASE_URL}/api/filters?category=${categorySlug}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
@@ -151,15 +145,9 @@ export const filtersService = {
    * @returns Promise<Filter[]> Array of active filters
    */
   async getActiveFilters(): Promise<Filter[]> {
-    const token = getToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     const response = await fetch(`${API_BASE_URL}/api/filters?isActive=true`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
