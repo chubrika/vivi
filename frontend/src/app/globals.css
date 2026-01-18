@@ -174,4 +174,71 @@
 
 .product-swiper .swiper-slide {
   height: auto;
-} 
+}
+
+/* Hide number input arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Range Slider Styles */
+.range-input::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid #0284c7;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.range-input::-webkit-slider-thumb:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transform: scale(1.1);
+}
+
+.range-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid #0284c7;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.range-input::-moz-range-thumb:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transform: scale(1.1);
+}
+
+.range-input::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 2px;
+}
+
+.range-input::-moz-range-track {
+  background: transparent;
+  height: 2px;
+}
+
+.range-input:focus {
+  outline: none;
+}
+
+.range-input:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+}
+
+.range-input:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+}
