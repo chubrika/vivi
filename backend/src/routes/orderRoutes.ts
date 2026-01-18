@@ -57,11 +57,11 @@ router.post('/', auth, async (req, res) => {
     if (paymentMethod === 'balance') {
       const user = await mongoose.model('User').findById(userId);
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'მომხმარებელი ვერ მოიძებნა!' });
       }
 
       if (user.balance < totalAmount) {
-        return res.status(400).json({ message: 'Insufficient balance' });
+        return res.status(400).json({ message: 'ბალანსზე გაქვთ არასაკმარისი თანხა!' });
       }
 
       // Deduct amount from user's balance

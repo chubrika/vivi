@@ -15,7 +15,7 @@ export default function MainContent({ children }: MainContentProps) {
   // Apply margin only for non-admin/non-courier pages
   const mainClasses = isAdminOrCourierPanel 
     ? "flex-grow pb-16 md:pb-0"
-    : "flex-grow mt-[148px] md:mt-[195px] pb-16 md:pb-0 container mx-auto px-4";
+    : "flex-grow mt-[85px] md:mt-[165px] pb-16 md:pb-0 container mx-auto px-0 md:px-4";
 
   return (
     <main className={mainClasses}>

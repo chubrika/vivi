@@ -61,22 +61,26 @@ export const getAllProducts = async (req: Request, res: Response) => {
       }
     }
 
-    // Add price range filter if provided
-    if (req.query.minPrice || req.query.maxPrice) {
-      query.price = {};
-      if (req.query.minPrice) {
-        query.price.$gte = Number(req.query.minPrice);
-      }
-      if (req.query.maxPrice) {
-        query.price.$lte = Number(req.query.maxPrice);
-      }
-    }
-    
-    const products = await Product.find(query)
+    // Find products first (without price filter)
+    let products = await Product.find(query)
       .populate('seller', 'firstName lastName businessName email')
       .populate('category', 'name slug parentId')
       .populate('filters', 'name description type config')
       .sort({ createdAt: -1 });
+    
+    // Filter by price range if provided (consider discountedPrice if available)
+    if (req.query.minPrice || req.query.maxPrice) {
+      const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
+      const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : Infinity;
+      
+      products = products.filter(product => {
+        // Use discountedPrice if available and valid, otherwise use price
+        const effectivePrice = product.discountedPrice && product.discountedPrice > 0 
+          ? product.discountedPrice 
+          : product.price;
+        return effectivePrice >= minPrice && effectivePrice <= maxPrice;
+      });
+    }
       
     res.json(products);
   } catch (error) {

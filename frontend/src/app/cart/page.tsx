@@ -68,15 +68,12 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-600">ჩემი კალათა</h1>
+    <div className="mx-auto px-4 py-8">
+      <h1 className="text-md md:text-2xl font-bold mb-6 text-gray-600">კალათა</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="p-4 border-b">
-              <h2 className="text-lg font-semibold text-gray-600">პროდუქტები ({items.length})</h2>
-            </div>
             <div className="divide-y">
               {items.map((item) => {
                 const isDiscounted = hasActiveDiscount(item);
@@ -108,7 +105,7 @@ export default function CartPage() {
                       )}
                     </div>
                     <div className="ml-4 flex-1">
-                      <h3 className="text-lg font-medium text-gray-600">{item.name}</h3>
+                      <h3 className="text-[12px] md:text-lg font-semibold text-gray-600">{item.name}</h3>
                       <div className="flex items-center gap-2">
                         {isDiscounted && item.discountedPrice ? (
                           <>
@@ -126,7 +123,7 @@ export default function CartPage() {
                         )}
                       </div>
                     </div>
-                    <div className="ml-4">
+                    <div className="ml-4 text-[12px] md:text-md">
                       <div className="flex items-center border rounded-md">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}

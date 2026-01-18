@@ -44,6 +44,10 @@ export default function CategoryNavigation({ categories, selectedCategorySlug }:
     router.push(`/products?category=${category.slug}`);
   };
 
+  if (currentChildren.length === 0) {
+    return null;
+  }
+
   return (
     <div className="w-64 bg-white rounded-lg shadow-sm">
       {/* Categories list */}

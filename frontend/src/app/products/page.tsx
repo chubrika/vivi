@@ -1,15 +1,24 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, ReactNode, Suspense } from 'react';
-import ProductDetailPanel from '../../components/ProductDetailPanel';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { api } from '../../utils/api';
-import { categoriesService } from '../../services/categoriesService';
-import { filtersService, Filter } from '../../services/filtersService';
-import { Product } from '../../types/product';
-import CategoryNavigation from '../../components/CategoryNavigation';
-import { Category } from '../../types/category';
-import AddToCartButton from '../../components/AddToCartButton';
+import {
+  useState,
+  useEffect,
+  useRef,
+  ReactNode,
+  Suspense,
+  useCallback,
+} from "react";
+import ProductDetailPanel from "../../components/ProductDetailPanel";
+import { useRouter, useSearchParams } from "next/navigation";
+import { api } from "../../utils/api";
+import { categoriesService } from "../../services/categoriesService";
+import { filtersService, Filter } from "../../services/filtersService";
+import { Product } from "../../types/product";
+import CategoryNavigation from "../../components/CategoryNavigation";
+import { Category } from "../../types/category";
+import AddToCartButton from "../../components/AddToCartButton";
+import RangeSlider from "../../components/RangeSlider";
+import { getCloudinaryThumbnail } from "../../utils/cloudinaryUrl";
 
 // Product Skeleton Loader Component
 const ProductSkeleton = () => (
@@ -31,12 +40,14 @@ function ProductsPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filters, setFilters] = useState<Filter[]>([]);
-  const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({});
+  const [expandedFilters, setExpandedFilters] = useState<
+    Record<string, boolean>
+  >({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    searchParams.get('category') || null
+    searchParams.get("category") || null
   );
   const [selectedFilter, setSelectedFilter] = useState<string | null>(
-    searchParams.get('filter') || null
+    searchParams.get("filter") || null
   );
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,66 +55,66 @@ function ProductsPageContent() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [filtersLoading, setFiltersLoading] = useState(false);
-  
+
   // Mobile sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   // Price range state
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(1000);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [minPriceInput, setMinPriceInput] = useState<string>('0');
-  const [maxPriceInput, setMaxPriceInput] = useState<string>('1000');
-  
-  // Slider refs
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const minThumbRef = useRef<HTMLDivElement>(null);
-  const maxThumbRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
+  const [minPriceInput, setMinPriceInput] = useState<string>("0");
+  const [maxPriceInput, setMaxPriceInput] = useState<string>("1000");
 
   // Add new state for selected colors and options
-  const [selectedColors, setSelectedColors] = useState<Record<string, string[]>>({});
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
+  const [selectedColors, setSelectedColors] = useState<
+    Record<string, string[]>
+  >({});
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string[]>
+  >({});
 
   // Fetch products whenever query parameters change
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setProductsLoading(true);
-        
+
         // Get all current query parameters
         const params = new URLSearchParams();
-        
+
         // Add category if present
-        const category = searchParams.get('category');
+        const category = searchParams.get("category");
         if (category) {
-          params.append('category', category);
+          params.append("category", category);
         }
-        
+
         // Add all filter parameters
         searchParams.forEach((value, key) => {
-          const filter = filters.find(f => f._id === key);
+          const filter = filters.find((f) => f._id === key);
           if (filter) {
             params.append(key, value);
           }
         });
-        
+
         // Add price range if present
-        const minPrice = searchParams.get('minPrice');
-        const maxPrice = searchParams.get('maxPrice');
-        if (minPrice) params.append('minPrice', minPrice);
-        if (maxPrice) params.append('maxPrice', maxPrice);
-        
+        const minPrice = searchParams.get("minPrice");
+        const maxPrice = searchParams.get("maxPrice");
+        if (minPrice) params.append("minPrice", minPrice);
+        if (maxPrice) params.append("maxPrice", maxPrice);
+
         const queryString = params.toString();
-        const endpoint = queryString ? `/api/products?${queryString}` : '/api/products';
-        
-        console.log('Fetching products with params:', queryString); // Debug log
-        
+        const endpoint = queryString
+          ? `/api/products?${queryString}`
+          : "/api/products";
+
+        console.log("Fetching products with params:", queryString); // Debug log
+
         const data = await api.get(endpoint, undefined, false);
         setProducts(data);
       } catch (err) {
-        console.error('Error fetching products:', err);
-        setError('Failed to fetch products');
+        console.error("Error fetching products:", err);
+        setError("Failed to fetch products");
       } finally {
         setProductsLoading(false);
         setInitialLoading(false);
@@ -115,11 +126,11 @@ function ProductsPageContent() {
 
   // Update local state when URL parameters change
   useEffect(() => {
-    setSelectedCategory(searchParams.get('category'));
-    setSelectedFilter(searchParams.get('filter'));
-    
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
+    setSelectedCategory(searchParams.get("category"));
+    setSelectedFilter(searchParams.get("filter"));
+
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
     if (minPrice && maxPrice) {
       setPriceRange([Number(minPrice), Number(maxPrice)]);
       setMinPriceInput(minPrice);
@@ -135,7 +146,7 @@ function ProductsPageContent() {
         console.log(data);
         setCategories(data);
       } catch (err) {
-        console.error('Error fetching categories:', err);
+        console.error("Error fetching categories:", err);
       }
     };
 
@@ -146,10 +157,10 @@ function ProductsPageContent() {
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
-        const data = await api.get('/api/products', undefined, false);
+        const data = await api.get("/api/products", undefined, false);
         setAllProducts(data);
       } catch (err) {
-        console.error('Error fetching all products:', err);
+        console.error("Error fetching all products:", err);
       }
     };
 
@@ -160,17 +171,18 @@ function ProductsPageContent() {
   useEffect(() => {
     if (allProducts.length > 0) {
       const categoryCounts = allProducts.reduce((acc, product) => {
-        const categoryId = typeof product.category === 'object' && product.category !== null
-          ? product.category._id
-          : product.category;
+        const categoryId =
+          typeof product.category === "object" && product.category !== null
+            ? product.category._id
+            : product.category;
         acc[categoryId] = (acc[categoryId] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 
-      setCategories(prevCategories => 
-        prevCategories.map(category => ({
+      setCategories((prevCategories) =>
+        prevCategories.map((category) => ({
           ...category,
-          productCount: categoryCounts[category._id] || 0
+          productCount: categoryCounts[category._id] || 0,
         }))
       );
     }
@@ -179,7 +191,7 @@ function ProductsPageContent() {
   // Calculate min and max prices from all products
   useEffect(() => {
     if (allProducts.length > 0) {
-      const prices = allProducts.map(product => product.price);
+      const prices = allProducts.map((product) => product.price);
       const min = Math.min(...prices);
       const max = Math.max(...prices);
       setMinPrice(min);
@@ -197,7 +209,7 @@ function ProductsPageContent() {
         setFiltersLoading(true);
         // Use getActiveFilters to only show active filters
         const data = await filtersService.getActiveFilters();
-        
+
         // If no filters are returned, create some example filters for demonstration
         if (data.length === 0) {
           const exampleFilters = createExampleFilters();
@@ -206,7 +218,7 @@ function ProductsPageContent() {
           setFilters(data);
         }
       } catch (err) {
-        console.error('Error fetching filters:', err);
+        console.error("Error fetching filters:", err);
         // Create example filters if there's an error
         const exampleFilters = createExampleFilters();
         setFilters(exampleFilters);
@@ -221,35 +233,38 @@ function ProductsPageContent() {
   // Function to create example filters for demonstration
   const createExampleFilters = () => {
     // Get the first category if available
-    const firstCategory = categories.length > 0 ? categories[0] : { _id: 'example-category', name: 'Example Category' };
-    
+    const firstCategory =
+      categories.length > 0
+        ? categories[0]
+        : { _id: "example-category", name: "Example Category" };
+
     return [
       {
-        _id: 'filter-category',
-        name: 'Category Filter',
-        description: 'Filter by category',
+        _id: "filter-category",
+        name: "Category Filter",
+        description: "Filter by category",
         category: firstCategory,
-        type: 'select' as const,
+        type: "select" as const,
         config: {
-          options: ['Electronics', 'Clothing', 'Home', 'Sports']
+          options: ["Electronics", "Clothing", "Home", "Sports"],
         },
         isActive: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       },
       {
-        _id: 'filter-color',
-        name: 'Color Filter',
-        description: 'Filter by color',
+        _id: "filter-color",
+        name: "Color Filter",
+        description: "Filter by color",
         category: firstCategory,
-        type: 'color' as const,
+        type: "color" as const,
         config: {
-          options: ['#FF0000', '#00FF00', '#0000FF', '#FFFF00']
+          options: ["#FF0000", "#00FF00", "#0000FF", "#FFFF00"],
         },
         isActive: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
+        updatedAt: new Date().toISOString(),
+      },
     ];
   };
 
@@ -260,10 +275,12 @@ function ProductsPageContent() {
         try {
           setFiltersLoading(true);
           console.log(selectedCategory);
-          const data = await filtersService.getFiltersByCategory(selectedCategory);
+          const data = await filtersService.getFiltersByCategory(
+            selectedCategory
+          );
           setFilters(data);
         } catch (err) {
-          console.error('Error fetching filters by category:', err);
+          console.error("Error fetching filters by category:", err);
         } finally {
           setFiltersLoading(false);
         }
@@ -278,159 +295,147 @@ function ProductsPageContent() {
   const filteredProducts = products;
 
   // Handle price input change
-  const handlePriceInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    let newPriceRange = [...priceRange] as [number, number];
-    
-    if (e.target.name === 'min') {
+    const name = e.target.name;
+
+    if (name === "minPrice") {
       setMinPriceInput(value);
-      const numValue = parseInt(value);
-      if (!isNaN(numValue) && numValue <= priceRange[1]) {
-        newPriceRange = [numValue, priceRange[1]];
-        setPriceRange(newPriceRange);
-      }
-    } else {
+    } else if (name === "maxPrice") {
       setMaxPriceInput(value);
-      const numValue = parseInt(value);
-      if (!isNaN(numValue) && numValue >= priceRange[0]) {
-        newPriceRange = [priceRange[0], numValue];
+    }
+  };
+
+  // Handle price input blur/enter - fetch products when user finishes editing
+  const handlePriceInputBlur = async (
+    e: React.FocusEvent<HTMLInputElement>
+  ) => {
+    // Small delay to check if user is moving to the other price input
+    setTimeout(async () => {
+      // Check if the related target (where focus moved to) is the other price input
+      const relatedTarget = e.relatedTarget as HTMLInputElement | null;
+      if (
+        relatedTarget &&
+        relatedTarget instanceof HTMLInputElement &&
+        (relatedTarget.name === "minPrice" || relatedTarget.name === "maxPrice")
+      ) {
+        // User is moving between price inputs, don't fetch yet
+        return;
+      }
+
+      const minValue = parseFloat(minPriceInput) || minPrice;
+      const maxValue = parseFloat(maxPriceInput) || maxPrice;
+
+      // Validate and clamp values
+      const validMin = Math.max(minPrice, Math.min(maxPrice, minValue));
+      const validMax = Math.max(
+        minPrice,
+        Math.min(maxPrice, Math.max(validMin, maxValue))
+      );
+
+      const newPriceRange: [number, number] = [validMin, validMax];
+
+      // Only fetch if the price range actually changed
+      if (
+        newPriceRange[0] !== priceRange[0] ||
+        newPriceRange[1] !== priceRange[1]
+      ) {
+        // Update state
         setPriceRange(newPriceRange);
-      }
-    }
-    
-    // Only fetch products if the price range actually changed
-    if (newPriceRange[0] !== priceRange[0] || newPriceRange[1] !== priceRange[1]) {
-      setProductsLoading(true);
-      
-      try {
-        // Construct URL with category, filter, and price range parameters
-        const params = new URLSearchParams();
-        
-        if (selectedCategory) {
-          params.append('category', selectedCategory);
-        }
-        
-        if (selectedFilter) {
-          params.append('filter', selectedFilter);
-        }
-        
-        // Add price range parameters
-        params.append('minPrice', newPriceRange[0].toString());
-        params.append('maxPrice', newPriceRange[1].toString());
-        
-        const queryString = params.toString();
-        const endpoint = queryString ? `/api/products?${queryString}` : '/api/products';
-        
-        const data = await api.get(endpoint, undefined, false);
-        setProducts(data);
-      } catch (err) {
-        console.error('Error fetching products by price range:', err);
-        setError('Failed to fetch products by price range');
-      } finally {
-        setProductsLoading(false);
-      }
-    }
-  };
+        setMinPriceInput(validMin.toString());
+        setMaxPriceInput(validMax.toString());
 
-  // Handle mouse down on thumb
-  const handleThumbMouseDown = (e: React.MouseEvent, thumb: 'min' | 'max') => {
-    e.preventDefault();
-    setIsDragging(thumb);
-  };
-
-  // Handle mouse move
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !sliderRef.current) return;
-      
-      const sliderRect = sliderRef.current.getBoundingClientRect();
-      const sliderWidth = sliderRect.width;
-      
-      // Calculate position as percentage
-      let position = ((e.clientX - sliderRect.left) / sliderWidth) * 100;
-      
-      // Clamp position between 0 and 100
-      position = Math.max(0, Math.min(100, position));
-      
-      // Convert percentage to price value
-      const priceValue = Math.round(minPrice + (position / 100) * (maxPrice - minPrice));
-      
-      let newPriceRange = [...priceRange] as [number, number];
-      
-      if (isDragging === 'min') {
-        // Ensure min doesn't exceed max
-        if (priceValue <= priceRange[1]) {
-          newPriceRange = [priceValue, priceRange[1]];
-          setPriceRange(newPriceRange);
-          setMinPriceInput(priceValue.toString());
-        }
+        // Update URL and fetch products
+        await fetchProductsByPriceRange(newPriceRange);
       } else {
-        // Ensure max doesn't go below min
-        if (priceValue >= priceRange[0]) {
-          newPriceRange = [priceRange[0], priceValue];
-          setPriceRange(newPriceRange);
-          setMaxPriceInput(priceValue.toString());
-        }
+        // Just update the input values to ensure they're valid (in case user typed invalid value)
+        setMinPriceInput(validMin.toString());
+        setMaxPriceInput(validMax.toString());
       }
-    };
-    
-    const handleMouseUp = async () => {
-      if (isDragging) {
-        // Fetch products when the slider is released
-        setProductsLoading(true);
-        
-        try {
-          // Construct URL with category, filter, and price range parameters
-          const params = new URLSearchParams();
-          
-          if (selectedCategory) {
-            params.append('category', selectedCategory);
-          }
-          
-          if (selectedFilter) {
-            params.append('filter', selectedFilter);
-          }
-          
-          // Add price range parameters
-          params.append('minPrice', priceRange[0].toString());
-          params.append('maxPrice', priceRange[1].toString());
-          
-          const queryString = params.toString();
-          const endpoint = queryString ? `/api/products?${queryString}` : '/api/products';
-          
-          const data = await api.get(endpoint, undefined, false);
-          setProducts(data);
-        } catch (err) {
-          console.error('Error fetching products by price range:', err);
-          setError('Failed to fetch products by price range');
-        } finally {
-          setProductsLoading(false);
-        }
-      }
-      
-      setIsDragging(null);
-    };
-    
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-    
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, minPrice, maxPrice, priceRange, selectedCategory, selectedFilter]);
+    }, 100);
+  };
 
-  // Calculate thumb positions
-  const minThumbPosition = ((priceRange[0] - minPrice) / (maxPrice - minPrice)) * 100;
-  const maxThumbPosition = ((priceRange[1] - minPrice) / (maxPrice - minPrice)) * 100;
+  // Handle Enter key press on price inputs
+  const handlePriceInputKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur();
+    }
+  };
+
+  // Fetch products by price range
+  const fetchProductsByPriceRange = async (newPriceRange: [number, number]) => {
+    setProductsLoading(true);
+
+    try {
+      // Construct URL with all current parameters
+      const params = new URLSearchParams();
+
+      // Add category if present
+      if (selectedCategory) {
+        params.append("category", selectedCategory);
+      }
+
+      // Add filter if present
+      if (selectedFilter) {
+        params.append("filter", selectedFilter);
+      }
+
+      // Add all filter parameters from URL
+      searchParams.forEach((value, key) => {
+        const filter = filters.find((f) => f._id === key);
+        if (filter) {
+          params.append(key, value);
+        }
+      });
+
+      // Add price range parameters
+      params.append("minPrice", newPriceRange[0].toString());
+      params.append("maxPrice", newPriceRange[1].toString());
+
+      // Preserve product ID if it exists
+      const productId = searchParams.get("product");
+      if (productId) {
+        params.append("product", productId);
+      }
+
+      const queryString = params.toString();
+      const endpoint = queryString
+        ? `/api/products?${queryString}`
+        : "/api/products";
+
+      // Update URL
+      router.push(`/products?${queryString}`, { scroll: false });
+
+      // Fetch products
+      const data = await api.get(endpoint, undefined, false);
+      setProducts(data);
+    } catch (err) {
+      console.error("Error fetching products by price range:", err);
+      setError("Failed to fetch products by price range");
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
+  // Handle range slider change - optimized with useCallback
+  const handleRangeSliderChange = useCallback((newRange: [number, number]) => {
+    setPriceRange(newRange);
+    setMinPriceInput(newRange[0].toString());
+    setMaxPriceInput(newRange[1].toString());
+  }, []);
+
+  // Handle range slider mouse up - fetch products
+  const handleRangeSliderMouseUp = useCallback(async () => {
+    await fetchProductsByPriceRange(priceRange);
+  }, [priceRange, fetchProductsByPriceRange]);
 
   useEffect(() => {
-    const productId = searchParams.get('product');
-    
+    const productId = searchParams.get("product");
+
     if (productId && products.length > 0) {
-      const product = products.find(p => p._id === productId);
+      const product = products.find((p) => p._id === productId);
       if (product) {
         setSelectedProduct(product);
       }
@@ -444,30 +449,30 @@ function ProductsPageContent() {
 
   const handlePanelClose = () => {
     setSelectedProduct(null);
-    router.push('/products', { scroll: false });
+    router.push("/products", { scroll: false });
   };
 
   const handleCategorySelect = async (categoryId: string | null) => {
     // Update URL with selected category
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (categoryId) {
-      params.set('category', categoryId);
+      params.set("category", categoryId);
     } else {
-      params.delete('category');
+      params.delete("category");
     }
-    
+
     // Remove filter when category changes
-    params.delete('filter');
-    
+    params.delete("filter");
+
     // Preserve product ID if it exists
-    const productId = searchParams.get('product');
+    const productId = searchParams.get("product");
     if (productId) {
-      params.set('product', productId);
+      params.set("product", productId);
     }
-    
+
     router.push(`/products?${params.toString()}`, { scroll: false });
-    
+
     // Close sidebar on mobile after selection
     setIsSidebarOpen(false);
   };
@@ -475,40 +480,40 @@ function ProductsPageContent() {
   const handleFilterSelect = async (filterId: string | null) => {
     // Update URL with selected filter
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (filterId) {
-      params.set('filter', filterId);
+      params.set("filter", filterId);
     } else {
-      params.delete('filter');
+      params.delete("filter");
     }
-    
+
     // Preserve product ID if it exists
-    const productId = searchParams.get('product');
+    const productId = searchParams.get("product");
     if (productId) {
-      params.set('product', productId);
+      params.set("product", productId);
     }
-    
+
     router.push(`/products?${params.toString()}`, { scroll: false });
   };
 
   const toggleFilterExpansion = (filterId: string) => {
-    setExpandedFilters(prev => ({
+    setExpandedFilters((prev) => ({
       ...prev,
-      [filterId]: !prev[filterId]
+      [filterId]: !prev[filterId],
     }));
   };
 
   // Add new handlers for color and option selection
   const handleColorSelect = async (filterId: string, color: string) => {
-    setSelectedColors(prev => {
+    setSelectedColors((prev) => {
       const currentColors = prev[filterId] || [];
       const newColors = currentColors.includes(color)
-        ? currentColors.filter(c => c !== color)
+        ? currentColors.filter((c) => c !== color)
         : [...currentColors, color];
-      
+
       return {
         ...prev,
-        [filterId]: newColors
+        [filterId]: newColors,
       };
     });
 
@@ -516,35 +521,35 @@ function ProductsPageContent() {
     const params = new URLSearchParams(searchParams.toString());
     const currentColors = selectedColors[filterId] || [];
     const newColors = currentColors.includes(color)
-      ? currentColors.filter(c => c !== color)
+      ? currentColors.filter((c) => c !== color)
       : [...currentColors, color];
 
     if (newColors.length > 0) {
-      params.set(filterId, newColors.join(','));
+      params.set(filterId, newColors.join(","));
     } else {
       params.delete(filterId);
     }
 
     // Preserve other parameters
-    if (selectedCategory) params.set('category', selectedCategory);
-    if (selectedFilter) params.set('filter', selectedFilter);
-    const productId = searchParams.get('product');
-    if (productId) params.set('product', productId);
+    if (selectedCategory) params.set("category", selectedCategory);
+    if (selectedFilter) params.set("filter", selectedFilter);
+    const productId = searchParams.get("product");
+    if (productId) params.set("product", productId);
 
     // Update URL and fetch filtered products
     router.push(`/products?${params.toString()}`, { scroll: false });
   };
 
   const handleOptionSelect = async (filterId: string, option: string) => {
-    setSelectedOptions(prev => {
+    setSelectedOptions((prev) => {
       const currentOptions = prev[filterId] || [];
       const newOptions = currentOptions.includes(option)
-        ? currentOptions.filter(o => o !== option)
+        ? currentOptions.filter((o) => o !== option)
         : [...currentOptions, option];
-      
+
       return {
         ...prev,
-        [filterId]: newOptions
+        [filterId]: newOptions,
       };
     });
 
@@ -552,20 +557,20 @@ function ProductsPageContent() {
     const params = new URLSearchParams(searchParams.toString());
     const currentOptions = selectedOptions[filterId] || [];
     const newOptions = currentOptions.includes(option)
-      ? currentOptions.filter(o => o !== option)
+      ? currentOptions.filter((o) => o !== option)
       : [...currentOptions, option];
 
     if (newOptions.length > 0) {
-      params.set(filterId, newOptions.join(','));
+      params.set(filterId, newOptions.join(","));
     } else {
       params.delete(filterId);
     }
 
     // Preserve other parameters
-    if (selectedCategory) params.set('category', selectedCategory);
-    if (selectedFilter) params.set('filter', selectedFilter);
-    const productId = searchParams.get('product');
-    if (productId) params.set('product', productId);
+    if (selectedCategory) params.set("category", selectedCategory);
+    if (selectedFilter) params.set("filter", selectedFilter);
+    const productId = searchParams.get("product");
+    if (productId) params.set("product", productId);
 
     // Update URL and fetch filtered products
     router.push(`/products?${params.toString()}`, { scroll: false });
@@ -574,7 +579,7 @@ function ProductsPageContent() {
   // Update useEffect to handle filter parameters from URL
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
-    
+
     // Reset selections
     setSelectedColors({});
     setSelectedOptions({});
@@ -582,18 +587,18 @@ function ProductsPageContent() {
     // Process all parameters
     params.forEach((value, key) => {
       // Find the filter to determine its type
-      const filter = filters.find(f => f._id === key);
+      const filter = filters.find((f) => f._id === key);
       if (filter) {
-        const values = value.split(',');
-        if (filter.type === 'color') {
-          setSelectedColors(prev => ({
+        const values = value.split(",");
+        if (filter.type === "color") {
+          setSelectedColors((prev) => ({
             ...prev,
-            [key]: values
+            [key]: values,
           }));
-        } else if (filter.type === 'select') {
-          setSelectedOptions(prev => ({
+        } else if (filter.type === "select") {
+          setSelectedOptions((prev) => ({
             ...prev,
-            [key]: values
+            [key]: values,
           }));
         }
       }
@@ -621,58 +626,139 @@ function ProductsPageContent() {
       {/* Mobile Header with Filter Button - Only visible on mobile */}
       <div className="lg:hidden bg-white shadow-sm border-b">
         <div className="flex items-center justify-between p-4">
-          <h1 className="text-lg font-semibold text-gray-900">პროდუქტები</h1>
+          <h1 className="text-sm md:text-lg font-semibold text-gray-900">პროდუქტები</h1>
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="flex items-center space-x-2 px-3 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
+            className="flex items-center space-x-2 px-3 py-2 text-sky-600 rounded-md font-semibold transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+              />
             </svg>
-            <span>ფილტრები</span>
+            <span className="text-sm md:text-base">ფილტრი</span>
           </button>
         </div>
       </div>
 
-      <div className="flex h-[100vh]">
+      <div className="flex">
         {/* Mobile Sidebar Overlay - Only on mobile */}
         {isSidebarOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
 
         {/* Sidebar */}
-        <div className={`
+        <div
+          className={`
           fixed lg:static inset-y-0 left-0 z-50 w-80 bg-white shadow-lg lg:shadow-none
           transform transition-transform duration-300 ease-in-out
-          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${
+            isSidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          }
           lg:inset-y-auto lg:left-auto lg:z-auto
-        `}>
-          <div className="h-full overflow-y-auto p-4 lg:p-6 space-y-6">
-            {/* Mobile Close Button - Only visible on mobile */}
+        `}
+        >
+          <CategoryNavigation
+            categories={categories}
+            selectedCategorySlug={selectedCategory}
+          />
+
+          <h2 className="text-lg font-semibold text-gray-900 pl-4 pr-4 lg:pl-6 lg:pr-6">
+            ფილტრი
+          </h2>
+          <div className="h-full overflow-y-auto p-4 lg:p-6 ">
+            {/* Mobile Close Button - Only visible on mobile */}\
             <div className="flex items-center justify-between lg:hidden">
-              <h2 className="text-lg font-semibold text-gray-900">ფილტრები</h2>
+              <h2 className="text-lg font-semibold text-gray-900">ფილტრი</h2>
               <button
                 onClick={() => setIsSidebarOpen(false)}
                 className="p-2 text-gray-500 hover:text-gray-700"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
+            {/* Price Filter - Always visible */}
+            <div className="bg-white rounded-lg shadow-sm mb-4 p-4 border">
+              <h3 className="text-sm font-medium text-gray-900 mb-4">ფასი</h3>
+              <div className="space-y-4">
+                {/* Price Range Slider */}
+                <RangeSlider
+                  min={minPrice}
+                  max={maxPrice}
+                  value={priceRange}
+                  onChange={handleRangeSliderChange}
+                  onMouseUp={handleRangeSliderMouseUp}
+                />
 
-            <CategoryNavigation 
-              categories={categories} 
-              selectedCategorySlug={selectedCategory} 
-            />
-            
+                {/* Price Inputs */}
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      name="minPrice"
+                      value={minPriceInput}
+                      onChange={handlePriceInputChange}
+                      onBlur={handlePriceInputBlur}
+                      onKeyDown={handlePriceInputKeyDown}
+                      className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      placeholder="მინ"
+                      min={minPrice}
+                      max={maxPrice}
+                    />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                      ₾
+                    </span>
+                  </div>
+                  <span className="text-gray-500">-</span>
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      name="maxPrice"
+                      value={maxPriceInput}
+                      onChange={handlePriceInputChange}
+                      onBlur={handlePriceInputBlur}
+                      onKeyDown={handlePriceInputKeyDown}
+                      className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      placeholder="მაქს"
+                      min={minPrice}
+                      max={maxPrice}
+                    />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                      ₾
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
             {/* Filters section */}
             {filters.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-4 border">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">ფილტრები</h3>
+                {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">ფილტრები</h3> */}
                 <div>
                   {filtersLoading ? (
                     <div className="animate-pulse space-y-2">
@@ -681,40 +767,54 @@ function ProductsPageContent() {
                       ))}
                     </div>
                   ) : (
-                    filters
-                      .map((filter) => (
-                        <div key={filter._id} className="border-b border-gray-200 overflow-hidden">
-                          <button
-                            onClick={() => toggleFilterExpansion(filter._id)}
-                            className="w-full flex items-center justify-between pt-3 pb-3 hover:bg-gray-50 transition-colors"
-                          >
-                            <h3 className="text-sm font-medium text-gray-900">{filter.name}</h3>
-                            <svg
-                              className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${
-                                expandedFilters[filter._id] ? 'rotate-180' : ''
-                              }`}
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </button>
-                          <div
-                            className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                              expandedFilters[filter._id] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    filters.map((filter) => (
+                      <div
+                        key={filter._id}
+                        className="border-b border-gray-200 overflow-hidden"
+                      >
+                        <button
+                          onClick={() => toggleFilterExpansion(filter._id)}
+                          className="w-full flex items-center justify-between pt-3 pb-3 hover:bg-gray-50 transition-colors"
+                        >
+                          <h3 className="text-sm font-medium text-gray-900">
+                            {filter.name}
+                          </h3>
+                          <svg
+                            className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${
+                              expandedFilters[filter._id] ? "rotate-180" : ""
                             }`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
                           >
-                            <div className="p-3 pt-0">
-                              {filter.type === 'color' && filter.config?.options && (
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </button>
+                        <div
+                          className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                            expandedFilters[filter._id]
+                              ? "max-h-96 opacity-100"
+                              : "max-h-0 opacity-0"
+                          }`}
+                        >
+                          <div className="p-3 pt-0">
+                            {filter.type === "color" &&
+                              filter.config?.options && (
                                 <div className="grid grid-cols-4 gap-2">
                                   {filter.config.options.map((color) => (
                                     <button
                                       key={color}
                                       className={`w-8 h-8 rounded-full cursor-pointer border-2 transition-colors ${
-                                        selectedColors[filter._id]?.includes(color)
-                                          ? 'border-sky-500'
-                                          : 'border-gray-200 hover:border-sky-500'
+                                        selectedColors[filter._id]?.includes(
+                                          color
+                                        )
+                                          ? "border-sky-500"
+                                          : "border-gray-200 hover:border-sky-500"
                                       }`}
                                       style={{ backgroundColor: color }}
                                       title={color}
@@ -726,17 +826,28 @@ function ProductsPageContent() {
                                   ))}
                                 </div>
                               )}
-                              {filter.type === 'select' && filter.config?.options && (
+                            {filter.type === "select" &&
+                              filter.config?.options && (
                                 <div className="space-y-2">
                                   {filter.config.options.map((option) => (
-                                    <div key={option} className="flex items-center">
+                                    <div
+                                      key={option}
+                                      className="flex items-center"
+                                    >
                                       <input
                                         type="checkbox"
                                         id={`${filter._id}-${option}`}
-                                        checked={selectedOptions[filter._id]?.includes(option) || false}
+                                        checked={
+                                          selectedOptions[filter._id]?.includes(
+                                            option
+                                          ) || false
+                                        }
                                         onChange={(e) => {
                                           e.stopPropagation();
-                                          handleOptionSelect(filter._id, option);
+                                          handleOptionSelect(
+                                            filter._id,
+                                            option
+                                          );
                                         }}
                                         className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
                                       />
@@ -750,10 +861,10 @@ function ProductsPageContent() {
                                   ))}
                                 </div>
                               )}
-                            </div>
                           </div>
                         </div>
-                      ))
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
@@ -769,103 +880,120 @@ function ProductsPageContent() {
               <div className="mb-4 flex items-center flex-wrap gap-2">
                 <span className="text-sm text-gray-600">Filtered by:</span>
                 <span className="px-3 py-1 bg-sky-100 text-sky-800 rounded-full text-sm">
-                  {filters.find(f => f._id === selectedFilter)?.name || 'Filter'}
+                  {filters.find((f) => f._id === selectedFilter)?.name ||
+                    "Filter"}
                 </span>
-                <button 
+                <button
                   onClick={() => handleFilterSelect(null)}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
             )}
 
             {/* Products Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-2 lg:gap-6">
               {productsLoading ? (
                 // Show skeleton loaders while products are loading
-                Array(10).fill(0).map((_, index) => (
-                  <ProductSkeleton key={index} />
-                ))
-              ) : (
-                // Show actual products when loaded
-                filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
-                    <div
-                      key={product._id}
-                      className="bg-white rounded-lg transition-all duration-300 hover:border hover:border-sky-600 overflow-hidden cursor-pointer shadow-sm hover:shadow-md"
-                      onClick={() => handleProductSelect(product)}
-                    >
-                      <div className="relative aspect-square">
-                        <img
-                          src={product.images[0] || 'https://via.placeholder.com/400'}
-                          alt={product.name}
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                      <div className="p-3 sm:p-4 relative">
-                        {/* Discount Ribbon */}
-                        {product.discountedPercent && product.discountedPercent > 0 && (
+                Array(10)
+                  .fill(0)
+                  .map((_, index) => <ProductSkeleton key={index} />)
+              ) : // Show actual products when loaded
+              filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <div
+                    key={product._id}
+                    className="bg-white rounded-lg transition-all duration-300  overflow-hidden cursor-pointer shadow-sm hover:shadow-md flex flex-col justify-between"
+                    onClick={() => handleProductSelect(product)}
+                  >
+                    <div className="relative aspect-squarew-full">
+                      <img
+                        src={getCloudinaryThumbnail(product.images[0])}
+                        alt={product.name}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <div className="p-3 sm:p-4 relative">
+                      {/* Discount Ribbon */}
+                      {product.discountedPercent &&
+                        product.discountedPercent > 0 && (
                           <div className="absolute top-2 right-2 z-10">
                             <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
                               -{product.discountedPercent}%
                             </div>
                           </div>
                         )}
-                        
-                        {/* Price Display */}
-                        <div className="mb-2">
-                          {product.discountedPrice && product.discountedPrice > 0 ? (
-                            <div className="flex items-center gap-2">
-                              <p className="text-gray-900 font-semibold text-sm sm:text-base">
-                                {product.discountedPrice.toFixed(2)} ₾
-                              </p>
-                              <p className="text-gray-500 text-xs sm:text-sm line-through">
-                                {product.price.toFixed(2)} ₾
-                              </p>
-                            </div>
-                          ) : (
+
+                      {/* Price Display */}
+                      <div className="mb-2">
+                        {product.discountedPrice &&
+                        product.discountedPrice > 0 ? (
+                          <div className="flex items-center gap-2">
                             <p className="text-gray-900 font-semibold text-sm sm:text-base">
+                              {product.discountedPrice.toFixed(2)} ₾
+                            </p>
+                            <p className="text-gray-500 text-xs sm:text-sm line-through">
                               {product.price.toFixed(2)} ₾
                             </p>
-                          )}
-                        </div>
-                        
-                        <h2 className="text-xs sm:text-sm text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h2>
-                        <div className="mt-2 flex items-center justify-between mb-3">
-                          <span className="text-xs text-gray-500 truncate">
-                            {typeof product.seller === 'object' && product.seller !== null
-                              ? product.seller.businessName
-                              : ''}
-                          </span>
-                        </div>
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <AddToCartButton 
-                            product={product} 
-                            className="text-xs py-1.5 px-2"
-                          />
-                        </div>
+                          </div>
+                        ) : (
+                          <p className="text-gray-900 font-semibold text-sm sm:text-base">
+                            {product.price.toFixed(2)} ₾
+                          </p>
+                        )}
+                      </div>
+
+                      <h2 className="text-xs sm:text-sm text-gray-900 mb-2 line-clamp-2 overflow-hidden text-ellipsis">
+                        {product.name}
+                      </h2>
+                      <div className="mt-2 flex items-center justify-between mb-3">
+                        <span className="text-xs text-gray-500 truncate">
+                          {typeof product.seller === "object" &&
+                          product.seller !== null
+                            ? product.seller.businessName
+                            : ""}
+                        </span>
+                      </div>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <AddToCartButton
+                          product={product}
+                          className="text-xs py-1.5 px-2"
+                        />
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-gray-500 text-lg">პროდუქტები არ მოიძებნა</p>
-                    <button 
-                      onClick={() => {
-                        handleFilterSelect(null);
-                        setPriceRange([minPrice, maxPrice]);
-                        setMinPriceInput(minPrice.toString());
-                        setMaxPriceInput(maxPrice.toString());
-                      }}
-                      className="mt-4 px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
-                    >
-                      ფილტრის გასუფთავება
-                    </button>
                   </div>
-                )
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-500 text-lg">
+                    პროდუქტები არ მოიძებნა
+                  </p>
+                  <button
+                    onClick={() => {
+                      handleFilterSelect(null);
+                      setPriceRange([minPrice, maxPrice]);
+                      setMinPriceInput(minPrice.toString());
+                      setMaxPriceInput(maxPrice.toString());
+                    }}
+                    className="mt-4 px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
+                  >
+                    ფილტრის გასუფთავება
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -883,12 +1011,14 @@ function ProductsPageContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
+        </div>
+      }
+    >
       <ProductsPageContent />
     </Suspense>
   );
-} 
+}

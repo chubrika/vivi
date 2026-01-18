@@ -132,7 +132,7 @@ export default function Navbar() {
             <div className="flex gap-8">
             <button
               onClick={toggleCategoryMenu}
-              className="inline-flex items-center px-1 text-sm font-medium text-gray-900 hover:text-blue-900 focus:outline-none"
+              className="hidden md:inline-flex items-center px-1 text-sm font-medium text-gray-900 hover:text-blue-900 focus:outline-none"
             >
               <CategoriesIcon 
                 size={20}
