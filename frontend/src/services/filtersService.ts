@@ -94,17 +94,17 @@ export const filtersService = {
   },
 
   /**
-   * Get a filter by ID
-   * @param id Filter ID
+   * Get a filter by ID or slug
+   * @param idOrSlug Filter ID or slug
    * @returns Promise<Filter> Filter object
    */
-  async getFilterById(id: string): Promise<Filter> {
+  async getFilterById(idOrSlug: string): Promise<Filter> {
     const token = getToken();
     if (!token) {
       throw new Error('Authentication required');
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/filters/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/filters/${idOrSlug}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -119,6 +119,15 @@ export const filtersService = {
     }
 
     return data;
+  },
+
+  /**
+   * Get a filter by slug
+   * @param slug Filter slug
+   * @returns Promise<Filter> Filter object
+   */
+  async getFilterBySlug(slug: string): Promise<Filter> {
+    return this.getFilterById(slug);
   },
 
   /**

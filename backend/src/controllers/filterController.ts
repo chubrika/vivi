@@ -54,11 +54,20 @@ export const getAllFilters = async (req: Request, res: Response) => {
   }
 };
 
-// Get a single filter by ID
+// Get a single filter by ID or slug
 export const getFilterById = async (req: Request, res: Response) => {
   try {
-    const filter = await Filter.findById(req.params.id)
-      .populate('category', 'name');
+    const { id } = req.params;
+    
+    // Try to find by ID first, then by slug
+    let filter = await Filter.findById(id)
+      .populate('category', 'name slug');
+    
+    if (!filter) {
+      // If not found by ID, try to find by slug
+      filter = await Filter.findOne({ slug: id })
+        .populate('category', 'name slug');
+    }
       
     if (!filter) {
       return res.status(404).json({ message: 'Filter not found' });

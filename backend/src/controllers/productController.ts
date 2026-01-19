@@ -3,6 +3,7 @@ import Product from '../models/Product';
 import User from '../models/User';
 import Category from '../models/Category';
 import Filter from '../models/Filter';
+import mongoose from 'mongoose';
 
 // Get all products
 export const getAllProducts = async (req: Request, res: Response) => {
@@ -26,38 +27,71 @@ export const getAllProducts = async (req: Request, res: Response) => {
       query.seller = req.query.seller;
     }
 
-    // Handle filter parameters
+    // Handle filter parameters (keys are filter slugs)
     const filterParams = Object.entries(req.query)
       .filter(([key]) => {
-        // Check if the key matches any filter ID in the database
+        // Exclude known query parameters
         return key !== 'category' && key !== 'seller' && key !== 'minPrice' && key !== 'maxPrice';
       })
       .map(([key, value]) => ({
-        filterId: key,
+        filterSlug: key,
         values: (value as string).split(',')
       }));
 
     if (filterParams.length > 0) {
-      // Build filter conditions to match products with filters array containing { id, value } objects
-      const filterConditions = filterParams.map(fp => {
-        // Match products where filters array contains an object with matching id and value
-        // Support multiple values (comma-separated)
-        return {
-          filters: {
-            $elemMatch: {
-              id: fp.filterId,
-              value: { $in: fp.values }
-            }
+      // Convert filter slugs to IDs and build filter conditions
+      const filterConditions = await Promise.all(
+        filterParams.map(async (fp) => {
+          // Build query to find filter - only use _id if it's a valid ObjectId
+          const filterQuery: any = { slug: fp.filterSlug };
+          if (mongoose.Types.ObjectId.isValid(fp.filterSlug)) {
+            filterQuery._id = fp.filterSlug;
           }
-        };
-      }).filter(Boolean);
+          
+          // Try to find filter by slug first, then by ID (for backward compatibility)
+          const foundFilter = await Filter.findOne({
+            $or: [
+              { slug: fp.filterSlug },
+              ...(mongoose.Types.ObjectId.isValid(fp.filterSlug) ? [{ _id: fp.filterSlug }] : [])
+            ]
+          });
 
-      if (filterConditions.length > 0) {
+          if (foundFilter) {
+            // Match products where filters array contains an object with matching id (or slug) and value
+            // Support multiple values (comma-separated)
+            return {
+              filters: {
+                $elemMatch: {
+                  $or: [
+                    { id: foundFilter._id.toString() },
+                    { slug: foundFilter.slug }
+                  ],
+                  value: { $in: fp.values }
+                }
+              }
+            };
+          }
+          // If filter not found, still try to match by slug (in case it's stored in products)
+          return {
+            filters: {
+              $elemMatch: {
+                $or: [
+                  { slug: fp.filterSlug }
+                ],
+                value: { $in: fp.values }
+              }
+            }
+          };
+        })
+      );
+
+      const validConditions = filterConditions.filter(Boolean);
+      if (validConditions.length > 0) {
         // Use $and to ensure ALL filter conditions are met
         if (!query.$and) {
           query.$and = [];
         }
-        query.$and.push(...filterConditions);
+        query.$and.push(...validConditions);
       }
     }
 
@@ -131,28 +165,65 @@ export const createProduct = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'The specified user is not a seller' });
     }
 
-    // Process filters - accept new format { id, value } or old format (just IDs)
+    // Process filters - accept new format { id, value } where id can be filter ID or slug
     if (req.body.filters && Array.isArray(req.body.filters)) {
-      // New format: array of { id, value } objects - keep as is
-      // Old format: array of strings or ObjectIds - convert to new format if needed
-      req.body.filters = req.body.filters.map((filter: any) => {
-        if (typeof filter === 'object' && filter !== null && filter.id && filter.value) {
-          // Already in new format { id, value }
-          return filter;
-        } else if (typeof filter === 'string') {
-          // Old format: "filterId:value" or just "filterId"
-          if (filter.includes(':')) {
-            const [id, value] = filter.split(':');
-            return { id, value };
+      // Convert filter slugs to IDs if needed
+      const processedFilters = await Promise.all(
+        req.body.filters.map(async (filter: any) => {
+          if (typeof filter === 'object' && filter !== null && filter.id && filter.value) {
+            // Already in new format { id, value } - id might be slug or ID
+            // Try to find filter by slug first, then by ID
+            const foundFilter = await Filter.findOne({ 
+              $or: [
+                { slug: filter.id },
+                { _id: filter.id }
+              ]
+            });
+            
+            if (foundFilter) {
+              // Use the filter ID for database storage
+              return { id: foundFilter._id.toString(), value: filter.value };
+            }
+            // If not found, assume it's already an ID and keep as is
+            return filter;
+          } else if (typeof filter === 'string') {
+            // Old format: "filterId:value" or just "filterId"
+            if (filter.includes(':')) {
+              const [id, value] = filter.split(':');
+              // Try to find filter by slug first, then by ID
+              const foundFilter = await Filter.findOne({ 
+                $or: [
+                  { slug: id },
+                  { _id: id }
+                ]
+              });
+              
+              if (foundFilter) {
+                return { id: foundFilter._id.toString(), value: value };
+              }
+              return { id, value };
+            } else {
+              // Just filter ID, no value - convert to new format
+              const foundFilter = await Filter.findOne({ 
+                $or: [
+                  { slug: filter },
+                  { _id: filter }
+                ]
+              });
+              
+              if (foundFilter) {
+                return { id: foundFilter._id.toString(), value: '' };
+              }
+              return { id: filter, value: '' };
+            }
           } else {
-            // Just filter ID, no value - convert to new format
-            return { id: filter, value: '' };
+            // ObjectId or other format - convert to new format
+            return { id: filter.toString(), value: '' };
           }
-        } else {
-          // ObjectId or other format - convert to new format
-          return { id: filter.toString(), value: '' };
-        }
-      });
+        })
+      );
+      
+      req.body.filters = processedFilters;
     }
     
     const product = new Product(req.body);
@@ -209,28 +280,81 @@ export const updateProduct = async (req: Request, res: Response) => {
       }
     }
 
-    // Process filters - accept new format { id, value } or old format (just IDs)
+    // Process filters - accept new format { id, slug, value } where id can be filter ID or slug
     if (req.body.filters && Array.isArray(req.body.filters)) {
-      // New format: array of { id, value } objects - keep as is
-      // Old format: array of strings or ObjectIds - convert to new format if needed
-      req.body.filters = req.body.filters.map((filter: any) => {
-        if (typeof filter === 'object' && filter !== null && filter.id && filter.value) {
-          // Already in new format { id, value }
-          return filter;
-        } else if (typeof filter === 'string') {
-          // Old format: "filterId:value" or just "filterId"
-          if (filter.includes(':')) {
-            const [id, value] = filter.split(':');
-            return { id, value };
+      // Convert filter slugs to IDs if needed, and ensure we have id, slug, and value
+      const processedFilters = await Promise.all(
+        req.body.filters.map(async (filter: any) => {
+          if (typeof filter === 'object' && filter !== null && filter.id && filter.value) {
+            // Already in new format { id, slug?, value } - id might be slug or ID
+            // Try to find filter by slug first, then by ID
+            const foundFilter = await Filter.findOne({ 
+              $or: [
+                { slug: filter.id },
+                { _id: filter.id }
+              ]
+            });
+            
+            if (foundFilter) {
+              // Use the filter ID and slug for database storage
+              return { 
+                id: foundFilter._id.toString(), 
+                slug: foundFilter.slug,
+                value: filter.value 
+              };
+            }
+            // If not found but has slug, use it
+            if (filter.slug) {
+              return filter;
+            }
+            // If not found, assume it's already an ID and keep as is
+            return filter;
+          } else if (typeof filter === 'string') {
+            // Old format: "filterId:value" or just "filterId"
+            if (filter.includes(':')) {
+              const [id, value] = filter.split(':');
+              // Try to find filter by slug first, then by ID
+              const foundFilter = await Filter.findOne({ 
+                $or: [
+                  { slug: id },
+                  { _id: id }
+                ]
+              });
+              
+              if (foundFilter) {
+                return { 
+                  id: foundFilter._id.toString(), 
+                  slug: foundFilter.slug,
+                  value: value 
+                };
+              }
+              return { id, value };
+            } else {
+              // Just filter ID, no value - convert to new format
+              const foundFilter = await Filter.findOne({ 
+                $or: [
+                  { slug: filter },
+                  { _id: filter }
+                ]
+              });
+              
+              if (foundFilter) {
+                return { 
+                  id: foundFilter._id.toString(), 
+                  slug: foundFilter.slug,
+                  value: '' 
+                };
+              }
+              return { id: filter, value: '' };
+            }
           } else {
-            // Just filter ID, no value - convert to new format
-            return { id: filter, value: '' };
+            // ObjectId or other format - convert to new format
+            return { id: filter.toString(), value: '' };
           }
-        } else {
-          // ObjectId or other format - convert to new format
-          return { id: filter.toString(), value: '' };
-        }
-      });
+        })
+      );
+      
+      req.body.filters = processedFilters;
     }
     
     const product = await Product.findByIdAndUpdate(

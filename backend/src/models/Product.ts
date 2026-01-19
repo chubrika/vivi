@@ -30,7 +30,7 @@ export interface IProduct extends Document {
   images: string[];
   isActive: boolean;
   productFeatureValues: IFeatureGroup[];
-  filters: Array<IFilter['_id'] | { id: string; value: string }>;
+  filters: Array<IFilter['_id'] | { id: string; slug?: string; value: string }>;
   discountedPercent?: number;
   discountStartDate?: Date;
   discountEndDate?: Date;
