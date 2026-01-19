@@ -626,7 +626,9 @@ function ProductsPageContent() {
       {/* Mobile Header with Filter Button - Only visible on mobile */}
       <div className="lg:hidden bg-white shadow-sm border-b">
         <div className="flex items-center justify-between p-4">
-          <h1 className="text-sm md:text-lg font-semibold text-gray-900">პროდუქტები</h1>
+          <h1 className="text-sm md:text-lg font-semibold text-gray-900">
+            პროდუქტები
+          </h1>
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="flex items-center space-x-2 px-3 py-2 text-sky-600 rounded-md font-semibold transition-colors"
@@ -676,13 +678,11 @@ function ProductsPageContent() {
             selectedCategorySlug={selectedCategory}
           />
 
-          <h2 className="text-lg font-semibold text-gray-900 pl-4 pr-4 lg:pl-6 lg:pr-6">
-            ფილტრი
-          </h2>
-          <div className="h-full overflow-y-auto p-4 lg:p-6 ">
-            {/* Mobile Close Button - Only visible on mobile */}\
+          <h2 className="text-[14px] font-semibold text-gray-900 hidden md:block">ფილტრი</h2>
+          <div className="h-full overflow-y-auto md:pt-4 pt-0">
+            {/* Mobile Close Button - Only visible on mobile */}
             <div className="flex items-center justify-between lg:hidden">
-              <h2 className="text-lg font-semibold text-gray-900">ფილტრი</h2>
+              <h2 className="text-[14px] pl-4 font-semibold text-gray-900">ფილტრი</h2>
               <button
                 onClick={() => setIsSidebarOpen(false)}
                 className="p-2 text-gray-500 hover:text-gray-700"
@@ -702,62 +702,59 @@ function ProductsPageContent() {
                 </svg>
               </button>
             </div>
-            {/* Price Filter - Always visible */}
-            <div className="bg-white rounded-lg shadow-sm mb-4 p-4 border">
-              <h3 className="text-sm font-medium text-gray-900 mb-4">ფასი</h3>
-              <div className="space-y-4">
-                {/* Price Range Slider */}
-                <RangeSlider
-                  min={minPrice}
-                  max={maxPrice}
-                  value={priceRange}
-                  onChange={handleRangeSliderChange}
-                  onMouseUp={handleRangeSliderMouseUp}
-                />
-
-                {/* Price Inputs */}
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      type="number"
-                      name="minPrice"
-                      value={minPriceInput}
-                      onChange={handlePriceInputChange}
-                      onBlur={handlePriceInputBlur}
-                      onKeyDown={handlePriceInputKeyDown}
-                      className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      placeholder="მინ"
-                      min={minPrice}
-                      max={maxPrice}
-                    />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
-                      ₾
-                    </span>
-                  </div>
-                  <span className="text-gray-500">-</span>
-                  <div className="relative flex-1">
-                    <input
-                      type="number"
-                      name="maxPrice"
-                      value={maxPriceInput}
-                      onChange={handlePriceInputChange}
-                      onBlur={handlePriceInputBlur}
-                      onKeyDown={handlePriceInputKeyDown}
-                      className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      placeholder="მაქს"
-                      min={minPrice}
-                      max={maxPrice}
-                    />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
-                      ₾
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
             {/* Filters section */}
             {filters.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-4 border">
+                <h3 className="text-sm font-medium text-gray-900 mb-4">ფასი</h3>
+                <div className="space-y-4 pb-4 border-b border-gray-200 ">
+                  {/* Price Range Slider */}
+                  <RangeSlider
+                    min={minPrice}
+                    max={maxPrice}
+                    value={priceRange}
+                    onChange={handleRangeSliderChange}
+                    onMouseUp={handleRangeSliderMouseUp}
+                  />
+
+                  {/* Price Inputs */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="number"
+                        name="minPrice"
+                        value={minPriceInput}
+                        onChange={handlePriceInputChange}
+                        onBlur={handlePriceInputBlur}
+                        onKeyDown={handlePriceInputKeyDown}
+                        className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        placeholder="მინ"
+                        min={minPrice}
+                        max={maxPrice}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                        ₾
+                      </span>
+                    </div>
+                    <span className="text-gray-500">-</span>
+                    <div className="relative flex-1">
+                      <input
+                        type="number"
+                        name="maxPrice"
+                        value={maxPriceInput}
+                        onChange={handlePriceInputChange}
+                        onBlur={handlePriceInputBlur}
+                        onKeyDown={handlePriceInputKeyDown}
+                        className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        placeholder="მაქს"
+                        min={minPrice}
+                        max={maxPrice}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                        ₾
+                      </span>
+                    </div>
+                  </div>
+                </div>
                 {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">ფილტრები</h3> */}
                 <div>
                   {filtersLoading ? (

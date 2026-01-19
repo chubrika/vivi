@@ -4,6 +4,7 @@ import { getToken } from '../utils/authContext';
 export interface Filter {
   _id: string;
   name: string;
+  slug: string;
   description: string;
   category: {
     _id: string;
@@ -25,6 +26,7 @@ export interface Filter {
 
 export interface CreateFilterData {
   name: string;
+  slug: string;
   description: string;
   category: string;
   type: 'select' | 'range' | 'color' | 'boolean';
@@ -40,6 +42,7 @@ export interface CreateFilterData {
 
 export interface UpdateFilterData {
   name?: string;
+  slug?: string;
   description?: string;
   category?: string;
   type?: 'select' | 'range' | 'color' | 'boolean';

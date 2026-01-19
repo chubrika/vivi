@@ -5,10 +5,11 @@ import Category from '../models/Category';
 // Create a new filter
 export const createFilter = async (req: Request, res: Response) => {
   try {
-    const { name, description, category, type, config } = req.body;
+    const { name, slug, description, category, type, config } = req.body;
 
     const filter = await Filter.create({
       name,
+      slug,
       description,
       category,
       type,
@@ -72,11 +73,11 @@ export const getFilterById = async (req: Request, res: Response) => {
 // Update a filter
 export const updateFilter = async (req: Request, res: Response) => {
   try {
-    const { name, description, category, type, config, isActive } = req.body;
+    const { name, slug, description, category, type, config, isActive } = req.body;
     
     const filter = await Filter.findByIdAndUpdate(
       req.params.id,
-      { name, description, category, type, config, isActive },
+      { name, slug, description, category, type, config, isActive },
       { new: true, runValidators: true }
     ).populate('category', 'name');
     

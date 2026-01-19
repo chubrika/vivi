@@ -15,7 +15,27 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+      setIsMounted(false);
+    } else if (shouldRender) {
+      // Start closing animation - trigger fade out
+      setIsClosing(true);
+      setIsMounted(false);
+      // Hide after animation completes
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 500); // Match the animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, shouldRender]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -26,13 +46,17 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
+        // Trigger animation after content is loaded
+        if (isOpen && !isClosing) {
+          setTimeout(() => setIsMounted(true), 10);
+        }
       }
     };
 
-    if (isOpen) {
+    if (isOpen && shouldRender) {
       fetchCategories();
     }
-  }, [isOpen]);
+  }, [isOpen, shouldRender, isClosing]);
 
   const handleCategoryClick = (category: Category) => {
     if (category.children && category.children.length > 0) {
@@ -63,7 +87,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
     );
   };
 
-  if (!isOpen) return null;
+  if (!shouldRender) return null;
 
   return (
     <div className="absolute top-0 md:top-[80px] inset-0 z-50 bg-white border-t border-gray-200 w-full">
@@ -72,7 +96,11 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
       ) : error ? (
         <div className="text-red-500 text-center py-8">{error}</div>
       ) : (
-        <div className="container mx-auto px-4 py-8 border border-gray-200 border-t-0 bg-white shadow-sm rounded-[10px]">
+        <div className={`container md:h-auto h-[100vh] mx-auto px-4 py-8 border border-gray-200 border-t-0 bg-white shadow-sm rounded-[10px] transition-all duration-500 ease-out ${
+          isMounted && !isClosing
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 -translate-y-8'
+        }`}>
           {/* Desktop Layout */}
           <div className="hidden md:flex gap-8">
             {/* Left: Main Categories */}

@@ -11,6 +11,7 @@ type FilterType = 'select' | 'range' | 'color' | 'boolean';
 
 interface FormData {
   name: string;
+  slug: string;
   description: string;
   category: string;
   type: FilterType;
@@ -33,6 +34,7 @@ const FiltersPage = () => {
   const [selectedFilter, setSelectedFilter] = useState<Filter | undefined>(undefined);
   const [formData, setFormData] = useState<FormData>({
     name: '',
+    slug: '',
     description: '',
     category: '',
     type: 'select',
@@ -77,6 +79,7 @@ const FiltersPage = () => {
       setSelectedFilter(filter);
       setFormData({
         name: filter.name,
+        slug: filter.slug,
         description: filter.description,
         category: filter.category._id,
         type: filter.type,
@@ -86,6 +89,7 @@ const FiltersPage = () => {
       setSelectedFilter(undefined);
       setFormData({
         name: '',
+        slug: '',
         description: '',
         category: '',
         type: 'select',
@@ -105,6 +109,7 @@ const FiltersPage = () => {
     setSelectedFilter(undefined);
     setFormData({
       name: '',
+      slug: '',
       description: '',
       category: '',
       type: 'select',
@@ -126,6 +131,7 @@ const FiltersPage = () => {
         // Update existing filter
         const updateData: UpdateFilterData = {
           name: formData.name,
+          slug: formData.slug,
           description: formData.description,
           category: formData.category,
           type: formData.type,
@@ -136,6 +142,7 @@ const FiltersPage = () => {
         // Create new filter
         const createData: CreateFilterData = {
           name: formData.name,
+          slug: formData.slug,
           description: formData.description,
           category: formData.category,
           type: formData.type,
@@ -346,6 +353,20 @@ const FiltersPage = () => {
                   />
                 </div>
 
+                <div>
+                  <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
+                    Slug
+                  </label>
+                  <input
+                    type="text"
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
+                    required
+                    placeholder="filter-slug"
+                  />
+                </div>
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                     Description
