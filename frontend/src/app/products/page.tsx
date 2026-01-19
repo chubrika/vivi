@@ -89,9 +89,9 @@ function ProductsPageContent() {
           params.append("category", category);
         }
 
-        // Add all filter parameters
+        // Add all filter parameters (using slugs)
         searchParams.forEach((value, key) => {
-          const filter = filters.find((f) => f._id === key);
+          const filter = filters.find((f) => f.slug === key);
           if (filter) {
             params.append(key, value);
           }
@@ -241,6 +241,7 @@ function ProductsPageContent() {
     return [
       {
         _id: "filter-category",
+        slug: "filter-category",
         name: "Category Filter",
         description: "Filter by category",
         category: firstCategory,
@@ -254,6 +255,7 @@ function ProductsPageContent() {
       },
       {
         _id: "filter-color",
+        slug: "filter-color",
         name: "Color Filter",
         description: "Filter by color",
         category: firstCategory,
@@ -382,9 +384,9 @@ function ProductsPageContent() {
         params.append("filter", selectedFilter);
       }
 
-      // Add all filter parameters from URL
+      // Add all filter parameters from URL (using slugs)
       searchParams.forEach((value, key) => {
-        const filter = filters.find((f) => f._id === key);
+        const filter = filters.find((f) => f.slug === key);
         if (filter) {
           params.append(key, value);
         }
@@ -477,12 +479,12 @@ function ProductsPageContent() {
     setIsSidebarOpen(false);
   };
 
-  const handleFilterSelect = async (filterId: string | null) => {
-    // Update URL with selected filter
+  const handleFilterSelect = async (filterSlug: string | null) => {
+    // Update URL with selected filter (using slug)
     const params = new URLSearchParams(searchParams.toString());
 
-    if (filterId) {
-      params.set("filter", filterId);
+    if (filterSlug) {
+      params.set("filter", filterSlug);
     } else {
       params.delete("filter");
     }
@@ -496,38 +498,38 @@ function ProductsPageContent() {
     router.push(`/products?${params.toString()}`, { scroll: false });
   };
 
-  const toggleFilterExpansion = (filterId: string) => {
+  const toggleFilterExpansion = (filterSlug: string) => {
     setExpandedFilters((prev) => ({
       ...prev,
-      [filterId]: !prev[filterId],
+      [filterSlug]: !prev[filterSlug],
     }));
   };
 
   // Add new handlers for color and option selection
-  const handleColorSelect = async (filterId: string, color: string) => {
+  const handleColorSelect = async (filterSlug: string, color: string) => {
     setSelectedColors((prev) => {
-      const currentColors = prev[filterId] || [];
+      const currentColors = prev[filterSlug] || [];
       const newColors = currentColors.includes(color)
         ? currentColors.filter((c) => c !== color)
         : [...currentColors, color];
 
       return {
         ...prev,
-        [filterId]: newColors,
+        [filterSlug]: newColors,
       };
     });
 
-    // Update URL parameters
+    // Update URL parameters (using slug)
     const params = new URLSearchParams(searchParams.toString());
-    const currentColors = selectedColors[filterId] || [];
+    const currentColors = selectedColors[filterSlug] || [];
     const newColors = currentColors.includes(color)
       ? currentColors.filter((c) => c !== color)
       : [...currentColors, color];
 
     if (newColors.length > 0) {
-      params.set(filterId, newColors.join(","));
+      params.set(filterSlug, newColors.join(","));
     } else {
-      params.delete(filterId);
+      params.delete(filterSlug);
     }
 
     // Preserve other parameters
@@ -540,30 +542,30 @@ function ProductsPageContent() {
     router.push(`/products?${params.toString()}`, { scroll: false });
   };
 
-  const handleOptionSelect = async (filterId: string, option: string) => {
+  const handleOptionSelect = async (filterSlug: string, option: string) => {
     setSelectedOptions((prev) => {
-      const currentOptions = prev[filterId] || [];
+      const currentOptions = prev[filterSlug] || [];
       const newOptions = currentOptions.includes(option)
         ? currentOptions.filter((o) => o !== option)
         : [...currentOptions, option];
 
       return {
         ...prev,
-        [filterId]: newOptions,
+        [filterSlug]: newOptions,
       };
     });
 
-    // Update URL parameters
+    // Update URL parameters (using slug)
     const params = new URLSearchParams(searchParams.toString());
-    const currentOptions = selectedOptions[filterId] || [];
+    const currentOptions = selectedOptions[filterSlug] || [];
     const newOptions = currentOptions.includes(option)
       ? currentOptions.filter((o) => o !== option)
       : [...currentOptions, option];
 
     if (newOptions.length > 0) {
-      params.set(filterId, newOptions.join(","));
+      params.set(filterSlug, newOptions.join(","));
     } else {
-      params.delete(filterId);
+      params.delete(filterSlug);
     }
 
     // Preserve other parameters
@@ -584,10 +586,10 @@ function ProductsPageContent() {
     setSelectedColors({});
     setSelectedOptions({});
 
-    // Process all parameters
+    // Process all parameters (using slugs)
     params.forEach((value, key) => {
-      // Find the filter to determine its type
-      const filter = filters.find((f) => f._id === key);
+      // Find the filter to determine its type (by slug)
+      const filter = filters.find((f) => f.slug === key);
       if (filter) {
         const values = value.split(",");
         if (filter.type === "color") {
@@ -604,6 +606,32 @@ function ProductsPageContent() {
       }
     });
   }, [searchParams, filters]);
+
+  // Clear all filters function
+  const handleClearAllFilters = async () => {
+    // Reset all filter states
+    setSelectedFilter(null);
+    setSelectedColors({});
+    setSelectedOptions({});
+    setPriceRange([minPrice, maxPrice]);
+    setMinPriceInput(minPrice.toString());
+    setMaxPriceInput(maxPrice.toString());
+
+    // Create new URL params, preserving category and product ID
+    const params = new URLSearchParams();
+    const category = searchParams.get("category");
+    if (category) {
+      params.set("category", category);
+    }
+    const productId = searchParams.get("product");
+    if (productId) {
+      params.set("product", productId);
+    }
+
+    // Navigate to clean URL
+    const queryString = params.toString();
+    router.push(queryString ? `/products?${queryString}` : "/products", { scroll: false });
+  };
 
   if (initialLoading) {
     return (
@@ -626,7 +654,9 @@ function ProductsPageContent() {
       {/* Mobile Header with Filter Button - Only visible on mobile */}
       <div className="lg:hidden bg-white shadow-sm border-b">
         <div className="flex items-center justify-between p-4">
-          <h1 className="text-sm md:text-lg font-semibold text-gray-900">პროდუქტები</h1>
+          <h1 className="text-sm md:text-lg font-semibold text-gray-900">
+            პროდუქტები
+          </h1>
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="flex items-center space-x-2 px-3 py-2 text-sky-600 rounded-md font-semibold transition-colors"
@@ -676,13 +706,11 @@ function ProductsPageContent() {
             selectedCategorySlug={selectedCategory}
           />
 
-          <h2 className="text-lg font-semibold text-gray-900 pl-4 pr-4 lg:pl-6 lg:pr-6">
-            ფილტრი
-          </h2>
-          <div className="h-full overflow-y-auto p-4 lg:p-6 ">
-            {/* Mobile Close Button - Only visible on mobile */}\
+          <h2 className="text-[14px] font-semibold text-gray-900 hidden md:block">ფილტრი</h2>
+          <div className="h-full overflow-y-auto md:pt-4 pt-0">
+            {/* Mobile Close Button - Only visible on mobile */}
             <div className="flex items-center justify-between lg:hidden">
-              <h2 className="text-lg font-semibold text-gray-900">ფილტრი</h2>
+              <h2 className="text-[14px] pl-4 font-semibold text-gray-900">ფილტრი</h2>
               <button
                 onClick={() => setIsSidebarOpen(false)}
                 className="p-2 text-gray-500 hover:text-gray-700"
@@ -702,62 +730,59 @@ function ProductsPageContent() {
                 </svg>
               </button>
             </div>
-            {/* Price Filter - Always visible */}
-            <div className="bg-white rounded-lg shadow-sm mb-4 p-4 border">
-              <h3 className="text-sm font-medium text-gray-900 mb-4">ფასი</h3>
-              <div className="space-y-4">
-                {/* Price Range Slider */}
-                <RangeSlider
-                  min={minPrice}
-                  max={maxPrice}
-                  value={priceRange}
-                  onChange={handleRangeSliderChange}
-                  onMouseUp={handleRangeSliderMouseUp}
-                />
-
-                {/* Price Inputs */}
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      type="number"
-                      name="minPrice"
-                      value={minPriceInput}
-                      onChange={handlePriceInputChange}
-                      onBlur={handlePriceInputBlur}
-                      onKeyDown={handlePriceInputKeyDown}
-                      className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      placeholder="მინ"
-                      min={minPrice}
-                      max={maxPrice}
-                    />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
-                      ₾
-                    </span>
-                  </div>
-                  <span className="text-gray-500">-</span>
-                  <div className="relative flex-1">
-                    <input
-                      type="number"
-                      name="maxPrice"
-                      value={maxPriceInput}
-                      onChange={handlePriceInputChange}
-                      onBlur={handlePriceInputBlur}
-                      onKeyDown={handlePriceInputKeyDown}
-                      className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      placeholder="მაქს"
-                      min={minPrice}
-                      max={maxPrice}
-                    />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
-                      ₾
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
             {/* Filters section */}
             {filters.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-4 border">
+                <h3 className="text-sm font-medium text-gray-900 mb-4">ფასი</h3>
+                <div className="space-y-4 pb-4 border-b border-gray-200 ">
+                  {/* Price Range Slider */}
+                  <RangeSlider
+                    min={minPrice}
+                    max={maxPrice}
+                    value={priceRange}
+                    onChange={handleRangeSliderChange}
+                    onMouseUp={handleRangeSliderMouseUp}
+                  />
+
+                  {/* Price Inputs */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="number"
+                        name="minPrice"
+                        value={minPriceInput}
+                        onChange={handlePriceInputChange}
+                        onBlur={handlePriceInputBlur}
+                        onKeyDown={handlePriceInputKeyDown}
+                        className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        placeholder="მინ"
+                        min={minPrice}
+                        max={maxPrice}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                        ₾
+                      </span>
+                    </div>
+                    <span className="text-gray-500">-</span>
+                    <div className="relative flex-1">
+                      <input
+                        type="number"
+                        name="maxPrice"
+                        value={maxPriceInput}
+                        onChange={handlePriceInputChange}
+                        onBlur={handlePriceInputBlur}
+                        onKeyDown={handlePriceInputKeyDown}
+                        className="w-full text-[18px] font-semibold text-gray-900 px-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        placeholder="მაქს"
+                        min={minPrice}
+                        max={maxPrice}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
+                        ₾
+                      </span>
+                    </div>
+                  </div>
+                </div>
                 {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">ფილტრები</h3> */}
                 <div>
                   {filtersLoading ? (
@@ -773,7 +798,7 @@ function ProductsPageContent() {
                         className="border-b border-gray-200 overflow-hidden"
                       >
                         <button
-                          onClick={() => toggleFilterExpansion(filter._id)}
+                          onClick={() => toggleFilterExpansion(filter.slug)}
                           className="w-full flex items-center justify-between pt-3 pb-3 hover:bg-gray-50 transition-colors"
                         >
                           <h3 className="text-sm font-medium text-gray-900">
@@ -781,7 +806,7 @@ function ProductsPageContent() {
                           </h3>
                           <svg
                             className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${
-                              expandedFilters[filter._id] ? "rotate-180" : ""
+                              expandedFilters[filter.slug] ? "rotate-180" : ""
                             }`}
                             fill="none"
                             viewBox="0 0 24 24"
@@ -797,7 +822,7 @@ function ProductsPageContent() {
                         </button>
                         <div
                           className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                            expandedFilters[filter._id]
+                            expandedFilters[filter.slug]
                               ? "max-h-96 opacity-100"
                               : "max-h-0 opacity-0"
                           }`}
@@ -810,7 +835,7 @@ function ProductsPageContent() {
                                     <button
                                       key={color}
                                       className={`w-8 h-8 rounded-full cursor-pointer border-2 transition-colors ${
-                                        selectedColors[filter._id]?.includes(
+                                        selectedColors[filter.slug]?.includes(
                                           color
                                         )
                                           ? "border-sky-500"
@@ -820,7 +845,7 @@ function ProductsPageContent() {
                                       title={color}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleColorSelect(filter._id, color);
+                                        handleColorSelect(filter.slug, color);
                                       }}
                                     />
                                   ))}
@@ -836,23 +861,23 @@ function ProductsPageContent() {
                                     >
                                       <input
                                         type="checkbox"
-                                        id={`${filter._id}-${option}`}
+                                        id={`${filter.slug}-${option}`}
                                         checked={
-                                          selectedOptions[filter._id]?.includes(
+                                          selectedOptions[filter.slug]?.includes(
                                             option
                                           ) || false
                                         }
                                         onChange={(e) => {
                                           e.stopPropagation();
                                           handleOptionSelect(
-                                            filter._id,
+                                            filter.slug,
                                             option
                                           );
                                         }}
                                         className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
                                       />
                                       <label
-                                        htmlFor={`${filter._id}-${option}`}
+                                        htmlFor={`${filter.slug}-${option}`}
                                         className="ml-2 block text-sm text-gray-700 cursor-pointer"
                                       >
                                         {option}
@@ -880,7 +905,7 @@ function ProductsPageContent() {
               <div className="mb-4 flex items-center flex-wrap gap-2">
                 <span className="text-sm text-gray-600">Filtered by:</span>
                 <span className="px-3 py-1 bg-sky-100 text-sky-800 rounded-full text-sm">
-                  {filters.find((f) => f._id === selectedFilter)?.name ||
+                  {filters.find((f) => f.slug === selectedFilter)?.name ||
                     "Filter"}
                 </span>
                 <button
@@ -979,17 +1004,12 @@ function ProductsPageContent() {
                 ))
               ) : (
                 <div className="col-span-full text-center py-12">
-                  <p className="text-gray-500 text-lg">
-                    პროდუქტები არ მოიძებნა
+                  <p className="text-gray-500 text-[16px] font-semibold">
+                  მითითებული მონაცემებით პროდუქტები ვერ მოიძებნა, სცადე მოგვიანებით ან გაასუფთავე ფილტრი
                   </p>
                   <button
-                    onClick={() => {
-                      handleFilterSelect(null);
-                      setPriceRange([minPrice, maxPrice]);
-                      setMinPriceInput(minPrice.toString());
-                      setMaxPriceInput(maxPrice.toString());
-                    }}
-                    className="mt-4 px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
+                    onClick={handleClearAllFilters}
+                    className="mt-4 px-4 py-2 border border-gray-300 text-gray-600 rounded-md hover:bg-sky-100 transition-colors"
                   >
                     ფილტრის გასუფთავება
                   </button>

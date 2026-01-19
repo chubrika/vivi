@@ -4,6 +4,7 @@ import { getToken } from '../utils/authContext';
 export interface Filter {
   _id: string;
   name: string;
+  slug: string;
   description: string;
   category: {
     _id: string;
@@ -25,6 +26,7 @@ export interface Filter {
 
 export interface CreateFilterData {
   name: string;
+  slug: string;
   description: string;
   category: string;
   type: 'select' | 'range' | 'color' | 'boolean';
@@ -40,6 +42,7 @@ export interface CreateFilterData {
 
 export interface UpdateFilterData {
   name?: string;
+  slug?: string;
   description?: string;
   category?: string;
   type?: 'select' | 'range' | 'color' | 'boolean';
@@ -91,17 +94,17 @@ export const filtersService = {
   },
 
   /**
-   * Get a filter by ID
-   * @param id Filter ID
+   * Get a filter by ID or slug
+   * @param idOrSlug Filter ID or slug
    * @returns Promise<Filter> Filter object
    */
-  async getFilterById(id: string): Promise<Filter> {
+  async getFilterById(idOrSlug: string): Promise<Filter> {
     const token = getToken();
     if (!token) {
       throw new Error('Authentication required');
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/filters/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/filters/${idOrSlug}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -119,20 +122,23 @@ export const filtersService = {
   },
 
   /**
+   * Get a filter by slug
+   * @param slug Filter slug
+   * @returns Promise<Filter> Filter object
+   */
+  async getFilterBySlug(slug: string): Promise<Filter> {
+    return this.getFilterById(slug);
+  },
+
+  /**
    * Get filters by category slug
    * @param categorySlug Category slug
    * @returns Promise<Filter[]> Array of filters for the specified category
    */
   async getFiltersByCategory(categorySlug: string): Promise<Filter[]> {
-    const token = getToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     const response = await fetch(`${API_BASE_URL}/api/filters?category=${categorySlug}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
@@ -151,15 +157,9 @@ export const filtersService = {
    * @returns Promise<Filter[]> Array of active filters
    */
   async getActiveFilters(): Promise<Filter[]> {
-    const token = getToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     const response = await fetch(`${API_BASE_URL}/api/filters?isActive=true`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });

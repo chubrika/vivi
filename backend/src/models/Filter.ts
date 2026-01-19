@@ -3,6 +3,7 @@ import { ICategory } from './Category';
 
 export interface IFilter extends Document {
   name: string;
+  slug: string;
   description?: string;
   category: mongoose.Types.ObjectId;
   type: string;
@@ -24,6 +25,12 @@ const filterSchema = new Schema<IFilter>(
     name: {
       type: String,
       required: [true, 'Filter name is required'],
+      trim: true,
+    },
+    slug: {
+      type: String,
+      required: [true, 'Filter slug is required'],
+      unique: true,
       trim: true,
     },
     description: {
@@ -63,6 +70,7 @@ const filterSchema = new Schema<IFilter>(
 
 // Create indexes for better query performance
 filterSchema.index({ name: 1 });
+filterSchema.index({ slug: 1 });
 filterSchema.index({ category: 1 });
 filterSchema.index({ isActive: 1 });
 

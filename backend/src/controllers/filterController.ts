@@ -5,10 +5,11 @@ import Category from '../models/Category';
 // Create a new filter
 export const createFilter = async (req: Request, res: Response) => {
   try {
-    const { name, description, category, type, config } = req.body;
+    const { name, slug, description, category, type, config } = req.body;
 
     const filter = await Filter.create({
       name,
+      slug,
       description,
       category,
       type,
@@ -38,6 +39,11 @@ export const getAllFilters = async (req: Request, res: Response) => {
       }
     }
     
+    // Add isActive filter if provided
+    if (req.query.isActive !== undefined) {
+      query.isActive = req.query.isActive === 'true';
+    }
+    
     const filters = await Filter.find(query)
       .populate('category', 'name slug')
       .sort({ createdAt: -1 });
@@ -48,11 +54,20 @@ export const getAllFilters = async (req: Request, res: Response) => {
   }
 };
 
-// Get a single filter by ID
+// Get a single filter by ID or slug
 export const getFilterById = async (req: Request, res: Response) => {
   try {
-    const filter = await Filter.findById(req.params.id)
-      .populate('category', 'name');
+    const { id } = req.params;
+    
+    // Try to find by ID first, then by slug
+    let filter = await Filter.findById(id)
+      .populate('category', 'name slug');
+    
+    if (!filter) {
+      // If not found by ID, try to find by slug
+      filter = await Filter.findOne({ slug: id })
+        .populate('category', 'name slug');
+    }
       
     if (!filter) {
       return res.status(404).json({ message: 'Filter not found' });
@@ -67,11 +82,11 @@ export const getFilterById = async (req: Request, res: Response) => {
 // Update a filter
 export const updateFilter = async (req: Request, res: Response) => {
   try {
-    const { name, description, category, type, config, isActive } = req.body;
+    const { name, slug, description, category, type, config, isActive } = req.body;
     
     const filter = await Filter.findByIdAndUpdate(
       req.params.id,
-      { name, description, category, type, config, isActive },
+      { name, slug, description, category, type, config, isActive },
       { new: true, runValidators: true }
     ).populate('category', 'name');
     

@@ -281,10 +281,10 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         const syncedFilters: string[] = [];
         
         filters.forEach(filter => {
-          // Use filter ID as key (not filter name)
-          const value = filterValues[filter._id];
+          // Use filter slug as key (not filter ID)
+          const value = filterValues[filter.slug];
           if (value) {
-            syncedFilters.push(`${filter._id}:${value}`);
+            syncedFilters.push(`${filter.slug}:${value}`);
           }
         });
         
@@ -327,24 +327,44 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
       }
       
       // Extract filter values from product filters array
-      // Filters array contains objects with { id, value } or just filter IDs
+      // Filters array contains objects with { id, slug?, value } where id can be filter ID or slug
       const extractedFilterValues: Record<string, string> = {};
       if (product && (product as any).filters) {
         const productFilters = (product as any).filters;
         if (Array.isArray(productFilters)) {
           productFilters.forEach((filterItem: any) => {
-            // Handle both formats: { id: '...', value: '...' } or just string ID
+            // Handle both formats: { id: '...', slug?: '...', value: '...' } or just string ID
             if (typeof filterItem === 'object' && filterItem !== null) {
               if (filterItem.id && filterItem.value) {
-                // New format: { id, value }
-                extractedFilterValues[filterItem.id] = filterItem.value;
+                // New format: { id, slug?, value } - id might be ID or slug
+                // If slug is provided, use it directly; otherwise find the filter by ID or slug
+                if (filterItem.slug) {
+                  extractedFilterValues[filterItem.slug] = filterItem.value;
+                } else {
+                  // Find the filter by ID or slug to get the slug
+                  const filter = filters.find(f => f._id === filterItem.id || f.slug === filterItem.id);
+                  if (filter) {
+                    extractedFilterValues[filter.slug] = filterItem.value;
+                  } else {
+                    // Fallback: use the id as-is (might be slug already)
+                    extractedFilterValues[filterItem.id] = filterItem.value;
+                  }
+                }
               } else if (filterItem._id) {
-                // Populated filter object - check if value is stored elsewhere
-                // For now, we'll need to get value from productFeatureValues or other source
+                // Populated filter object - find by ID to get slug
+                const filter = filters.find(f => f._id === filterItem._id);
+                if (filter) {
+                  // Value might be in productFeatureValues or other source
+                  // We'll handle this in the sync logic
+                }
               }
             } else if (typeof filterItem === 'string') {
               // Old format: just filter ID, value might be in productFeatureValues
-              // We'll handle this in the sync logic
+              // Find filter by ID to get slug
+              const filter = filters.find(f => f._id === filterItem);
+              if (filter) {
+                // We'll handle this in the sync logic
+              }
             }
           });
         }
@@ -397,16 +417,24 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
     setError(null);
 
     try {
-      // Prepare filters array with id and value
+      // Prepare filters array with id, slug, and value
       const filtersArray = selectedFilters
         .map(filterStr => {
-          const [filterId, value] = filterStr.split(':');
+          const [filterSlug, value] = filterStr.split(':');
           if (value) {
-            return { id: filterId, value: value };
+            // Find filter by slug to get id and slug
+            const filter = filters.find(f => f.slug === filterSlug);
+            if (filter) {
+              return { 
+                id: filter._id, 
+                slug: filter.slug, 
+                value: value 
+              };
+            }
           }
           return null;
         })
-        .filter((f): f is { id: string; value: string } => f !== null);
+        .filter((f): f is { id: string; slug: string; value: string } => f !== null);
 
       // Build product data with filter values stored in filters array
       const productData: any = {
@@ -713,23 +741,23 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                     </label>
                     <FilterInput
                       filter={filter}
-                      value={selectedFilters.find(f => f.startsWith(`${filter._id}:`))?.split(':')[1] || ''}
+                      value={selectedFilters.find(f => f.startsWith(`${filter.slug}:`))?.split(':')[1] || ''}
                       onChange={(newValue) => {
-                        // Update selectedFilters for UI state
-                        const newFilters = selectedFilters.filter(f => !f.startsWith(`${filter._id}:`));
+                        // Update selectedFilters for UI state (using slug)
+                        const newFilters = selectedFilters.filter(f => !f.startsWith(`${filter.slug}:`));
                         if (newValue) {
-                          newFilters.push(`${filter._id}:${newValue}`);
+                          newFilters.push(`${filter.slug}:${newValue}`);
                         }
                         setSelectedFilters(newFilters);
                         
-                        // Update filterValues for product data (using filter ID as key)
+                        // Update filterValues for product data (using filter slug as key)
                         setFilterValues(prev => {
                           const updated = { ...prev };
                           if (newValue) {
-                            updated[filter._id] = newValue;
+                            updated[filter.slug] = newValue;
                           } else {
                             // Remove filter value if cleared
-                            delete updated[filter._id];
+                            delete updated[filter.slug];
                           }
                           return updated;
                         });
