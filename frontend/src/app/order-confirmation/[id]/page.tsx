@@ -89,17 +89,17 @@ export default function OrderConfirmationPage() {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="max-w-2xl mx-auto">
-                <div className="bg-white p-8 rounded-xl shadow-lg">
-                    <div className="text-center mb-8">
-                        <svg className="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white md:p-8 p-4 rounded-xl shadow-lg">
+                    <div className="text-center mb-4 md:mb-8">
+                        <svg className="w-12 h-12 md:w-16 md:h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        <h1 className="text-2xl font-semibold text-gray-800 mb-2">შეკვეთა წარმატებით შესრულდა</h1>
-                        <p className="text-gray-600">შეკვეთის ნომერი: #{order.orderId}</p>
+                        <h1 className="text-[16px] md:text-2xl font-semibold text-gray-800 mb-2">შეკვეთა წარმატებით შესრულდა</h1>
+                        <p className="text-gray-600 text-[14px] md:text-base">შეკვეთის ნომერი: <span className="font-semibold">#{order.orderId}</span></p>
                     </div>
 
-                    <div className="border-t border-b border-gray-200 py-6 mb-6">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-4">შეკვეთის დეტალები</h2>
+                    <div className="border-t border-b border-gray-200 md:py-6 py-4 md:mb-6 mb-4">
+                        <h2 className="text-[16px] md:text-lg font-semibold text-gray-800 mb-4">შეკვეთის დეტალები</h2>
                         <div className="space-y-4">
                             {order.items.map((item, index) => (
                                 <div key={index} className="flex items-center justify-between">
@@ -108,11 +108,11 @@ export default function OrderConfirmationPage() {
                                             <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg mr-4" />
                                         )}
                                         <div>
-                                            <h3 className="text-gray-800 font-medium">{item.name}</h3>
-                                            <p className="text-gray-600">რაოდენობა: {item.quantity}</p>
+                                            <h3 className="text-gray-800 text-[14px] md:text-base font-medium">{item.name}</h3>
+                                            <p className="text-gray-600 text-[14px] md:text-base">რაოდენობა: {item.quantity}</p>
                                         </div>
                                     </div>
-                                    <p className="text-gray-800 font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                                    <p className="text-gray-800 text-[14px] md:text-base font-medium">{(item.price * item.quantity).toFixed(2)} ₾</p>
                                 </div>
                             ))}
                         </div>
@@ -120,19 +120,19 @@ export default function OrderConfirmationPage() {
 
                     <div className="space-y-4 mb-6">
                         <div className="flex justify-between">
-                            <span className="text-gray-600">მიტანის მისამართი</span>
-                            <span className="text-gray-800">{order.shippingAddress}</span>
+                            <span className="text-gray-600 text-[14px] md:text-base">მიტანის მისამართი</span>
+                            <span className="text-gray-800 text-[14px] md:text-base">{order.shippingAddress}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-gray-600">გადახდის მეთოდი</span>
-                            <span className="text-gray-800">
+                            <span className="text-gray-600 text-[14px] md:text-base">გადახდის მეთოდი</span>
+                            <span className="text-gray-800 text-[14px] md:text-base">
                                 {order.paymentMethod === 'card' ? 'ბარათით' : 
                                  order.paymentMethod === 'balance' ? 'ბალანსით' : 'კურიერთან'}
                             </span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-gray-600">სულ თანხა</span>
-                            <span className="text-gray-800 font-semibold">${order.totalAmount.toFixed(2)}</span>
+                            <span className="text-gray-600 text-[14px] md:text-base">სულ თანხა</span>
+                            <span className="text-gray-800 text-[14px] md:text-base font-semibold">{order.totalAmount.toFixed(2)} ₾</span>
                         </div>
                     </div>
 

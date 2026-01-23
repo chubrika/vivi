@@ -264,6 +264,20 @@ export default function CheckoutPage() {
             return;
         }
 
+        // Calculate total amount
+        const totalAmount = isCartCheckout 
+            ? cartTotalPrice 
+            : (product?.price ? product.price * quantity : 0);
+
+        // Check balance if payment method is balance
+        if (formData.paymentMethod === 'balance') {
+            if (userBalance < totalAmount) {
+                setError('ბალანსზე გაქვთ არასაკმარისი თანხა!');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+        }
+
         try {
             // Update user profile with the new information
             await userService.updateProfile({
@@ -419,16 +433,6 @@ export default function CheckoutPage() {
         );
     }
 
-    if (error) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                    <p>{error}</p>
-                </div>
-            </div>
-        );
-    }
-
     if (!isCartCheckout && !product) return <div>Product not found</div>;
     if (isCartCheckout && cartItemsToCheckout.length === 0) return <div>Cart is empty</div>;
 
@@ -438,6 +442,16 @@ export default function CheckoutPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left side - Recipient Information */}
                 <div className="lg:col-span-2 space-y-8">
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                            <div className="flex items-center">
+                                <svg className="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p className="font-medium">{error}</p>
+                            </div>
+                        </div>
+                    )}
                     {!isAuthenticated && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                             <div className="flex items-center">
