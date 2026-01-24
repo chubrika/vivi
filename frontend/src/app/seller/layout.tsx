@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '../../utils/authContext';
+import { useAuth, hasRole } from '../../utils/authContext';
 import { API_BASE_URL } from '../../utils/api';
+import { sellerProfileService } from '../../services/sellerProfileService';
 
 export default function SellerLayout({
   children,
@@ -15,25 +16,32 @@ export default function SellerLayout({
   const pathname = usePathname();
   const { isAuthenticated, user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [hasSellerProfile, setHasSellerProfile] = useState(false);
+  const [sellerStatus, setSellerStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const checkSellerAccess = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/check-seller`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        // Check if user has seller profile (even if pending)
+        const profile = await sellerProfileService.getMyProfile();
+        setHasSellerProfile(true);
+        setSellerStatus(profile.status);
         
-        if (!response.ok) {
-          router.push('/login');
+        // For profile page, allow access regardless of status
+        // For other pages, only allow if approved
+        if (pathname !== '/seller/profile' && profile.status !== 'approved') {
+          router.push('/seller/profile');
           return;
         }
-
-        // We don't need to use the response data as the role is managed by the auth context
       } catch (error) {
         console.error('Error checking seller access:', error);
-        router.push('/login');
+        // Check if they have seller role as fallback
+        const hasSellerRole = hasRole(user, 'seller');
+        if (!hasSellerRole) {
+          router.push('/');
+          return;
+        }
+        setHasSellerProfile(true);
       } finally {
         setLoading(false);
       }
@@ -44,7 +52,7 @@ export default function SellerLayout({
     } else {
       router.push('/login');
     }
-  }, [router, isAuthenticated]);
+  }, [router, isAuthenticated, user, pathname]);
 
   if (loading) {
     return (
@@ -54,7 +62,9 @@ export default function SellerLayout({
     );
   }
 
-  if (user?.role !== 'seller') {
+  // Allow access if user has seller role OR seller profile
+  const hasSellerRole = hasRole(user, 'seller');
+  if (!hasSellerRole && !hasSellerProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -65,12 +75,17 @@ export default function SellerLayout({
     );
   }
 
-  const navigation = [
-    { name: 'Dashboard', href: '/seller/dashboard' },
-    { name: 'Products', href: '/seller/products' },
-    { name: 'Orders', href: '/seller/orders' },
-    { name: 'Profile', href: '/profile' },
-  ];
+  // Navigation items - only show approved seller pages if approved
+  const navigation = sellerStatus === 'approved' 
+    ? [
+        { name: 'Dashboard', href: '/seller/dashboard' },
+        { name: 'Products', href: '/seller/products' },
+        { name: 'Orders', href: '/seller/orders' },
+        { name: 'Profile', href: '/seller/profile' },
+      ]
+    : [
+        { name: 'Profile', href: '/seller/profile' },
+      ];
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -79,7 +94,10 @@ export default function SellerLayout({
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link href="/seller/dashboard" className="text-xl font-bold text-sky-600">
+                <Link 
+                  href={sellerStatus === 'approved' ? '/seller/dashboard' : '/seller/profile'} 
+                  className="text-xl font-bold text-sky-600"
+                >
                   Seller Portal
                 </Link>
               </div>
@@ -110,6 +128,25 @@ export default function SellerLayout({
           </div>
         </div>
       </nav>
+
+      {sellerStatus && sellerStatus !== 'approved' && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center">
+              <svg className="h-5 w-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <p className="text-sm text-yellow-800">
+                {sellerStatus === 'pending' 
+                  ? 'თქვენი გამყიდველის პროფილი მოლოდინშია. გთხოვთ დაელოდოთ ადმინისტრაციის დამტკიცებას.'
+                  : sellerStatus === 'rejected'
+                  ? 'თქვენი გამყიდველის პროფილი უარყოფილია. გთხოვთ დაუკავშირდეთ ადმინისტრაციას.'
+                  : 'თქვენი გამყიდველის პროფილი დაბლოკილია. გთხოვთ დაუკავშირდეთ ადმინისტრაციას.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main>{children}</main>
     </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '../../utils/authContext';
+import { useAuth, hasRole } from '../../utils/authContext';
 import { API_BASE_URL } from '../../utils/api';
 import CourierMobileBottomNav from '../../components/CourierMobileBottomNav';
 
@@ -55,7 +55,7 @@ export default function CourierLayout({
     );
   }
 
-  if (user?.role !== 'courier') {
+  if (!hasRole(user, 'courier')) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

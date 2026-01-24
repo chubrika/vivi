@@ -1,6 +1,6 @@
 import { Order } from '../types/order';
 import { useEffect, useState } from 'react';
-import { useAuth } from '../utils/authContext';
+import { useAuth, hasRole } from '../utils/authContext';
 import { API_BASE_URL } from '../utils/api';
 
 interface OrderDetailsPanelProps {
@@ -25,8 +25,8 @@ export default function OrderDetailsPanel({
   allowedStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
 }: OrderDetailsPanelProps) {
   const { token, user } = useAuth();
-  const isCourier = user?.role === 'courier';
-  const isAdmin = user?.role === 'admin';
+  const isCourier = hasRole(user, 'courier');
+  const isAdmin = hasRole(user, 'admin');
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [localOrder, setLocalOrder] = useState<Order | null>(order);
 

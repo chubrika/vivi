@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../utils/authContext';
+import { useAuth, hasRole } from '../../../utils/authContext';
 import Link from 'next/link';
 
 interface SellerStats {
@@ -27,7 +27,7 @@ export default function SellerDashboard() {
       return;
     }
 
-    if (user?.role !== 'seller') {
+    if (!hasRole(user, 'seller')) {
       router.push('/');
       return;
     }

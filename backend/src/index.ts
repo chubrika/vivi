@@ -7,6 +7,7 @@ import path from 'path';
 import authRoutes from './routes/authRoutes';
 import componentRoutes from './routes/components';
 import sellerRoutes from './routes/sellerRoutes';
+import sellerProfileRoutes from './routes/sellerProfileRoutes';
 import productRoutes from './routes/productRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import cartRoutes from './routes/cartRoutes';
@@ -109,6 +110,7 @@ mongoose
 app.use('/api/auth', authRoutes);
 app.use('/api/components', componentRoutes);
 app.use('/api/sellers', sellerRoutes);
+app.use('/api/seller-profiles', sellerProfileRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);

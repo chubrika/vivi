@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import AddToCartButton from './AddToCartButton';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../utils/authContext';
+import { useAuth, hasRole } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
 import { Product } from '../types/product';
 import { ShoppingCart } from 'lucide-react';
@@ -32,8 +32,8 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
     const router = useRouter();
     const { user } = useAuth();
     const { addItem, totalItems } = useCart();
-    const isSeller = user?.role === 'seller';
-    const isCourier = user?.role === 'courier';
+    const isSeller = hasRole(user, 'seller');
+    const isCourier = hasRole(user, 'courier');
 
     // Handle body scroll lock when panel is open
     useEffect(() => {

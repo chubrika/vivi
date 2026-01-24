@@ -23,10 +23,10 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
 // Update user
 router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { name, email, role, isActive } = req.body;
+    const { email, roles, isActive } = req.body;
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { name, email, role, isActive },
+      { email, roles, isActive },
       { new: true, runValidators: true }
     ).select('-password');
 
@@ -58,6 +58,8 @@ router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) =>
 });
 
 // Toggle user active status
+// Note: isActive field was removed from User model as per new architecture
+// If you need to deactivate users, consider using roles or a separate status field
 router.patch('/users/:id/toggle-status', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -66,10 +68,10 @@ router.patch('/users/:id/toggle-status', authenticateToken, requireAdmin, async 
       return res.status(404).json({ message: 'User not found' });
     }
 
-    user.isActive = !user.isActive;
-    await user.save();
-
-    return res.json({ message: `User ${user.isActive ? 'activated' : 'deactivated'} successfully` });
+    // This endpoint is deprecated - isActive field no longer exists
+    return res.status(400).json({ 
+      message: 'This endpoint is no longer available. User model no longer has isActive field.' 
+    });
   } catch (error) {
     console.error('Error toggling user status:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -79,8 +81,14 @@ router.patch('/users/:id/toggle-status', authenticateToken, requireAdmin, async 
 // Get all couriers
 router.get('/couriers', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const couriers = await User.find({ role: 'courier' })
-      .select('firstName lastName email phoneNumber')
+    // Handle both old (role) and new (roles) structures
+    const couriers = await User.find({
+      $or: [
+        { roles: { $in: ['courier'] } },
+        { role: 'courier' }
+      ]
+    })
+      .select('email roles role')
       .sort({ createdAt: -1 });
     
     res.json(couriers);
@@ -97,7 +105,14 @@ router.post('/orders/:orderId/assign', authenticateToken, requireAdmin, async (r
     const { courierId } = req.body;
 
     // Validate courier exists and is actually a courier
-    const courier = await User.findOne({ _id: courierId, role: 'courier' });
+    // Handle both old (role) and new (roles) structures
+    const courier = await User.findOne({
+      _id: courierId,
+      $or: [
+        { roles: { $in: ['courier'] } },
+        { role: 'courier' }
+      ]
+    });
     if (!courier) {
       return res.status(404).json({ message: 'Courier not found' });
     }
@@ -147,8 +162,8 @@ router.delete('/orders/:orderId/assign', authenticateToken, requireAdmin, async 
 router.get('/orders', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate('user', 'firstName lastName email')
-      .populate('courier', 'firstName lastName email')
+      .populate('user', 'email roles')
+      .populate('courier', 'email roles')
       .sort({ createdAt: -1 });
     
     res.json(orders);

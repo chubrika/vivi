@@ -2,25 +2,12 @@ import { API_BASE_URL } from '../utils/api';
 import { getToken } from '../utils/authContext';
 import { api } from '../utils/api';
 import { fetchApi } from '../utils/api';
+import type { User } from '../types/user';
 
 interface AuthCredentials {
   email: string;
   password: string;
   name?: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  businessName?: string;
-  role: 'user' | 'admin' | 'customer' | 'seller' | 'courier';
-  phoneNumber?: string;
-  personalNumber?: string;
-  balance?: number;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 interface UpdateUserData {
@@ -53,7 +40,7 @@ export const userService = {
       throw new Error(data.message || 'Failed to fetch user profile');
     }
 
-    return data;
+    return { ...data, _id: data._id || data.id } as User;
   },
 
   async updateProfile(data: UpdateUserData): Promise<User> {

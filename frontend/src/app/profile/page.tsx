@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { isAuthenticated, getToken } from '../../utils/authContext';
+import { isAuthenticated, hasRole } from '../../utils/authContext';
+import type { User } from '../../types/user';
 import { API_BASE_URL } from '../../utils/api';
 import { userService } from '../../services/userService';
+import { sellerProfileService, type SellerProfileDocument } from '../../services/sellerProfileService';
 import { addressService, Address } from '../../services/addressService';
 import { orderService, Order } from '../../services/orderService';
 import Link from 'next/link';
@@ -13,24 +15,10 @@ import Modal from '../../components/Modal';
 import AddressForm from '../../components/AddressForm';
 import PasswordChangeModal from '../../components/PasswordChangeModal';
 
-interface UserProfile {
-  id: string;
-  firstName?: string;
-  lastName?: string;
-  businessName?: string;
-  email: string;
-  role: 'user' | 'admin' | 'seller' | 'courier' | 'customer';
-  phoneNumber?: string;
-  personalNumber?: string;
-  balance: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export default function ProfilePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeSection, setActiveSection] = useState('personal');
@@ -49,14 +37,20 @@ export default function ProfilePage() {
     lastName: '',
     email: '',
     phoneNumber: '',
-    personalNumber: ''
+    personalNumber: '',
+    storeName: '',
+    sellerPhone: '',
+    sellerDocuments: [] as SellerProfileDocument[]
   });
   const [originalFormData, setOriginalFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phoneNumber: '',
-    personalNumber: ''
+    personalNumber: '',
+    storeName: '',
+    sellerPhone: '',
+    sellerDocuments: [] as SellerProfileDocument[]
   });
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [updateError, setUpdateError] = useState('');
@@ -67,6 +61,13 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState('');
+
+  // Helper: customer = has user role (or no roles) and no seller/courier/admin
+  const isCustomer = (): boolean => {
+    if (!profile) return false;
+    const special = hasRole(profile, 'seller') || hasRole(profile, 'courier') || hasRole(profile, 'admin');
+    return !special && (hasRole(profile, 'user') || !profile.roles?.length);
+  };
 
   // Function to fetch addresses
   const fetchAddresses = async () => {
@@ -135,18 +136,45 @@ export default function ProfilePage() {
 
       try {
         // Use the userService to fetch the profile
-        const userData = await userService.getCurrentUser();
+        const userData = await userService.getCurrentUser() as any;
         console.log('Fetched user data:', userData);
+        
+        // Normalize roles - handle both old (role) and new (roles) structures
+        let normalizedRoles: string[] = [];
+        if (userData.roles && Array.isArray(userData.roles)) {
+          // New structure: roles array exists
+          normalizedRoles = userData.roles;
+        } else if (userData.role && typeof userData.role === 'string') {
+          // Old structure: convert role string to roles array
+          normalizedRoles = [userData.role];
+        } else {
+          // Default fallback
+          normalizedRoles = ['user'];
+        }
+        
         setProfile({
           ...userData,
+          roles: normalizedRoles,
           balance: userData.balance || 0
         });
+        const rawDocs = userData.sellerProfile?.documents;
+        const sellerDocuments: SellerProfileDocument[] = Array.isArray(rawDocs)
+          ? rawDocs.map((d: any) => ({
+              id: d.id || `doc-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+              type: (d.type === 'id' || d.type === 'company' || d.type === 'bank' ? d.type : 'id') as 'id' | 'company' | 'bank',
+              url: d.url || '',
+              uploadedAt: d.uploadedAt ? (typeof d.uploadedAt === 'string' ? d.uploadedAt : new Date(d.uploadedAt).toISOString()) : new Date().toISOString()
+            }))
+          : [];
         const initialFormData = {
           firstName: userData.firstName || '',
           lastName: userData.lastName || '',
           email: userData.email || '',
           phoneNumber: userData.phoneNumber || '',
-          personalNumber: userData.personalNumber || ''
+          personalNumber: userData.personalNumber || '',
+          storeName: userData.sellerProfile?.storeName || '',
+          sellerPhone: userData.sellerProfile?.phone || '',
+          sellerDocuments
         };
         setFormData(initialFormData);
         setOriginalFormData(initialFormData);
@@ -162,11 +190,27 @@ export default function ProfilePage() {
     fetchProfile();
   }, [router]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const addSellerDocument = () => {
+    setFormData(prev => ({
+      ...prev,
+      sellerDocuments: [...prev.sellerDocuments, { id: `new-${Date.now()}`, type: 'id', url: '', uploadedAt: new Date().toISOString() }]
+    }));
+  };
+  const removeSellerDocument = (index: number) => {
+    setFormData(prev => ({ ...prev, sellerDocuments: prev.sellerDocuments.filter((_, i) => i !== index) }));
+  };
+  const updateSellerDocument = (index: number, field: 'type' | 'text', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      sellerDocuments: prev.sellerDocuments.map((d, i) => i === index ? { ...d, [field]: value } : d)
     }));
   };
 
@@ -226,29 +270,60 @@ export default function ProfilePage() {
     setUpdateError('');
 
     try {
-      // Use the userService to update the profile
-      const updatedUser = await userService.updateProfile({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        personalNumber: formData.personalNumber
-      });
+      // Sellers: do not send firstName, lastName, personalNumber, phoneNumber
+      const updatePayload: Parameters<typeof userService.updateProfile>[0] = {
+        email: formData.email
+      };
+      if (!hasRole(profile, 'seller')) {
+        updatePayload.phoneNumber = formData.phoneNumber;
+        updatePayload.firstName = formData.firstName;
+        updatePayload.lastName = formData.lastName;
+        updatePayload.personalNumber = formData.personalNumber;
+      }
+      const updatedUser = await userService.updateProfile(updatePayload);
 
-      setProfile({
-        ...updatedUser,
-        balance: updatedUser.balance || 0
-      });
-      
-      // Update original form data after successful update
-      setOriginalFormData({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        personalNumber: formData.personalNumber
-      });
-      
+      // Normalize roles for updated user
+      const updatedUserAny = updatedUser as any;
+      let normalizedRoles: string[] = [];
+      if (updatedUserAny.roles && Array.isArray(updatedUserAny.roles)) {
+        normalizedRoles = updatedUserAny.roles;
+      } else if (updatedUserAny.role && typeof updatedUserAny.role === 'string') {
+        normalizedRoles = [updatedUserAny.role];
+      } else {
+        normalizedRoles = ['user'];
+      }
+
+      let profileToSet: User = {
+        ...updatedUserAny,
+        _id: (updatedUserAny._id || updatedUserAny.id) as string,
+        roles: normalizedRoles,
+        balance: updatedUserAny.balance || 0
+      };
+
+      // Sellers: if any seller field changed, update via seller profile API
+      const sellerChanged =
+        formData.storeName !== originalFormData.storeName ||
+        formData.sellerPhone !== originalFormData.sellerPhone ||
+        JSON.stringify(formData.sellerDocuments) !== JSON.stringify(originalFormData.sellerDocuments);
+      if (hasRole(profile, 'seller') && sellerChanged) {
+        try {
+          const { sellerProfile: updatedSp } = await sellerProfileService.updateMyProfile({
+            storeName: formData.storeName,
+            phone: formData.sellerPhone,
+            documents: formData.sellerDocuments
+          });
+          profileToSet = {
+            ...profileToSet,
+            sellerProfile: { ...(profileToSet.sellerProfile || {}), ...updatedSp, storeName: updatedSp.storeName, phone: updatedSp.phone, documents: updatedSp.documents || [] }
+          } as User;
+        } catch (spErr) {
+          setUpdateError(spErr instanceof Error ? spErr.message : 'Failed to update seller profile');
+          return;
+        }
+      }
+
+      setProfile(profileToSet);
+      setOriginalFormData({ ...formData });
       setUpdateSuccess(true);
     } catch (err) {
       console.error('Profile update error:', err);
@@ -260,14 +335,23 @@ export default function ProfilePage() {
     setShowPasswordModal(true);
   };
 
-  // Check if form has been modified
+  // Check if form has been modified (sellers: no phoneNumber, personalNumber; user/others: all)
   const isFormModified = () => {
+    const base = formData.email !== originalFormData.email;
+    if (hasRole(profile, 'seller')) {
+      return (
+        base ||
+        formData.storeName !== originalFormData.storeName ||
+        formData.sellerPhone !== originalFormData.sellerPhone ||
+        JSON.stringify(formData.sellerDocuments) !== JSON.stringify(originalFormData.sellerDocuments)
+      );
+    }
     return (
-      formData.firstName !== originalFormData.firstName ||
-      formData.lastName !== originalFormData.lastName ||
-      formData.email !== originalFormData.email ||
+      base ||
       formData.phoneNumber !== originalFormData.phoneNumber ||
-      formData.personalNumber !== originalFormData.personalNumber
+      formData.personalNumber !== originalFormData.personalNumber ||
+      formData.firstName !== originalFormData.firstName ||
+      formData.lastName !== originalFormData.lastName
     );
   };
 
@@ -352,37 +436,97 @@ export default function ProfilePage() {
                     <span className="block sm:inline">{updateError}</span>
                   </div>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
-                      placeholder=" "
-                    />
-                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.firstName ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
-                      }`}>
-                      სახელი
-                    </label>
+                {/* Sellers: show sellerName input; user/others: show firstName & lastName */}
+                {hasRole(profile, 'seller') ? (
+                  <>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="storeName"
+                        value={formData.storeName}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
+                        placeholder=" "
+                      />
+                      <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.storeName ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'}`}>
+                        გამყიდველის სახელი
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        name="sellerPhone"
+                        value={formData.sellerPhone}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
+                        placeholder=" "
+                      />
+                      <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.sellerPhone ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'}`}>
+                        გამყიდველის ტელეფონი
+                      </label>
+                    </div>
+                    <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+                      <div className="text-sm font-medium text-gray-700 mb-2">დოკუმენტები</div>
+                      {formData.sellerDocuments.map((doc, i) => (
+                        <div key={doc.id} className="flex flex-wrap items-center gap-2 mt-2 p-2 bg-white rounded border border-gray-200">
+                          <select
+                            value={doc.type}
+                            onChange={e => updateSellerDocument(i, 'type', e.target.value)}
+                            className="px-2 text-gray-800 py-1.5 border border-gray-300 rounded text-sm"
+                          >
+                            <option value="id">პირადი მოწმობა</option>
+                            <option value="company">კომპანიის სერტიფიკატი</option>
+                            <option value="bank">საბანკო</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={doc.url}
+                            onChange={e => updateSellerDocument(i, 'text', e.target.value)}
+                            placeholder="URL"
+                            className="flex-1 text-gray-800 min-w-[120px] px-2 py-1.5 border border-gray-300 rounded text-sm"
+                          />
+                          <button type="button" onClick={() => removeSellerDocument(i)} className="text-red-600 hover:text-red-800 text-sm">
+                            წაშლა
+                          </button>
+                        </div>
+                      ))}
+                      <button type="button" onClick={addSellerDocument} className="mt-2 text-sm text-sky-600 hover:text-sky-800">
+                        + დოკუმენტის დამატება
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
+                        placeholder=" "
+                      />
+                      <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.firstName ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
+                        }`}>
+                        სახელი
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
+                        placeholder=" "
+                      />
+                      <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.lastName ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
+                        }`}>
+                        გვარი
+                      </label>
+                    </div>
                   </div>
-
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
-                      placeholder=" "
-                    />
-                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.lastName ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
-                      }`}>
-                      გვარი
-                    </label>
-                  </div>
-                </div>
+                )}
 
                 <div className="relative">
                   <input
@@ -399,35 +543,37 @@ export default function ProfilePage() {
                   </label>
                 </div>
 
-                <div className="relative">
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
-                    placeholder=" "
-                  />
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.phoneNumber ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
-                    }`}>
-                    ტელეფონის ნომერი
-                  </label>
-                </div>
+                {!hasRole(profile, 'seller') && (
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
+                      placeholder=" "
+                    />
+                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.phoneNumber ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'}`}>
+                      ტელეფონის ნომერი
+                    </label>
+                  </div>
+                )}
 
-                <div className="relative">
-                  <input
-                    type="text"
-                    name="personalNumber"
-                    value={formData.personalNumber}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
-                    placeholder=" "
-                  />
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.personalNumber ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'
-                    }`}>
-                    პირადი ნომერი
-                  </label>
-                </div>
+                {!hasRole(profile, 'seller') && (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="personalNumber"
+                      value={formData.personalNumber}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 outline-none peer text-gray-800"
+                      placeholder=" "
+                    />
+                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none bg-white px-1 ${formData.personalNumber ? '-top-2 text-xs text-sky-500' : 'top-3 text-base text-gray-500'}`}>
+                      პირადი ნომერი
+                    </label>
+                  </div>
+                )}
 
                 <div className="pt-6 border-t border-gray-200">
                   <div className="flex justify-end space-x-4">
@@ -660,17 +806,21 @@ export default function ProfilePage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-800 text-center">{profile?.firstName || profile?.businessName || 'მომხმარებელი'}</h2>
+                  <h2 className="text-lg font-semibold text-gray-800 text-center">
+                    {hasRole(profile, 'seller')
+                      ? (profile?.sellerProfile?.storeName || 'მომხმარებელი')
+                      : ([profile?.firstName, profile?.lastName].filter(Boolean).join(' ').trim() || 'მომხმარებელი')}
+                  </h2>
                 </div>
 
-                {profile?.role === 'customer' && (
+                {isCustomer() && (
                   <>
                     <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4 border border-gray-200 mx-auto" style={{ maxWidth: '180px' }}>
                       <div className="flex items-center">
                         <span className="font-medium text-gray-700 text-xs">ბალანსი</span>
                       </div>
                       <div className="flex items-center">
-                        <span className="font-semibold text-gray-800 mr-2">{profile?.balance.toFixed(2) || '0.00'} ₾</span>
+                        <span className="font-semibold text-gray-800 mr-2">{(profile?.balance ?? 0).toFixed(2)} ₾</span>
                         <button
                           className="text-sky-600 hover:text-sky-800"
                           onClick={() => setActiveSection('balance')}
@@ -686,18 +836,42 @@ export default function ProfilePage() {
               </div>
 
               <nav className="space-y-1">
-                {profile?.role === 'seller' && (
-                  <Link
-                    href="/seller/dashboard"
-                    className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 flex items-center"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    გამყიდველის პანელი
-                  </Link>
+                {(hasRole(profile, 'seller') || profile?.sellerProfile) && (
+                  <>
+                    <Link
+                      href="/seller/dashboard"
+                      className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 flex items-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      გამყიდველის პანელი
+                    </Link>
+                    <Link
+                      href="/seller/profile"
+                      className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 flex items-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      გამყიდველის პროფილი
+                      {profile?.sellerProfile && (
+                        <span className={`ml-auto px-2 py-1 rounded-full text-xs font-medium ${
+                          profile.sellerProfile.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          profile.sellerProfile.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          profile.sellerProfile.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {profile.sellerProfile.status === 'approved' ? 'დამტკიცებული' :
+                           profile.sellerProfile.status === 'pending' ? 'მოლოდინში' :
+                           profile.sellerProfile.status === 'rejected' ? 'უარყოფილი' :
+                           'დაბლოკილი'}
+                        </span>
+                      )}
+                    </Link>
+                  </>
                 )}
-                {profile?.role === 'courier' && (
+                {hasRole(profile, 'courier') && (
                   <Link
                     href="/courier/orders"
                     className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 flex items-center"
@@ -708,7 +882,7 @@ export default function ProfilePage() {
                     კურიერის პანელი
                   </Link>
                 )}
-                {profile?.role !== 'seller' && profile?.role !== 'courier' && (
+                {!hasRole(profile, 'seller') && !hasRole(profile, 'courier') && (
                   <button
                     onClick={() => handleSectionChange('orders')}
                     className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center ${activeSection === 'orders'

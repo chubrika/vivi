@@ -15,14 +15,9 @@ export default function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
     email: '',
     password: '',
     role: 'customer' as 'customer' | 'seller',
-    businessName: '',
-    businessAddress: '',
-    phoneNumber: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +31,7 @@ export default function AuthForm({ type }: AuthFormProps) {
       console.log(`${type === 'login' ? 'Login' : 'Registration'} attempt for:`, formData.email);
       
       const data = type === 'login' 
-        ? await authService.login(formData)
+        ? await authService.login({ email: formData.email, password: formData.password })
         : await authService.register(formData);
 
       console.log(`${type === 'login' ? 'Login' : 'Registration'} successful:`, data);
@@ -47,15 +42,19 @@ export default function AuthForm({ type }: AuthFormProps) {
       
       // Show success notification
       if (type === 'register') {
-        toast.success(`🎉 რეგისტრაცია წარმატებით დასრულდა! მოგესალმებთ ${data.user.firstName}!`);
+        toast.success(`🎉 რეგისტრაცია წარმატებით დასრულდა! მოგესალმებთ!`);
       } else {
-        toast.success(`👋 კეთილი იყოს თქვენი დაბრუნება, ${data.user.firstName}!`);
+        toast.success(`👋 კეთილი იყოს თქვენი დაბრუნება!`);
       }
       
-      // Redirect based on role
-      if (data.user.role === 'admin') {
+      // Redirect based on roles (handle both old and new structures)
+      const userData = data.user as any;
+      const userRoles = userData.roles && Array.isArray(userData.roles)
+        ? userData.roles
+        : (userData.role ? [userData.role] : ['user']);
+      if (userRoles.includes('admin')) {
         router.push('/admin');
-      } else if (data.user.role === 'seller') {
+      } else if (userRoles.includes('seller')) {
         router.push('/seller/dashboard');
       } else {
         router.push('/');
@@ -76,10 +75,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   };
 
   const handleRoleChange = (role: 'customer' | 'seller') => {
-    setFormData({
-      ...formData,
-      role,
-    });
+    setFormData({ ...formData, role });
   };
 
   return (
@@ -96,131 +92,38 @@ export default function AuthForm({ type }: AuthFormProps) {
               <span className="block sm:inline">{error}</span>
             </div>
           )}
-          
+
           {type === 'register' && (
-            <div className="mb-4">
-              <div className="sm:hidden">
-                <label htmlFor="role" className="sr-only">Account Type</label>
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm"
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">ანგარიშის ტიპი</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleRoleChange('customer')}
+                  className={`p-3 border rounded-lg text-sm font-medium transition-colors ${
+                    formData.role === 'customer'
+                      ? 'border-sky-500 bg-sky-50 text-sky-700'
+                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                  }`}
                 >
-                  <option value="customer">მომხმარებელი</option>
-                  <option value="seller">მაღაზია</option>
-                </select>
-              </div>
-              <div className="hidden sm:block">
-                <div className="border-b border-gray-200">
-                  <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button
-                      type="button"
-                      onClick={() => handleRoleChange('customer')}
-                      className={`${
-                        formData.role === 'customer'
-                          ? 'border-sky-500 text-sky-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                    >
-                      მომხმარებელი
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRoleChange('seller')}
-                      className={`${
-                        formData.role === 'seller'
-                          ? 'border-sky-500 text-sky-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                    >
-                      მაღაზია
-                    </button>
-                  </nav>
-                </div>
+                  მომხმარებელი
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRoleChange('seller')}
+                  className={`p-3 border rounded-lg text-sm font-medium transition-colors ${
+                    formData.role === 'seller'
+                      ? 'border-sky-500 bg-sky-50 text-sky-700'
+                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                  }`}
+                >
+                  გამყიდველი
+                </button>
               </div>
             </div>
           )}
           
           <div className="rounded-md shadow-sm -space-y-px">
-            {type === 'register' && (
-              <>
-                {formData.role === 'customer' && (
-                  <>
-                    <div>
-                      <label htmlFor="firstName" className="sr-only">სახელი</label>
-                      <input
-                        id="firstName"
-                        name="firstName"
-                        type="text"
-                        required
-                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
-                        placeholder="სახელი"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="lastName" className="sr-only">გვარი</label>
-                      <input
-                        id="lastName"
-                        name="lastName"
-                        type="text"
-                        required
-                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
-                        placeholder="გვარი"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </>
-                )}
-                {formData.role === 'seller' && (
-                  <>
-                    <div>
-                      <label htmlFor="businessName" className="sr-only">Business Name</label>
-                      <input
-                        id="businessName"
-                        name="businessName"
-                        type="text"
-                        required
-                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
-                        placeholder="მაღაზიის სახელი"
-                        value={formData.businessName}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="businessAddress" className="sr-only">Business Address</label>
-                      <input
-                        id="businessAddress"
-                        name="businessAddress"
-                        type="text"
-                        required
-                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
-                        placeholder="მაღაზიის მისამართი"
-                        value={formData.businessAddress}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="phoneNumber" className="sr-only">ტელეფონის ნომერი</label>
-                      <input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="tel"
-                        required
-                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
-                        placeholder="ტელეფონის ნომერი"
-                        value={formData.phoneNumber}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </>
-                )}
-              </>
-            )}
             <div>
               <label htmlFor="email" className="sr-only">ელ-ფოსტა</label>
               <input
@@ -228,9 +131,7 @@ export default function AuthForm({ type }: AuthFormProps) {
                 name="email"
                 type="email"
                 required
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm ${
-                  type === 'register' ? '' : 'rounded-t-md'
-                }`}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 placeholder="ელ-ფოსტა"
                 value={formData.email}
                 onChange={handleChange}

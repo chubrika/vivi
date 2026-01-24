@@ -9,21 +9,13 @@ import { useAuth } from '../utils/authContext';
 import HierarchicalCategorySelect from './HierarchicalCategorySelect';
 import { Category } from '../types/category';
 import { productsService } from '../services/productsService';
+import type { User } from '../types/user';
 
 // Use dynamic import with no SSR to avoid hydration issues
 const ReactQuill = dynamic(() => import('react-quill'), { 
   ssr: false,
   loading: () => <p>Loading editor...</p>
 });
-
-interface User {
-  _id: string;
-  firstName?: string;
-  lastName?: string;
-  businessName?: string;
-  email: string;
-  role: string;
-}
 
 interface FeatureValue {
   type: number;
@@ -785,7 +777,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
             <option value="">აირჩიე მაღაზია</option>
             {sellers.map((seller) => (
               <option key={seller._id} value={seller._id}>
-                {seller.businessName || `${seller.firstName} ${seller.lastName}`.trim()}
+                {seller.sellerProfile?.storeName || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || seller.email}
               </option>
             ))}
           </select>

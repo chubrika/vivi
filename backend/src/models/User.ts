@@ -2,39 +2,22 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
 interface IUser {
-  firstName?: string;
-  lastName?: string;
   email: string;
   password: string;
-  role: 'user' | 'admin' | 'customer' | 'seller' | 'courier';
-  businessName?: string;
-  businessAddress?: string;
+  firstName?: string;
+  lastName?: string;
   phoneNumber?: string;
   personalNumber?: string;
-  balance: number;
-  isActive: boolean;
+  balance?: number; // Wallet balance for role 'user' (pay with balance at checkout)
+  roles?: string[]; // Array of roles: ['user'], ['user', 'seller'], ['admin'], etc.
+  role?: string; // Legacy field for backward compatibility
   createdAt: Date;
-  // Courier-specific fields
-  deliveryHistory?: mongoose.Types.ObjectId[];
-  totalEarnings?: number;
-  pendingWithdrawal?: boolean;
-  payoutHistory?: Array<{
-    amount: number;
-    date: Date;
-    status: 'paid' | 'rejected';
-  }>;
+  updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
+  getRoles(): string[]; // Helper method to normalize roles
 }
 
 const userSchema = new mongoose.Schema<IUser>({
-  firstName: {
-    type: String,
-    trim: true,
-  },
-  lastName: {
-    type: String,
-    trim: true,
-  },
   email: {
     type: String,
     required: [true, 'Please provide an email'],
@@ -46,68 +29,47 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     required: [true, 'Please provide a password'],
   },
-  role: {
-    type: String,
-    enum: ['user', 'admin', 'customer', 'seller', 'courier'],
-    default: 'user',
-  },
-  businessName: {
-    type: String,
-    trim: true,
-  },
-  businessAddress: {
-    type: String,
-    trim: true,
-  },
-  phoneNumber: {
-    type: String,
-    trim: true,
-  },
-  personalNumber: {
-    type: String,
-    trim: true,
-  },
+  firstName: { type: String, trim: true },
+  lastName: { type: String, trim: true },
+  phoneNumber: { type: String, trim: true },
+  personalNumber: { type: String, trim: true },
   balance: {
     type: Number,
     default: 0,
   },
-  isActive: {
-    type: Boolean,
-    default: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  // Courier-specific fields
-  deliveryHistory: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Order',
-    default: []
-  }],
-  totalEarnings: {
-    type: Number,
-    default: 0
-  },
-  pendingWithdrawal: {
-    type: Boolean,
-    default: false
-  },
-  payoutHistory: [{
-    amount: {
-      type: Number,
-      required: true
-    },
-    date: {
-      type: Date,
-      default: Date.now
-    },
-    status: {
-      type: String,
-      enum: ['paid', 'rejected'],
-      default: 'paid'
+  roles: {
+    type: [String],
+    default: ['user'],
+    validate: {
+      validator: function(roles: string[]) {
+        const validRoles = ['user', 'admin', 'seller', 'courier'];
+        return roles.every(role => validRoles.includes(role));
+      },
+      message: 'Invalid role in roles array'
     }
-  }]
+  },
+  role: {
+    type: String,
+    required: false, // Legacy field for backward compatibility
+    enum: ['user', 'admin', 'seller', 'courier']
+  }
+}, {
+  timestamps: true // This automatically adds createdAt and updatedAt
+});
+
+// Normalize role values before validation (convert 'customer' to 'user' for backward compatibility)
+userSchema.pre('save', function(next) {
+  // Normalize legacy role field: 'customer' -> 'user'
+  if ((this as any).role === 'customer') {
+    (this as any).role = 'user';
+  }
+  
+  // Normalize roles array: convert 'customer' to 'user'
+  if (this.roles && Array.isArray(this.roles)) {
+    this.roles = this.roles.map(role => role === 'customer' ? 'user' : role);
+  }
+  
+  next();
 });
 
 // Hash password before saving
@@ -126,6 +88,22 @@ userSchema.pre('save', async function(next) {
 // Method to compare passwords
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Helper method to normalize roles - handles both old (role) and new (roles) structures
+userSchema.methods.getRoles = function(): string[] {
+  // If roles array exists and is not empty, use it
+  if (this.roles && Array.isArray(this.roles) && this.roles.length > 0) {
+    return this.roles;
+  }
+  
+  // If old role field exists, convert it to array
+  if (this.role && typeof this.role === 'string') {
+    return [this.role];
+  }
+  
+  // Default to ['user']
+  return ['user'];
 };
 
 const User = mongoose.model<IUser>('User', userSchema);

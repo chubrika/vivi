@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AddToCartButton from '../../../components/AddToCartButton';
 import { api } from '../../../utils/api';
-import { useAuth } from '../../../utils/authContext';
+import { useAuth, hasRole } from '../../../utils/authContext';
 import { Product } from '../../../types/product';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
@@ -15,7 +15,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const router = useRouter();
   const { user } = useAuth();
-  const isSeller = user?.role === 'seller';
+  const isSeller = hasRole(user, 'seller');
 
   useEffect(() => {
     const fetchProduct = async () => {
