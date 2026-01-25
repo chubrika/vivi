@@ -1,9 +1,18 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import ProductClient from './ProductClient';
+import AddToCartButton from '../../../components/AddToCartButton';
+import { api } from '../../../utils/api';
+import { useAuth, hasRole } from '../../../utils/authContext';
 import { Product } from '../../../types/product';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4800';
+export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const router = useRouter();
+  const { user } = useAuth();
+  const isSeller = hasRole(user, 'seller');
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
@@ -164,15 +173,14 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
                 )}
               </div>
 
-              {/* Seller */}
-              {sellerName && (
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">გამყიდველი</h2>
-                  <p className="mt-1 text-gray-600" itemProp="brand" itemScope itemType="https://schema.org/Brand">
-                    <span itemProp="name">{sellerName}</span>
-                  </p>
-                </div>
-              )}
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Seller</h2>
+                <p className="mt-1 text-gray-600">
+                  {typeof product.seller === 'object' && product.seller !== null
+                    ? product.seller.storeName
+                    : ''}
+                </p>
+              </div>
 
               {/* Client component for interactive features */}
               <div className="pt-6">

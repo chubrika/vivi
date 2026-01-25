@@ -317,7 +317,7 @@ router.post('/payout/:courierId', auth, requireAdmin, async (req, res) => {
     }
 
     const courier = await User.findById(courierId);
-    if (!courier || courier.role !== 'courier') {
+    if (!courier || !courier.roles || !courier.roles.includes('courier')) {
       return res.status(404).json({ message: 'Courier not found' });
     }
 

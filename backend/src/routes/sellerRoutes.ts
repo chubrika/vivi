@@ -15,8 +15,14 @@ const router = express.Router();
 // Public route to get all sellers (no authentication required)
 router.get('/public', async (req, res) => {
   try {
-    const sellers = await User.find({ role: 'seller' })
-      .select('firstName lastName email phoneNumber businessName businessAddress isActive')
+    // Handle both old (role) and new (roles) structures
+    const sellers = await User.find({
+      $or: [
+        { roles: { $in: ['seller'] } },
+        { role: 'seller' }
+      ]
+    })
+      .select('email roles role')
       .sort({ createdAt: -1 });
     res.json(sellers);
   } catch (error) {
@@ -28,8 +34,15 @@ router.get('/public', async (req, res) => {
 // Public route to get a single seller by ID (no authentication required)
 router.get('/public/:id', async (req, res) => {
   try {
-    const seller = await User.findOne({ _id: req.params.id, role: 'seller' })
-      .select('firstName lastName email phoneNumber businessName businessAddress isActive');
+    // Handle both old (role) and new (roles) structures
+    const seller = await User.findOne({
+      _id: req.params.id,
+      $or: [
+        { roles: { $in: ['seller'] } },
+        { role: 'seller' }
+      ]
+    })
+      .select('email storeName phone isActive');
     
     if (!seller) {
       return res.status(404).json({ message: 'Seller not found' });
@@ -52,7 +65,7 @@ router.get('/', getAllSellers);
 router.get('/orders', async (req, res) => {
   try {
     // Check if user is authenticated and is a seller
-    if (!req.user || req.user.role !== 'seller') {
+    if (!req.user || !req.user.roles || !req.user.roles.includes('seller')) {
       return res.status(403).json({ message: 'Access denied. Seller role required.' });
     }
 
@@ -118,7 +131,7 @@ router.get('/orders', async (req, res) => {
 // Update order status
 router.patch('/orders/:id/status', async (req, res) => {
   try {
-    if (!req.user || req.user.role !== 'seller') {
+    if (!req.user || !req.user.roles || !req.user.roles.includes('seller')) {
       return res.status(403).json({ message: 'Access denied. Seller role required.' });
     }
 

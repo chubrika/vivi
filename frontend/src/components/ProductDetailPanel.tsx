@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import AddToCartButton from './AddToCartButton';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../utils/authContext';
+import { useAuth, hasRole } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
 import { Product } from '../types/product';
 import { ShoppingCart } from 'lucide-react';
@@ -32,8 +32,8 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
     const router = useRouter();
     const { user } = useAuth();
     const { addItem, totalItems } = useCart();
-    const isSeller = user?.role === 'seller';
-    const isCourier = user?.role === 'courier';
+    const isSeller = hasRole(user, 'seller');
+    const isCourier = hasRole(user, 'courier');
 
     // Handle body scroll lock when panel is open
     useEffect(() => {
@@ -173,7 +173,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                     <h2 className="text-sm font-semibold text-gray-900">მაღაზია</h2>
                                     <p className="text-gray-600 text-sm">
                                         {typeof product.seller === 'object' 
-                                            ? (product.seller.businessName || product.seller.name || 'Unknown Seller')
+                                            ? (product.seller.storeName || 'Unknown Seller')
                                             : 'Unknown Seller'
                                         }
                                     </p>
@@ -296,8 +296,8 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                         <div>
                             {/* Product Features Section */}
                             {product.productFeatureValues && product.productFeatureValues.length > 0 && (
-                                <div className="mt-8 pt-8 border-t border-gray-200">
-                                    <div className="space-y-6">
+                                <div className="mt-8 pt-8 border-t border-gray-200 flex w-full flex-col md:flex-row">
+                                    <div className="space-y-6 w-full md:w-4/5">
                                         {product.productFeatureValues.map((group, groupIndex) => (
                                             <div key={groupIndex} className="bg-gray-50 rounded-lg p-3">
                                                 <h3 className="text-xl font-bold text-gray-800 mb-4">
@@ -309,10 +309,11 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                                             <h4 className="text-sm font-medium text-gray-700">
                                                                 {feature.featureCaption}
                                                             </h4>
-                                                            <div className="text-right">
+                                                            <div className="flex-1 border-b border-gray-200 mx-2 self-center min-w-[8px]" />
+                                                            <div className="text-right flex flex-wrap gap-2">
                                                                 {feature.featureValues.map((value, valueIndex) => (
                                                                     <div key={valueIndex} className="text-sm text-gray-600">
-                                                                        {value.featureValue}
+                                                                        {value.featureValue},
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -321,6 +322,8 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                                 </div>
                                             </div>
                                         ))}
+                                    </div>
+                                    <div className='w-full md:w-1/5 p-2 md:p-3'>
                                     </div>
                                 </div>
                             )}

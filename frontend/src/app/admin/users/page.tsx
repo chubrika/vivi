@@ -4,17 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../utils/authContext';
 import { API_BASE_URL } from '../../../utils/api';
-
-interface User {
-  businessName?: string;
-  _id: string;
-  firstName?: string;
-  lastName?: string;
-  email: string;
-  role: 'user' | 'seller' | 'admin' | 'courier';
-  isActive: boolean;
-  createdAt: string;
-}
+import type { User, UserRole } from '../../../types/user';
 
 export default function UsersManagement() {
   const router = useRouter();
@@ -64,7 +54,7 @@ export default function UsersManagement() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedUser),
+        body: JSON.stringify({ email: updatedUser.email, roles: (updatedUser.roles?.length) ? updatedUser.roles : ['user'] }),
       });
 
       if (!response.ok) {
@@ -162,16 +152,16 @@ export default function UsersManagement() {
           <tbody className="bg-white divide-y divide-gray-200 text-gray-800">
             {users.map((user) => (
               <tr key={user._id}>
-                <td className="px-6 py-4 whitespace-nowrap">{user.firstName || user.businessName}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.sellerProfile?.storeName || 'Unknown Seller'}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    user.role === 'admin' ? 'bg-sky-100 text-sky-800' : 
-                    user.role === 'seller' ? 'bg-orange-100 text-orange-800' :
-                    user.role === 'courier' ? 'bg-blue-100 text-blue-800' :
+                    (user.roles?.[0]) === 'admin' ? 'bg-sky-100 text-sky-800' : 
+                    (user.roles?.[0]) === 'seller' ? 'bg-orange-100 text-orange-800' :
+                    (user.roles?.[0]) === 'courier' ? 'bg-blue-100 text-blue-800' :
                     'bg-green-100 text-green-800'
                   }`}>
-                    {user.role}
+                    {user.roles?.[0] || 'user'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -182,7 +172,7 @@ export default function UsersManagement() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {new Date(user.createdAt).toLocaleDateString()}
+                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
@@ -227,7 +217,7 @@ export default function UsersManagement() {
                   </label>
                   <input
                     type="text"
-                    value={editingUser.firstName || editingUser.businessName}
+                    value={editingUser.sellerProfile?.storeName}
                     onChange={(e) => setEditingUser({ ...editingUser, firstName: e.target.value })}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   />
@@ -248,8 +238,8 @@ export default function UsersManagement() {
                     Role
                   </label>
                   <select
-                    value={editingUser.role}
-                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as 'user' | 'admin' | 'seller' | 'courier' })}
+                    value={editingUser.roles?.[0] || 'user'}
+                    onChange={(e) => setEditingUser({ ...editingUser, roles: [e.target.value as UserRole] })}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   >
                     <option value="user">User</option>

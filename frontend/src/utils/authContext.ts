@@ -1,19 +1,11 @@
 import { useState, useEffect, createContext, useContext, ReactNode, createElement } from 'react';
 import { API_BASE_URL } from './api';
+import type { User, UserRole } from '../types/user';
 
-// Define a proper User type to replace 'any'
-export interface User {
-  _id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role: 'customer' | 'seller' | 'admin' | 'courier';
-  businessName?: string;
-  businessAddress?: string;
-  phoneNumber?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+export const hasRole = (user: User | null, role: UserRole): boolean => {
+  if (!user || !user.roles || !Array.isArray(user.roles)) return false;
+  return user.roles.includes(role);
+};
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -94,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setToken(storedToken);
         setUser(parsedUser);
         setIsAuthenticated(true);
-        setIsAdmin(parsedUser.role === 'admin');
+        setIsAdmin(hasRole(parsedUser, 'admin'));
       } catch (error) {
         console.error('Error parsing stored user:', error);
         // Clear invalid data
@@ -126,7 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(cleanToken);
       setUser(userData);
       setIsAuthenticated(true);
-      setIsAdmin(userData.role === 'admin');
+      setIsAdmin(hasRole(userData, 'admin'));
       
       // Dispatch storage event to notify other tabs
       window.dispatchEvent(new Event('storage'));

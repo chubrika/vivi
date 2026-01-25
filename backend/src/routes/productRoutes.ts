@@ -26,7 +26,7 @@ router.get('/seller/:sellerId/public', async (req, res) => {
       seller: req.params.sellerId,
       isActive: true 
     })
-      .populate('seller', 'firstName lastName businessName email')
+      .populate('seller', 'storeName email')
       .populate('category', 'name')
       .sort({ createdAt: -1 });
     

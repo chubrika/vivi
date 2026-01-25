@@ -11,6 +11,7 @@ import ProductForm from '../../../components/ProductForm';
 import ProductsGrid from '../../../components/ProductsGrid';
 import { Product } from '../../../types/product';
 import { Category } from '../../../types/category';
+import { User } from '@/src/types/user';
 
 interface FeatureValue {
   type: number;
@@ -227,12 +228,12 @@ export default function SellerProducts() {
               _id: user?._id || '', 
               firstName: user?.firstName || '',
               lastName: user?.lastName || '',
-              businessName: user?.businessName || '',
+              sellerProfile: user?.sellerProfile || {},
               email: user?.email || '',
-              role: user?.role || 'seller'
-            }]}
+              roles: user?.roles || ['seller']
+            }] as User[]}
             onClose={handleCloseModal}
-            onSuccess={handleSuccess}
+            onSuccess={handleSuccess} 
             isSellerContext={true}
           />
         </Modal>

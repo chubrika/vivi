@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../utils/authContext';
 import { authService } from '../services/authService';
-import { X, Mail, Lock, Eye, EyeOff, User, Building, LogIn } from 'lucide-react';
+import { X, Mail, Lock, Eye, EyeOff, Building, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface LoginSidebarProps {
@@ -19,14 +19,9 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
   const { login } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('login');
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
     email: '',
     password: '',
     role: 'customer' as 'customer' | 'seller',
-    businessName: '',
-    businessAddress: '',
-    phoneNumber: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -66,18 +61,23 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
       
       // Show success notification
       if (activeTab === 'register') {
-        toast.success(`🎉 რეგისტრაცია წარმატებით დასრულდა! მოგესალმებთ ${data.user.firstName}!`);
+        toast.success(`🎉 რეგისტრაცია წარმატებით დასრულდა! მოგესალმებთ!`);
       } else {
-        toast.success(`👋 კეთილი იყოს თქვენი დაბრუნება, ${data.user.firstName}!`);
+        toast.success(`👋 კეთილი იყოს თქვენი დაბრუნება!`);
       }
       
       // Close sidebar
       onClose();
       
-      // Redirect based on role
-      if (data.user.role === 'admin') {
+      // Redirect based on roles (handle both old and new structures)
+      const userData = data.user as any;
+      const userRoles = userData.roles && Array.isArray(userData.roles) 
+        ? userData.roles 
+        : (userData.role ? [userData.role] : ['user']);
+      
+      if (userRoles.includes('admin')) {
         router.push('/admin');
-      } else if (data.user.role === 'seller') {
+      } else if (userRoles.includes('seller')) {
         router.push('/seller/dashboard');
       } else {
         router.push('/');
@@ -107,16 +107,7 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     setError('');
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      role: 'customer',
-      businessName: '',
-      businessAddress: '',
-      phoneNumber: '',
-    });
+    setFormData({ email: '', password: '', role: 'customer' });
   };
 
   return (
@@ -183,133 +174,36 @@ export default function LoginSidebar({ isOpen, onClose }: LoginSidebarProps) {
                 </div>
               )}
 
-              {/* Register Form Fields */}
+              {/* Register: role only (new structure: customer -> user, seller -> userType seller + SellerProfile) */}
               {activeTab === 'register' && (
-                <>
-                  {/* Name Fields */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                        სახელი
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <User className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                          id="firstName"
-                          name="firstName"
-                          type="text"
-                          required
-                          className="block text-gray-900 w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                          placeholder="სახელი"
-                          value={formData.firstName}
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                        გვარი
-                      </label>
-                      <input
-                        id="lastName"
-                        name="lastName"
-                        type="text"
-                        required
-                        className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                        placeholder="გვარი"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                      />
-                    </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">ანგარიშის ტიპი</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleRoleChange('customer')}
+                      className={`p-3 border rounded-lg text-sm font-medium transition-colors ${
+                        formData.role === 'customer'
+                          ? 'border-sky-500 bg-sky-50 text-sky-700'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      მომხმარებელი
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRoleChange('seller')}
+                      className={`p-3 border rounded-lg text-sm font-medium transition-colors ${
+                        formData.role === 'seller'
+                          ? 'border-sky-500 bg-sky-50 text-sky-700'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      <Building className="h-4 w-4 inline mr-2" />
+                      გამყიდველი
+                    </button>
                   </div>
-
-                  {/* Phone Number */}
-                  <div className="space-y-2">
-                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
-                      ტელეფონის ნომერი
-                    </label>
-                    <input
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      type="tel"
-                      required
-                      className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                      placeholder="+995 5XX XX XX XX"
-                      value={formData.phoneNumber}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  {/* Role Selection */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      ანგარიშის ტიპი
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => handleRoleChange('customer')}
-                        className={`p-3 border rounded-lg text-sm font-medium transition-colors ${
-                          formData.role === 'customer'
-                            ? 'border-sky-500 bg-sky-50 text-sky-700'
-                            : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                        }`}
-                      >
-                        მომხმარებელი
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRoleChange('seller')}
-                        className={`p-3 border rounded-lg text-sm font-medium transition-colors ${
-                          formData.role === 'seller'
-                            ? 'border-sky-500 bg-sky-50 text-sky-700'
-                            : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                        }`}
-                      >
-                        <Building className="h-4 w-4 inline mr-2" />
-                        გამყიდველი
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Seller-specific fields */}
-                  {formData.role === 'seller' && (
-                    <>
-                      <div className="space-y-2">
-                        <label htmlFor="businessName" className="block text-sm font-medium text-gray-700">
-                          ბიზნესის სახელი
-                        </label>
-                        <input
-                          id="businessName"
-                          name="businessName"
-                          type="text"
-                          required
-                          className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                          placeholder="თქვენი ბიზნესის სახელი"
-                          value={formData.businessName}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="businessAddress" className="block text-sm font-medium text-gray-700">
-                          ბიზნესის მისამართი
-                        </label>
-                        <input
-                          id="businessAddress"
-                          name="businessAddress"
-                          type="text"
-                          required
-                          className="block text-gray-900 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                          placeholder="ბიზნესის მისამართი"
-                          value={formData.businessAddress}
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </>
-                  )}
-                </>
+                </div>
               )}
 
               {/* Email Field */}

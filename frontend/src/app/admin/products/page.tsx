@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '../../../utils/api';
-import { useAuth, User } from '../../../utils/authContext';
+import { useAuth } from '../../../utils/authContext';
 import Modal from '../../../components/Modal';
 import ProductForm from '../../../components/ProductForm';
 import ProductsGrid from '../../../components/ProductsGrid';
 import { Product, FeatureGroup } from '../../../types/product';
 import { categoriesService, Category } from '../../../services/categoriesService';
+import { sellerProfileService, SellerProfileWithUser } from '../../../services/sellerProfileService';
+import type { User, UserRole } from '../../../types/user';
 import toast, { Toaster } from 'react-hot-toast';
 import { FiEdit, FiTrash2, FiPlus } from 'react-icons/fi';
 
@@ -21,15 +23,6 @@ interface Feature {
   featureId: number;
   featureCaption: string;
   featureValues: FeatureValue[];
-}
-
-interface Seller {
-  _id: string;
-  firstName?: string;
-  lastName?: string;
-  businessName?: string;
-  email: string;
-  role: string;
 }
 
 interface Filter {
@@ -54,7 +47,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filters, setFilters] = useState<Filter[]>([]);
-  const [sellers, setSellers] = useState<Seller[]>([]);
+  const [sellers, setSellers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>(undefined);
@@ -97,14 +90,25 @@ export default function AdminProductsPage() {
 
   const fetchSellers = async () => {
     try {
-      const response = await fetch('/api/admin/users?role=seller', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      let data = await response.json();
-      data = data.filter((seller: User) => seller.role === 'seller');
-      setSellers(data);
+      const data = await sellerProfileService.getAllSellers();
+      const mapped: User[] = data
+        .filter((sp): sp is SellerProfileWithUser & { userId: { _id: string; email: string; roles?: string[] } } =>
+          !!sp.userId && typeof sp.userId === 'object')
+        .map((sp) => {
+          const u = sp.userId as { _id: string; email: string; roles?: string[] };
+          return {
+            _id: u._id,
+            email: u.email,
+            roles: (u.roles || []) as UserRole[],
+            sellerProfile: {
+              _id: sp._id,
+              status: sp.status,
+              storeName: sp.storeName,
+              phone: sp.phone,
+            },
+          };
+        });
+      setSellers(mapped);
     } catch (err) {
       setError('Failed to fetch sellers');
     }

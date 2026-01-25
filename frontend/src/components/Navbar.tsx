@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../utils/authContext';
+import { useAuth, hasRole } from '../utils/authContext';
 import { useCart } from '../utils/cartContext';
 import { useCategoryMenu } from '../contexts/CategoryMenuContext';
 import { useLoginSidebar } from '../contexts/LoginSidebarContext';
@@ -27,8 +27,8 @@ export default function Navbar() {
   const [categories, setCategories] = useState<Category[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
-  const isSeller = user?.role === 'seller';
-  const isCourier = user?.role === 'courier';
+  const isSeller = hasRole(user, 'seller');
+  const isCourier = hasRole(user, 'courier');
   const isCourierRoute = pathname?.includes('courier');
 
   // Fetch categories

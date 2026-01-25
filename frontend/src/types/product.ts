@@ -6,10 +6,7 @@ export interface Product {
   stock: number;
   seller: string | {
     _id: string;
-    firstName?: string;
-    lastName?: string;
-    businessName?: string;
-    name?: string;
+    storeName?: string;
     email: string;
   };
   category: string | {

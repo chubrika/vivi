@@ -13,7 +13,12 @@ router.get('/check-admin', authenticateToken, async (req: Request, res: Response
       return res.status(404).json({ message: 'User not found' });
     }
 
-    return res.json({ isAdmin: user.role === 'admin' });
+    // Normalize roles - handle both old (role) and new (roles) structures
+    const normalizedRoles = user.roles && Array.isArray(user.roles) && user.roles.length > 0
+      ? user.roles
+      : ((user as any).role ? [(user as any).role] : ['user']);
+
+    return res.json({ isAdmin: normalizedRoles.includes('admin') });
   } catch (error) {
     console.error('Error checking admin access:', error);
     return res.status(500).json({ message: 'Internal server error' });

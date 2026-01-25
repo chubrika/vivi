@@ -60,12 +60,13 @@ router.post('/', auth, async (req, res) => {
         return res.status(404).json({ message: 'მომხმარებელი ვერ მოიძებნა!' });
       }
 
-      if (user.balance < totalAmount) {
+      const currentBalance = user.balance ?? 0;
+      if (currentBalance < totalAmount) {
         return res.status(400).json({ message: 'ბალანსზე გაქვთ არასაკმარისი თანხა!' });
       }
 
       // Deduct amount from user's balance
-      user.balance -= totalAmount;
+      user.balance = currentBalance - totalAmount;
       await user.save();
     }
 

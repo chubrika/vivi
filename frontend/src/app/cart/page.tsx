@@ -110,15 +110,15 @@ export default function CartPage() {
                         {isDiscounted && item.discountedPrice ? (
                           <>
                             <span className="text-gray-900 font-bold">
-                              ${item.discountedPrice.toFixed(2)}
+                              {item.discountedPrice.toFixed(2)} ₾
                             </span>
                             <span className="text-gray-500 line-through text-sm">
-                              ${item.price.toFixed(2)}
+                              {item.price.toFixed(2)} ₾
                             </span>
                           </>
                         ) : (
                           <span className="text-gray-900 font-bold">
-                            ${item.price.toFixed(2)}
+                            {item.price.toFixed(2)} ₾
                           </span>
                         )}
                       </div>
@@ -172,7 +172,7 @@ export default function CartPage() {
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between">
                   <span className="font-semibold text-gray-600">სულ თანხა</span>
-                  <span className="font-semibold text-gray-500">${totalPrice.toFixed(2)}</span>
+                  <span className="font-semibold text-gray-500">{totalPrice.toFixed(2)} ₾</span>
                 </div>
               </div>
             </div>

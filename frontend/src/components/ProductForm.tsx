@@ -9,21 +9,13 @@ import { useAuth } from '../utils/authContext';
 import HierarchicalCategorySelect from './HierarchicalCategorySelect';
 import { Category } from '../types/category';
 import { productsService } from '../services/productsService';
+import type { User } from '../types/user';
 
 // Use dynamic import with no SSR to avoid hydration issues
 const ReactQuill = dynamic(() => import('react-quill'), { 
   ssr: false,
   loading: () => <p>Loading editor...</p>
 });
-
-interface User {
-  _id: string;
-  firstName?: string;
-  lastName?: string;
-  businessName?: string;
-  email: string;
-  role: string;
-}
 
 interface FeatureValue {
   type: number;
@@ -51,11 +43,9 @@ interface ProductFormProps {
     stock: number;
     seller: string | {
       _id: string;
-      firstName?: string;
-      lastName?: string;
-      businessName?: string;
-      name?: string;
+      storeName?: string;
       email: string;
+      phone?: string;
     };
     category: string | { _id: string; name: string };
     images: string[];
@@ -479,8 +469,11 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
   // Feature group management functions
   const handleAddFeatureGroup = () => {
-    if (newFeatureGroup.featureGroupId && newFeatureGroup.featureGroupCaption) {
-      setFeatureGroups([...featureGroups, { ...newFeatureGroup }]);
+    if (newFeatureGroup.featureGroupCaption) {
+      const nextId = featureGroups.length === 0
+        ? 1
+        : Math.max(...featureGroups.map((g) => g.featureGroupId)) + 1;
+      setFeatureGroups([...featureGroups, { ...newFeatureGroup, featureGroupId: nextId }]);
       setNewFeatureGroup({
         featureGroupId: 0,
         featureGroupCaption: '',
@@ -497,9 +490,13 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
 
   // Feature management functions
   const handleAddFeature = (groupIndex: number) => {
-    if (newFeature.featureId && newFeature.featureCaption) {
+    if (newFeature.featureCaption) {
+      const features = featureGroups[groupIndex].features;
+      const nextId = features.length === 0
+        ? 1
+        : Math.max(...features.map((f) => f.featureId)) + 1;
       const updatedGroups = [...featureGroups];
-      updatedGroups[groupIndex].features.push({ ...newFeature });
+      updatedGroups[groupIndex].features.push({ ...newFeature, featureId: nextId });
       setFeatureGroups(updatedGroups);
       setNewFeature({
         featureId: 0,
@@ -518,10 +515,14 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   // Feature value management functions
   const handleAddFeatureValue = (groupIndex: number, featureIndex: number) => {
     if (newFeatureValue.featureValue) {
+      const featureValues = featureGroups[groupIndex].features[featureIndex].featureValues;
+      const nextType = featureValues.length === 0
+        ? 1
+        : Math.max(...featureValues.map((v) => v.type)) + 1;
       const updatedGroups = [...featureGroups];
-      updatedGroups[groupIndex].features[featureIndex].featureValues.push({ 
-        type: newFeatureValue.type || 1,
-        featureValue: newFeatureValue.featureValue 
+      updatedGroups[groupIndex].features[featureIndex].featureValues.push({
+        type: nextType,
+        featureValue: newFeatureValue.featureValue
       });
       setFeatureGroups(updatedGroups);
       setNewFeatureValue({
@@ -785,7 +786,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
             <option value="">აირჩიე მაღაზია</option>
             {sellers.map((seller) => (
               <option key={seller._id} value={seller._id}>
-                {seller.businessName || `${seller.firstName} ${seller.lastName}`.trim()}
+                {seller.sellerProfile?.storeName || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || seller.email}
               </option>
             ))}
           </select>
@@ -861,18 +862,10 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                       ))}
                       
                       {/* Add new feature value */}
-                      <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-                        <input
-                          type="number"
-                          placeholder="Type"
-                          value={newFeatureValue.type || ''}
-                          onChange={(e) => setNewFeatureValue({...newFeatureValue, type: Number(e.target.value)})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
-                          min="1"
-                        />
+                      <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
                         <input
                           type="text"
-                          placeholder="Value"
+                          placeholder="მნიშვნელობა"
                           value={newFeatureValue.featureValue}
                           onChange={(e) => setNewFeatureValue({...newFeatureValue, featureValue: e.target.value})}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
@@ -882,7 +875,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                           onClick={() => handleAddFeatureValue(groupIndex, featureIndex)}
                           className="px-3 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition duration-200 text-sm font-medium"
                         >
-                          Add Value
+                          დამატება
                         </button>
                       </div>
                     </div>
@@ -892,14 +885,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                 {/* Add new feature to this group */}
                 <div className="border-t border-gray-200 pt-2 mt-2">
                   <h6 className="text-sm font-medium text-gray-700 mb-2">მახასიათებლის დამატება</h6>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <input
-                      type="number"
-                      placeholder="Feature ID"
-                      value={newFeature.featureId || ''}
-                      onChange={(e) => setNewFeature({...newFeature, featureId: Number(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-sm text-gray-600"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <input
                       type="text"
                       placeholder="Feature Caption"
@@ -912,7 +898,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                       onClick={() => handleAddFeature(groupIndex)}
                       className="px-3 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition duration-200 text-sm font-medium"
                     >
-                      ჯგუფის დამატება
+                      მახასიათებლის დამატება
                     </button>
                   </div>
                 </div>
@@ -923,17 +909,10 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
           {/* Add new feature group */}
           <div className="border border-gray-200 rounded-lg p-4 shadow-sm">
             <h4 className="text-md font-medium text-gray-800 mb-4">მახასიათებლების ჯგუფის დამატება</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <input
-                type="number"
-                placeholder="Group ID"
-                value={newFeatureGroup.featureGroupId || ''}
-                onChange={(e) => setNewFeatureGroup({...newFeatureGroup, featureGroupId: Number(e.target.value)})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <input
                 type="text"
-                placeholder="Group Caption"
+                placeholder="ჯგუფის სახელი"
                 value={newFeatureGroup.featureGroupCaption}
                 onChange={(e) => setNewFeatureGroup({...newFeatureGroup, featureGroupCaption: e.target.value})}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
