@@ -3,6 +3,7 @@ import Product from '../models/Product';
 import User from '../models/User';
 import Category from '../models/Category';
 import Filter from '../models/Filter';
+import SellerProfile from '../models/SellerProfile';
 import mongoose from 'mongoose';
 
 // Get all products
@@ -95,13 +96,15 @@ export const getAllProducts = async (req: Request, res: Response) => {
       }
     }
 
-    // Find products first (without price filter)
+    // Find products first (without price filter); .lean() so seller is a plain object
+    // and our storeName/phone merge is not stripped by Mongoose toJSON
     let products = await Product.find(query)
-      .populate('seller', 'firstName lastName businessName email')
+      .populate('seller', 'email')
       .populate('category', 'name slug parentId')
       .populate('filters', 'name description type config')
-      .sort({ createdAt: -1 });
-    
+      .sort({ createdAt: -1 })
+      .lean();
+
     // Filter by price range if provided (consider discountedPrice if available)
     if (req.query.minPrice || req.query.maxPrice) {
       const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
@@ -115,7 +118,29 @@ export const getAllProducts = async (req: Request, res: Response) => {
         return effectivePrice >= minPrice && effectivePrice <= maxPrice;
       });
     }
-      
+
+    // Join storeName (from storeName) and phone from sellerProfiles into seller
+    const sellerIds = [...new Set(products.map(p => p.seller?._id).filter(Boolean))];
+    if (sellerIds.length > 0) {
+      const profiles = await SellerProfile.find({ userId: { $in: sellerIds } })
+        .select('userId storeName phone')
+        .lean();
+      const profileByUserId = new Map(
+        profiles.map((p: { userId: { toString: () => string }; storeName?: string; phone?: string }) => [
+          p.userId.toString(),
+          { storeName: p.storeName, phone: p.phone }
+        ])
+      );
+      for (const product of products) {
+        if (product.seller?._id) {
+          const profile = profileByUserId.get(String(product.seller._id));
+          const s = product.seller as unknown as Record<string, unknown>;
+          s.storeName = profile?.storeName;
+          s.phone = profile?.phone;
+        }
+      }
+    }
+
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching products', error });
@@ -126,7 +151,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 export const getProductById = async (req: Request, res: Response) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate('seller', 'firstName lastName businessName email')
+      .populate('seller', 'storeName email')
       .populate('category', 'name')
       .populate('filters', 'name description');
       
@@ -229,7 +254,7 @@ export const createProduct = async (req: Request, res: Response) => {
     const product = new Product(req.body);
     await product.save();
     const populatedProduct = await Product.findById(product._id)
-      .populate('seller', 'firstName lastName businessName email')
+      .populate('seller', 'storeName email')
       .populate('category', 'name')
       .populate('filters', 'name description');
     res.status(201).json(populatedProduct);
@@ -362,7 +387,7 @@ export const updateProduct = async (req: Request, res: Response) => {
       req.body,
       { new: true, runValidators: true }
     )
-      .populate('seller', 'firstName lastName businessName email')
+      .populate('seller', 'storeName email')
       .populate('category', 'name')
       .populate('filters', 'name description');
     

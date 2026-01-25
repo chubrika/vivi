@@ -43,11 +43,9 @@ interface ProductFormProps {
     stock: number;
     seller: string | {
       _id: string;
-      firstName?: string;
-      lastName?: string;
-      businessName?: string;
-      name?: string;
+      storeName?: string;
       email: string;
+      phone?: string;
     };
     category: string | { _id: string; name: string };
     images: string[];

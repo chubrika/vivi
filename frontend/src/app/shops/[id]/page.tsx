@@ -9,12 +9,9 @@ import { Product } from '../../../types/product';
 
 interface Seller {
   _id: string;
-  firstName: string;
-  lastName: string;
   email: string;
-  phoneNumber: string;
-  businessName: string;
-  businessAddress: string;
+  phone: string;
+  storeName: string;
   isActive: boolean;
 }
 
@@ -123,7 +120,7 @@ export default function SellerDetailPage() {
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
         <div className="p-8">
           <div className="flex justify-between items-start mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">{seller.businessName}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{seller.storeName}</h1>
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                 seller.isActive
@@ -145,11 +142,11 @@ export default function SellerDetailPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Phone</h3>
-                  <p className="text-gray-900">{seller.phoneNumber}</p>
+                  <p className="text-gray-900">{seller.phone}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Address</h3>
-                  <p className="text-gray-900">{seller.businessAddress}</p>
+                  <p className="text-gray-900">{seller.storeName}</p>
                 </div>
               </div>
             </div>
@@ -158,7 +155,7 @@ export default function SellerDetailPage() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Name</h3>
-                  <p className="text-gray-900">{seller.firstName} {seller.lastName}</p>
+                  <p className="text-gray-900">{seller.storeName}</p>
                 </div>
               </div>
             </div>
@@ -168,7 +165,7 @@ export default function SellerDetailPage() {
 
       {/* Seller's Products Section */}
       <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Products by {seller.businessName}</h2>
+        <h2 className="text-2xl font-bold mb-6">Products by {seller.storeName}</h2>
         
         {productsLoading ? (
           <div className="flex justify-center items-center py-12">

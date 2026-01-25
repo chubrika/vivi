@@ -5,12 +5,9 @@ import Link from 'next/link';
 
 interface Seller {
     _id: string;
-    firstName: string;
-    lastName: string;
     email: string;
-    phoneNumber: string;
-    businessName: string;
-    businessAddress: string;
+    phone: string;
+    storeName: string;
     isActive: boolean;
 }
 
@@ -52,12 +49,12 @@ export default function SellersPage() {
 
         if (filter === '0-9') {
             // Filter sellers whose names start with a number
-            const filtered = sellers.filter(seller => /^[0-9]/.test(seller.businessName));
+            const filtered = sellers.filter(seller => /^[0-9]/.test(seller.storeName));
             setFilteredSellers(filtered);
         } else {
             // Filter sellers whose names start with the selected letter
             const filtered = sellers.filter(seller =>
-                seller.businessName.toUpperCase().startsWith(filter)
+                seller.storeName.toUpperCase().startsWith(filter)
             );
             setFilteredSellers(filtered);
         }
@@ -142,7 +139,7 @@ export default function SellersPage() {
                                     href={`/shops/${seller._id}`}
                                     className="text-xl font-semibold text-sky-600 hover:text-sky-800 block mb-2"
                                 >
-                                    {seller.businessName}
+                                    {seller.storeName}
                                 </Link>
                             </div>
                         </div>

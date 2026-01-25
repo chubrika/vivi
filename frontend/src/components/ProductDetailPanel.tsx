@@ -173,7 +173,7 @@ export default function ProductDetailPanel({ product, onClose }: ProductDetailPa
                                     <h2 className="text-sm font-semibold text-gray-900">მაღაზია</h2>
                                     <p className="text-gray-600 text-sm">
                                         {typeof product.seller === 'object' 
-                                            ? (product.seller.businessName || product.seller.name || 'Unknown Seller')
+                                            ? (product.seller.storeName || 'Unknown Seller')
                                             : 'Unknown Seller'
                                         }
                                     </p>

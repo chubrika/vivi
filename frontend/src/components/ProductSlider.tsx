@@ -205,7 +205,7 @@ const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
                   </div>
                                      <h3 className="text-sm md:text-md mb-1 md:mb-2 text-gray-900 line-clamp-2 overflow-hidden text-ellipsis">{product.name}</h3>
                                      <p className="text-gray-600 text-xs md:text-sm mb-1 md:mb-2 line-clamp-2">
-                    {typeof product.seller === 'object' && product.seller !== null ? product.seller.businessName : product.seller}
+                    {typeof product.seller === 'object' && product.seller !== null ? product.seller.storeName : 'unknown seller'}
                   </p>
                   <div className="mt-auto flex justify-between items-center">
                   </div>

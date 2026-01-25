@@ -9,7 +9,7 @@ export interface Product {
   stock: number;
   seller: {
     _id: string;
-    name: string;
+    storeName: string;
     email: string;
   };
   category: {

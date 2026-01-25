@@ -143,7 +143,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <h2 className="text-lg font-semibold text-gray-900">Seller</h2>
                 <p className="mt-1 text-gray-600">
                   {typeof product.seller === 'object' && product.seller !== null
-                    ? product.seller.name || `${product.seller.firstName} ${product.seller.lastName}` || product.seller.businessName
+                    ? product.seller.storeName
                     : ''}
                 </p>
               </div>

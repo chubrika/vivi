@@ -989,7 +989,7 @@ function ProductsPageContent() {
                         <span className="text-xs text-gray-500 truncate">
                           {typeof product.seller === "object" &&
                           product.seller !== null
-                            ? product.seller.businessName
+                            ? product.seller.storeName
                             : ""}
                         </span>
                       </div>

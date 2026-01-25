@@ -436,7 +436,7 @@ export default function ProfilePage() {
                     <span className="block sm:inline">{updateError}</span>
                   </div>
                 )}
-                {/* Sellers: show sellerName input; user/others: show firstName & lastName */}
+                {/* Sellers: show storeName input; user/others: show firstName & lastName */}
                 {hasRole(profile, 'seller') ? (
                   <>
                     <div className="relative">

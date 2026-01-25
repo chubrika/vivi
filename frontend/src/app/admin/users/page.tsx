@@ -152,7 +152,7 @@ export default function UsersManagement() {
           <tbody className="bg-white divide-y divide-gray-200 text-gray-800">
             {users.map((user) => (
               <tr key={user._id}>
-                <td className="px-6 py-4 whitespace-nowrap">{user.firstName || user.businessName}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.sellerProfile?.storeName || 'Unknown Seller'}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -217,7 +217,7 @@ export default function UsersManagement() {
                   </label>
                   <input
                     type="text"
-                    value={editingUser.firstName || editingUser.businessName}
+                    value={editingUser.sellerProfile?.storeName}
                     onChange={(e) => setEditingUser({ ...editingUser, firstName: e.target.value })}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   />

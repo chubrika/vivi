@@ -226,8 +226,7 @@ export const getProfile = async (req: Request, res: Response) => {
       phoneNumber: (user as any).phoneNumber || undefined,
       personalNumber: (user as any).personalNumber || undefined,
       balance: user.balance ?? 0,
-      businessName: (user as any).businessName || undefined,
-      businessAddress: (user as any).businessAddress || undefined,
+      storeName: (user as any).storeName || undefined,
     };
 
     // Remove undefined fields
@@ -356,8 +355,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       phoneNumber: (updatedUser as any).phoneNumber || undefined,
       personalNumber: (updatedUser as any).personalNumber || undefined,
       balance: updatedUser.balance ?? 0,
-      businessName: (updatedUser as any).businessName || undefined,
-      businessAddress: (updatedUser as any).businessAddress || undefined,
+      storeName: (updatedUser as any).storeName || undefined,
     };
 
     // Remove undefined fields

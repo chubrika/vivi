@@ -32,10 +32,9 @@ interface Product {
   stock: number;
   seller: string | {
     _id: string;
-    firstName?: string;
-    lastName?: string;
-    businessName?: string;
+    storeName?: string;
     email: string;
+    phone?: string;
   };
   category: string | {
     _id: string;
@@ -435,7 +434,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
                       <span className="text-sm text-gray-500">
                         მაღაზია: {
                           typeof product.seller === 'object' 
-                            ? (product.seller?.businessName || `${product.seller?.firstName} ${product.seller?.lastName}`.trim())
+                            ? (product.seller?.storeName || 'Unknown Seller')
                             : product.seller
                         }
                       </span>

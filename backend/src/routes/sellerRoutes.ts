@@ -42,7 +42,7 @@ router.get('/public/:id', async (req, res) => {
         { role: 'seller' }
       ]
     })
-      .select('firstName lastName email phoneNumber businessName businessAddress isActive');
+      .select('email storeName phone isActive');
     
     if (!seller) {
       return res.status(404).json({ message: 'Seller not found' });
