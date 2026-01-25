@@ -14,22 +14,22 @@ const Footer = () => {
               <h3 className="text-[12px] font-semibold mb-3 md:mb-4 text-[#0284c7]">ჩვენს შესახებ</h3>
               <ul className="space-y-2">
                 <li className="leading-[16px]">
-                  <Link href="/about" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
+                  <Link href="#" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
                     ჩვენი ისტორია
                   </Link>
                 </li>
                 <li className="leading-[16px]">
-                  <Link href="/team" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
+                  <Link href="#" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
                     ჩვენი გუნდი
                   </Link>
                 </li>
                 <li className="leading-[16px]">
-                  <Link href="/careers" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
+                  <Link href="#" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
                     კარიერა
                   </Link>
                 </li>
                 <li className="leading-[16px]">
-                  <Link href="/blog" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
+                  <Link href="#" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
                     ბლოგი
                   </Link>
                 </li>
@@ -41,22 +41,22 @@ const Footer = () => {
               <h3 className="text-[12px] font-semibold mb-3 md:mb-4 text-[#0284c7] ">წესები და პირობები</h3>
               <ul className="space-y-2">
                 <li className="leading-[16px]">
-                  <Link href="/terms" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
+                  <Link href="#" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
                     მომსახურების პირობები
                   </Link>
                 </li>
                 <li className="leading-[16px]">
-                  <Link href="/privacy" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
+                  <Link href="#" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
                     კონფიდენციალურობის პოლიტიკა
                   </Link>
                 </li>
                 <li className="leading-[16px]">
-                  <Link href="/shipping" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
+                  <Link href="#" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
                     მიწოდების პოლიტიკა
                   </Link>
                 </li>
                 <li className="leading-[16px]">
-                  <Link href="/returns" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
+                  <Link href="#" className="text-[12px] text-[#696969] hover:text-[#0284c7] transition-colors">
                     კონფიდენციალურობა
                   </Link>
                 </li>

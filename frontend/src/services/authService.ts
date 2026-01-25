@@ -1,14 +1,20 @@
 import { API_BASE_URL } from '../utils/api';
 import type { SellerProfileInfo, User, UserRole } from '../types/user';
 
-interface AuthCredentials {
+export interface LoginCredentials {
   email: string;
   password: string;
-  roles: UserRole[];
-  phone?: string;
+}
+
+export interface RegisterCredentials {
+  email: string;
+  password: string;
+  role?: 'customer' | 'seller';
+  roles?: UserRole[];
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
+  phone?: string;
   sellerProfile?: SellerProfileInfo;
 }
 
@@ -18,7 +24,7 @@ interface AuthResponse {
 }
 
 export const authService = {
-  async login(credentials: AuthCredentials): Promise<AuthResponse> {
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
@@ -43,10 +49,9 @@ export const authService = {
     return data;
   },
 
-  async register(credentials: AuthCredentials): Promise<AuthResponse> {
-    // Map frontend role to backend userType
-    // 'customer' -> 'user', 'seller' -> 'seller'
-    const userType = credentials.roles?.[0] === 'seller' ? 'seller' : 'user';
+  async register(credentials: RegisterCredentials): Promise<AuthResponse> {
+    // Map frontend role to backend userType: 'customer' -> 'user', 'seller' -> 'seller'
+    const userType = credentials.role === 'seller' || credentials.roles?.[0] === 'seller' ? 'seller' : 'user';
     
     // Prepare the request body with userType instead of role
     const requestBody: any = {
