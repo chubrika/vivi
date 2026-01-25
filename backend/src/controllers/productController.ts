@@ -186,7 +186,7 @@ export const createProduct = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Seller not found' });
     }
     
-    if (seller.role !== 'seller') {
+    if (seller.roles && !seller.roles.includes('seller')) {
       return res.status(400).json({ message: 'The specified user is not a seller' });
     }
 
@@ -300,7 +300,7 @@ export const updateProduct = async (req: Request, res: Response) => {
         return res.status(400).json({ message: 'Seller not found' });
       }
       
-      if (seller.role !== 'seller') {
+      if (seller.roles && !seller.roles.includes('seller')) {
         return res.status(400).json({ message: 'The specified user is not a seller' });
       }
     }
