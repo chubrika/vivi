@@ -10,10 +10,10 @@ export default function MainContent({ children }: MainContentProps) {
   const pathname = usePathname();
   
   // Check if current path is admin or courier panel
-  const isAdminOrCourierPanel = pathname?.startsWith('/admin') || pathname?.startsWith('/courier');
+  const isAdminOrCourierOrSellerPanel = pathname?.startsWith('/admin') || pathname?.startsWith('/courier') || pathname?.startsWith('/seller');
   
   // Apply margin only for non-admin/non-courier pages
-  const mainClasses = isAdminOrCourierPanel 
+  const mainClasses = isAdminOrCourierOrSellerPanel 
     ? "flex-grow pb-16 md:pb-0"
     : "flex-grow mt-[85px] md:mt-[140px] pb-16 md:pb-0 container mx-auto px-0 md:px-4";
 

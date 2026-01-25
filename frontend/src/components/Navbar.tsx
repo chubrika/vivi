@@ -119,14 +119,14 @@ export default function Navbar() {
       <div className="container mx-auto px-4">
         {/* Top row with logo, search, and user controls */}
         <div className="flex items-center justify-between h-20">
-          <div className="flex items-center gap-4 md:gap-8">
+          <div className="flex items-center w-full">
             <Link href="/" className="flex items-center">
               <Image
                 src="/img/logo.png"
                 alt="Logo"
                 width={40}
                 height={40}
-                className="w-12 h-12 md:w-auto md:h-auto"
+                className="w-8 h-8 md:w-auto md:h-auto mr-2"
               />
             </Link>
             <div className="flex gap-8">
@@ -169,7 +169,7 @@ export default function Navbar() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4 md:gap-6">
+          <div className="flex items-center ml-2 gap-2 md:gap-6">
             {/* Chat Icon - Mobile Only */}
             <button
               onClick={openChat}
