@@ -1,18 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import AddToCartButton from '../../../components/AddToCartButton';
-import { api } from '../../../utils/api';
-import { useAuth, hasRole } from '../../../utils/authContext';
 import { Product } from '../../../types/product';
-
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const router = useRouter();
-  const { user } = useAuth();
-  const isSeller = hasRole(user, 'seller');
+import { API_BASE_URL } from '../../../utils/api';
+import ProductClient from './ProductClient';
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
@@ -22,11 +12,11 @@ async function getProduct(id: string): Promise<Product | null> {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (!response.ok) {
       return null;
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching product:', error);
@@ -48,10 +38,6 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
   
   const categoryName = typeof product.category === 'object' && product.category !== null
     ? product.category.name
-    : '';
-  
-  const sellerName = typeof product.seller === 'object' && product.seller !== null
-    ? (product.seller.businessName || product.seller.name || `${product.seller.firstName} ${product.seller.lastName}` || '')
     : '';
 
   return (

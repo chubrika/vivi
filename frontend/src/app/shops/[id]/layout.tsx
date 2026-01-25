@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     });
   }
 
-  const sellerName = seller.businessName || `${seller.firstName} ${seller.lastName}`;
+  const sellerName = seller.storeName || `მაღაზიებიდან`;
   const description = `${sellerName} - გაეცანით პროდუქტებს ${sellerName}-დან vivi.ge-ზე. ხარისხიანი პროდუქტები და საიმედო მომსახურება.`;
 
   return generateSEOMetadata({
@@ -55,7 +55,7 @@ export default async function ShopLayout({
   let breadcrumbData = null;
 
   if (seller) {
-    const sellerName = seller.businessName || `${seller.firstName} ${seller.lastName}`;
+    const sellerName = seller.storeName || `მაღაზიებიდან`;
     
     breadcrumbData = generateBreadcrumbStructuredData([
       { name: 'მთავარი', url: siteUrl },
