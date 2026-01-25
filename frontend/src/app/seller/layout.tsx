@@ -27,12 +27,6 @@ export default function SellerLayout({
         setHasSellerProfile(true);
         setSellerStatus(profile.status);
         
-        // For profile page, allow access regardless of status
-        // For other pages, only allow if approved
-        if (pathname !== '/seller/profile' && profile.status !== 'approved') {
-          router.push('/seller/profile');
-          return;
-        }
       } catch (error) {
         console.error('Error checking seller access:', error);
         // Check if they have seller role as fallback
@@ -78,13 +72,13 @@ export default function SellerLayout({
   // Navigation items - only show approved seller pages if approved
   const navigation = sellerStatus === 'approved' 
     ? [
-        { name: 'Dashboard', href: '/seller/dashboard' },
-        { name: 'Products', href: '/seller/products' },
-        { name: 'Orders', href: '/seller/orders' },
-        { name: 'Profile', href: '/seller/profile' },
+        { name: 'დეშბორდი', href: '/seller/dashboard' },
+        { name: 'პროდუქტები', href: '/seller/products' },
+        { name: 'შეკვეთები', href: '/seller/orders' },
+        { name: 'პროფილი', href: '/profile' },
       ]
     : [
-        { name: 'Profile', href: '/seller/profile' },
+        { name: 'პროფილი', href: '/profile' },
       ];
 
   return (
@@ -98,7 +92,7 @@ export default function SellerLayout({
                   href={sellerStatus === 'approved' ? '/seller/dashboard' : '/seller/profile'} 
                   className="text-xl font-bold text-sky-600"
                 >
-                  Seller Portal
+                  გამყიდველის პორტალი
                 </Link>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -122,7 +116,7 @@ export default function SellerLayout({
                 href="/"
                 className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
               >
-                Back to Store
+                მაღაზიაში დაბრუნება
               </Link>
             </div>
           </div>

@@ -93,7 +93,7 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-10 px-3 bg-white">
+      <section className="py-3 md:py-10 px-3 bg-white">
         <div className="container mx-auto">
           {widgetGroups.map((group) => (
             <div key={group._id} className="mb-12">
@@ -161,14 +161,14 @@ export default function Home() {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-10 px-3 bg-white">
+      <section className="py-3 md:py-10 px-3 bg-white">
         <div className="container mx-auto">
           <ProductSlider title="გამორჩეული პროდუქტები" />
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="py-6 md:py-10 px-3 bg-white">
+      <section className="py-3 md:py-10 px-3 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl md:text-4xl font-bold text-center mb-8 md:mb-16">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-blue-600">
@@ -176,21 +176,21 @@ export default function Home() {
             </span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-            <div className="bg-gray-50 p-6 md:p-8 rounded-xl md:rounded-2xl text-center">
+            <div className="bg-gray-50 p-2 md:p-8 rounded-xl md:rounded-2xl text-center">
               <div className="w-12 h-12 md:w-16 md:h-16 bg-sky-100 rounded-full flex items-center justify-center mb-4 md:mb-6 mx-auto">
                 <Search className="text-sky-600" size={20} />
               </div>
               <h3 className="text-lg md:text-2xl text-gray-900 font-semibold mb-3 md:mb-4">1. დაათვალიერე & მოძებნე</h3>
               <p className="text-sm md:text-base text-gray-600 leading-relaxed">აარჩიე პროდუქცია სხვადასხვა მაღაზიიდან ერთ სივრცეში</p>
             </div>
-            <div className="bg-gray-50 p-6 md:p-8 rounded-xl md:rounded-2xl text-center">
+            <div className="bg-gray-50 p-2 md:p-8 rounded-xl md:rounded-2xl text-center">
               <div className="w-12 h-12 md:w-16 md:h-16 bg-sky-100 rounded-full flex items-center justify-center mb-4 md:mb-6 mx-auto">
                 <ShoppingCart className="text-sky-600" size={20} />
               </div>
               <h3 className="text-lg md:text-2xl text-gray-900 font-semibold mb-3 md:mb-4">2. დაამატე კალათაში</h3>
               <p className="text-sm md:text-base text-gray-600 leading-relaxed">აირჩიე შენი სასურველი პროდუქტი და დაამატე კალათაში</p>
             </div>
-            <div className="bg-gray-50 p-6 md:p-8 rounded-xl md:rounded-2xl text-center">
+            <div className="bg-gray-50 p-2 md:p-8 rounded-xl md:rounded-2xl text-center">
               <div className="w-12 h-12 md:w-16 md:h-16 bg-sky-100 rounded-full flex items-center justify-center mb-4 md:mb-6 mx-auto">
                 <Package className="text-sky-600" size={20} />
               </div>
@@ -202,7 +202,7 @@ export default function Home() {
       </section>
 
       {/* Trust Indicators */}
-      <section className="py-16 px-3 bg-gray-50">
+      <section className="py-8 md:py-16 px-3 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex items-center gap-4">
