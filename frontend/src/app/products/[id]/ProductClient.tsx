@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import AddToCartButton from '../../../components/AddToCartButton';
-import { useAuth } from '../../../utils/authContext';
+import { useAuth, hasRole } from '../../../utils/authContext';
 import { Product } from '../../../types/product';
 
 interface ProductClientProps {
@@ -12,7 +12,7 @@ interface ProductClientProps {
 export default function ProductClient({ product }: ProductClientProps) {
   const { user } = useAuth();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const isSeller = user?.role === 'seller';
+  const isSeller = hasRole(user, 'seller');
 
   return (
     <>
