@@ -140,7 +140,7 @@ export const authService = {
         id: user._id || user.id,
         name: user.firstName || user.name || 'User',
         email: user.email,
-        role: user.role || 'user'
+        role: user.roles[0] || 'user' 
       };
       
       // Store the token and user data
@@ -231,7 +231,7 @@ export const authService = {
         id: user._id || user.id,
         name: user.firstName || user.name || 'User',
         email: user.email,
-        role: user.role || 'user'
+        role: user.roles[0] || 'user' 
       };
       
       // Store the token and user data
