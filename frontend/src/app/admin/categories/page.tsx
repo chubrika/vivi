@@ -94,7 +94,7 @@ const CategoriesPage = () => {
             {category.hasChildren && (
               <button
                 onClick={() => toggleCategory(category._id)}
-                className="w-4 h-4 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-transform duration-200"
+                className="w-4 h-4 flex items-center justify-center text-gray-600 hover:text-gray-900"
                 style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

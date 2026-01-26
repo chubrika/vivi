@@ -6,9 +6,12 @@ import Link from 'next/link';
 interface Seller {
     _id: string;
     email: string;
-    phone: string;
-    storeName: string;
-    isActive: boolean;
+    sellerProfile: {
+        _id: string;
+        storeName: string;
+        phone: string;
+        isActive: boolean;
+    }
 }
 
 export default function SellersPage() {
@@ -49,12 +52,12 @@ export default function SellersPage() {
 
         if (filter === '0-9') {
             // Filter sellers whose names start with a number
-            const filtered = sellers.filter(seller => /^[0-9]/.test(seller.storeName));
+            const filtered = sellers.filter(seller => /^[0-9]/.test(seller.sellerProfile.storeName));
             setFilteredSellers(filtered);
         } else {
             // Filter sellers whose names start with the selected letter
             const filtered = sellers.filter(seller =>
-                seller.storeName.toUpperCase().startsWith(filter)
+                seller.sellerProfile.storeName.toUpperCase().startsWith(filter)
             );
             setFilteredSellers(filtered);
         }
@@ -126,7 +129,7 @@ export default function SellersPage() {
             </div>
 
             {/* Sellers Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {filteredSellers.length === 0 ? (
                     <div className="col-span-full text-center text-gray-500 py-8">
                         No sellers found matching your filter.
@@ -139,7 +142,7 @@ export default function SellersPage() {
                                     href={`/shops/${seller._id}`}
                                     className="text-xl font-semibold text-sky-600 hover:text-sky-800 block mb-2"
                                 >
-                                    {seller.storeName}
+                                    {seller.sellerProfile.storeName}
                                 </Link>
                             </div>
                         </div>
