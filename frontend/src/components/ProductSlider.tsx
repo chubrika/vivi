@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ReactNode, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -8,7 +8,7 @@ import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { api } from '../utils/api';
+import { useFeaturedProducts } from '@/src/hooks/useFeaturedProducts';
 import ProductDetailPanel from './ProductDetailPanel';
 import { Product } from '../types/product';
 
@@ -17,30 +17,10 @@ interface ProductSliderProps {
 }
 
 const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { products, isLoading, error } = useFeaturedProducts();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const swiperRef = useRef<SwiperType>();
   const [showArrows, setShowArrows] = useState(false);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        // Use public API endpoint for products
-        const data = await api.get('/api/products', undefined, false);
-        // Filter for featured products or take the first 6 products
-        setProducts(data.slice(0, 6));
-      } catch (err) {
-        console.error('Error fetching products:', err);
-        setError('Failed to load products');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
 
   // Function to check if arrows should be shown
   const checkShowArrows = () => {
@@ -97,7 +77,7 @@ const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
     return false;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-600"></div>
@@ -108,7 +88,7 @@ const ProductSlider = ({ title = "Featured Products" }: ProductSliderProps) => {
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        <p>{error}</p>
+        <p>{error.message ?? 'Failed to load products'}</p>
       </div>
     );
   }

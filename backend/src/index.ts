@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 import authRoutes from './routes/authRoutes';
-import componentRoutes from './routes/components';
 import sellerRoutes from './routes/sellerRoutes';
 import sellerProfileRoutes from './routes/sellerProfileRoutes';
 import productRoutes from './routes/productRoutes';
@@ -108,7 +107,6 @@ mongoose
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/components', componentRoutes);
 app.use('/api/sellers', sellerRoutes);
 app.use('/api/seller-profiles', sellerProfileRoutes);
 app.use('/api/products', productRoutes);

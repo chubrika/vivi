@@ -11,7 +11,6 @@ import Image from 'next/image';
 import SearchResults from './SearchResults';
 import { Search, ShoppingCart, User, Menu, X, MessageCircle, ChevronDown, ChevronUp, SquareMenu } from 'lucide-react';
 import CategoryMenu from './CategoryMenu';
-import { categoriesService, Category } from '../services/categoriesService';
 import { CategoriesIcon } from './icons/CategoriesIcon';
 
 export default function Navbar() {
@@ -24,28 +23,11 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const isSeller = hasRole(user, 'seller');
   const isCourier = hasRole(user, 'courier');
   const isCourierRoute = pathname?.includes('courier');
-
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await categoriesService.getAllCategories();
-        // Only get root categories (no parent)
-        const rootCategories = data.filter((cat: Category) => !cat.parentId);
-        setCategories(rootCategories);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      }
-    };
-
-    fetchCategories();
-  }, []);
 
   // Check authentication status on component mount and when pathname changes
   useEffect(() => {
@@ -213,6 +195,20 @@ export default function Navbar() {
                       onClick={() => setDropdownOpen(false)}
                     >
                       პროფილი
+                    </Link>
+                    <Link
+                      href="/profile?section=orders"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      შეკვეთები
+                    </Link>
+                    <Link
+                      href="/profile?section=addresses"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      მისამართები
                     </Link>
                     <button
                       onClick={() => {

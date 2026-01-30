@@ -74,41 +74,32 @@ function ProductsPageContent() {
     Record<string, string[]>
   >({});
 
-  // Fetch products whenever query parameters change
+  // Skip duplicate runs from React Strict Mode / double mount
+  const lastProductsParamsRef = useRef<string | null>(null);
+  const categoriesFetchedRef = useRef(false);
+  const filtersFetchedForRef = useRef<string | null | undefined>(undefined);
+  const allProductsFetchedRef = useRef(false);
+
+  // Fetch products only when URL search params change
   useEffect(() => {
+    const params = new URLSearchParams();
+    searchParams.forEach((value, key) => {
+      params.append(key, value);
+    });
+    const queryString = params.toString();
+
+    if (lastProductsParamsRef.current === queryString) {
+      return;
+    }
+    lastProductsParamsRef.current = queryString;
+
     const fetchProducts = async () => {
       try {
         setProductsLoading(true);
 
-        // Get all current query parameters
-        const params = new URLSearchParams();
-
-        // Add category if present
-        const category = searchParams.get("category");
-        if (category) {
-          params.append("category", category);
-        }
-
-        // Add all filter parameters (using slugs)
-        searchParams.forEach((value, key) => {
-          const filter = filters.find((f) => f.slug === key);
-          if (filter) {
-            params.append(key, value);
-          }
-        });
-
-        // Add price range if present
-        const minPrice = searchParams.get("minPrice");
-        const maxPrice = searchParams.get("maxPrice");
-        if (minPrice) params.append("minPrice", minPrice);
-        if (maxPrice) params.append("maxPrice", maxPrice);
-
-        const queryString = params.toString();
         const endpoint = queryString
           ? `/api/products?${queryString}`
           : "/api/products";
-
-        console.log("Fetching products with params:", queryString); // Debug log
 
         const data = await api.get(endpoint, undefined, false);
         setProducts(data);
@@ -122,7 +113,7 @@ function ProductsPageContent() {
     };
 
     fetchProducts();
-  }, [searchParams, filters]); // Added filters dependency
+  }, [searchParams]);
 
   // Update local state when URL parameters change
   useEffect(() => {
@@ -138,12 +129,14 @@ function ProductsPageContent() {
     }
   }, [searchParams]);
 
-  // Fetch categories
+  // Fetch categories (once per mount)
   useEffect(() => {
+    if (categoriesFetchedRef.current) return;
+    categoriesFetchedRef.current = true;
+
     const fetchCategories = async () => {
       try {
         const data = await categoriesService.getAllCategories();
-        console.log(data);
         setCategories(data);
       } catch (err) {
         console.error("Error fetching categories:", err);
@@ -153,8 +146,11 @@ function ProductsPageContent() {
     fetchCategories();
   }, []);
 
-  // Fetch all products for counting
+  // Fetch all products for counting (once per mount)
   useEffect(() => {
+    if (allProductsFetchedRef.current) return;
+    allProductsFetchedRef.current = true;
+
     const fetchAllProducts = async () => {
       try {
         const data = await api.get("/api/products", undefined, false);
@@ -202,34 +198,6 @@ function ProductsPageContent() {
     }
   }, [allProducts]);
 
-  // Fetch filters
-  useEffect(() => {
-    const fetchFilters = async () => {
-      try {
-        setFiltersLoading(true);
-        // Use getActiveFilters to only show active filters
-        const data = await filtersService.getActiveFilters();
-
-        // If no filters are returned, create some example filters for demonstration
-        if (data.length === 0) {
-          const exampleFilters = createExampleFilters();
-          setFilters(exampleFilters);
-        } else {
-          setFilters(data);
-        }
-      } catch (err) {
-        console.error("Error fetching filters:", err);
-        // Create example filters if there's an error
-        const exampleFilters = createExampleFilters();
-        setFilters(exampleFilters);
-      } finally {
-        setFiltersLoading(false);
-      }
-    };
-
-    fetchFilters();
-  }, []);
-
   // Function to create example filters for demonstration
   const createExampleFilters = () => {
     // Get the first category if available
@@ -270,26 +238,31 @@ function ProductsPageContent() {
     ];
   };
 
-  // Fetch filters by category when category changes
+  // Fetch filters: one request per selected category (skip duplicate run for same category)
   useEffect(() => {
-    const fetchFiltersByCategory = async () => {
-      if (selectedCategory) {
-        try {
-          setFiltersLoading(true);
-          console.log(selectedCategory);
-          const data = await filtersService.getFiltersByCategory(
-            selectedCategory
-          );
+    if (filtersFetchedForRef.current === selectedCategory) return;
+    filtersFetchedForRef.current = selectedCategory;
+
+    const fetchFilters = async () => {
+      try {
+        setFiltersLoading(true);
+        const data = await filtersService.getFiltersForProducts(selectedCategory);
+        if (data.length === 0) {
+          const exampleFilters = createExampleFilters();
+          setFilters(exampleFilters);
+        } else {
           setFilters(data);
-        } catch (err) {
-          console.error("Error fetching filters by category:", err);
-        } finally {
-          setFiltersLoading(false);
         }
+      } catch (err) {
+        console.error("Error fetching filters:", err);
+        const exampleFilters = createExampleFilters();
+        setFilters(exampleFilters);
+      } finally {
+        setFiltersLoading(false);
       }
     };
 
-    fetchFiltersByCategory();
+    fetchFilters();
   }, [selectedCategory]);
 
   // Since we're now fetching filtered products from the server,

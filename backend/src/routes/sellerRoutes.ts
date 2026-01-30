@@ -9,6 +9,8 @@ import {
 } from '../controllers/sellerController';
 import User from '../models/User';
 import { Order } from '../models/Order';
+import SellerProfile from '../models/SellerProfile';
+import mongoose from 'mongoose';
 
 const router = express.Router();
 
@@ -16,14 +18,50 @@ const router = express.Router();
 router.get('/public', async (req, res) => {
   try {
     // Handle both old (role) and new (roles) structures
-    const sellers = await User.find({
-      $or: [
-        { roles: { $in: ['seller'] } },
-        { role: 'seller' }
-      ]
-    })
-      .select('email roles role')
-      .sort({ createdAt: -1 });
+    // Use aggregation to join SellerProfile
+    const sellers = await User.aggregate([
+      {
+        $match: {
+          $or: [
+            { roles: { $in: ['seller'] } },
+            { role: 'seller' }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'sellerprofiles',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'sellerProfile'
+        }
+      },
+      {
+        $unwind: {
+          path: '$sellerProfile',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          roles: 1,
+          role: 1,
+          sellerProfile: {
+            _id: '$sellerProfile._id',
+            status: '$sellerProfile.status',
+            storeName: '$sellerProfile.storeName',
+            phone: '$sellerProfile.phone',
+            documents: '$sellerProfile.documents',
+            createdAt: '$sellerProfile.createdAt',
+            approvedAt: '$sellerProfile.approvedAt'
+          }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      }
+    ]);
     res.json(sellers);
   } catch (error) {
     console.error('Error fetching public sellers:', error);
@@ -35,20 +73,58 @@ router.get('/public', async (req, res) => {
 router.get('/public/:id', async (req, res) => {
   try {
     // Handle both old (role) and new (roles) structures
-    const seller = await User.findOne({
-      _id: req.params.id,
-      $or: [
-        { roles: { $in: ['seller'] } },
-        { role: 'seller' }
-      ]
-    })
-      .select('email storeName phone isActive');
+    // Use aggregation to join SellerProfile
+    const sellers = await User.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(req.params.id),
+          $or: [
+            { roles: { $in: ['seller'] } },
+            { role: 'seller' }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'sellerprofiles',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'sellerProfile'
+        }
+      },
+      {
+        $unwind: {
+          path: '$sellerProfile',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          storeName: 1,
+          phone: 1,
+          isActive: 1,
+          sellerProfile: {
+            _id: '$sellerProfile._id',
+            status: '$sellerProfile.status',
+            storeName: '$sellerProfile.storeName',
+            phone: '$sellerProfile.phone',
+            documents: '$sellerProfile.documents',
+            createdAt: '$sellerProfile.createdAt',
+            approvedAt: '$sellerProfile.approvedAt'
+          }
+        }
+      },
+      {
+        $limit: 1
+      }
+    ]);
     
-    if (!seller) {
+    if (!sellers || sellers.length === 0) {
       return res.status(404).json({ message: 'Seller not found' });
     }
     
-    res.json(seller);
+    res.json(sellers[0]);
   } catch (error) {
     console.error('Error fetching public seller:', error);
     res.status(500).json({ message: 'Error fetching seller' });

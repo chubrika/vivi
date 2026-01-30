@@ -24,17 +24,36 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
 router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { email, roles, isActive } = req.body;
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { email, roles, isActive },
-      { new: true, runValidators: true }
-    ).select('-password');
-
+    
+    // Find user first to check if we need to create courierProfile
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    return res.json(user);
+    // Check if courier role is being added
+    const hasCourierRole = roles?.includes('courier') || roles?.some((r: string) => r === 'courier');
+    const hadCourierRole = user.roles?.includes('courier') || (user as any).role === 'courier';
+    
+    // If courier role is being added and profile doesn't exist, create it
+    if (hasCourierRole && !hadCourierRole && !user.courierProfile) {
+      user.courierProfile = {
+        totalEarnings: 0,
+        pendingWithdrawal: false,
+        deliveryHistory: [],
+        payoutHistory: []
+      };
+    }
+
+    // Update user fields
+    if (email) user.email = email;
+    if (roles) user.roles = roles;
+    if (isActive !== undefined) (user as any).isActive = isActive;
+
+    await user.save();
+
+    const updatedUser = await User.findById(req.params.id).select('-password');
+    return res.json(updatedUser);
   } catch (error) {
     console.error('Error updating user:', error);
     return res.status(500).json({ message: 'Internal server error' });

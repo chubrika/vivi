@@ -10,9 +10,12 @@ import { Product } from '../../../types/product';
 interface Seller {
   _id: string;
   email: string;
-  phone: string;
-  storeName: string;
-  isActive: boolean;
+  sellerProfile: {
+    _id: string;
+    status: string;
+    storeName: string;
+    phone: string;
+  }
 }
 
 export default function SellerDetailPage() {
@@ -113,59 +116,30 @@ export default function SellerDetailPage() {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
           </svg>
-          Back to Sellers
+          უკან
         </Link>
       </div>
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="p-8">
-          <div className="flex justify-between items-start mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">{seller.storeName}</h1>
+        <div className="p-4">
+          <div className="flex justify-between items-start">
+            <h1 className="text-xl font-semibold text-gray-900">{seller.sellerProfile.storeName}</h1>
             <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                seller.isActive
+              className={`inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium ${
+                seller.sellerProfile.status === 'approved'
                   ? 'bg-green-100 text-green-800'
                   : 'bg-red-100 text-red-800'
               }`}
             >
-              {seller.isActive ? 'Active' : 'Inactive'}
+              {seller.sellerProfile.status === 'approved' ? 'აქტიური' : 'შეჩერებული'}
             </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900">Contact Information</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Email</h3>
-                  <p className="text-gray-900">{seller.email}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Phone</h3>
-                  <p className="text-gray-900">{seller.phone}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Address</h3>
-                  <p className="text-gray-900">{seller.storeName}</p>
-                </div>
-              </div>
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900">Business Owner</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Name</h3>
-                  <p className="text-gray-900">{seller.storeName}</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Seller's Products Section */}
       <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Products by {seller.storeName}</h2>
+        <h2 className="text-2xl font-bold mb-6">Products by {seller.sellerProfile.storeName}</h2>
         
         {productsLoading ? (
           <div className="flex justify-center items-center py-12">

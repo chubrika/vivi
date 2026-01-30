@@ -85,7 +85,7 @@ router.post('/', auth, async (req, res) => {
       shippingAddress,
       paymentMethod,
       paymentStatus: paymentMethod === 'balance' ? 'completed' : 'pending',
-      status: paymentMethod === 'balance' ? 'processing' : 'pending'
+      status: paymentMethod === 'balance' ? 'completed' : 'pending'
     });
 
     console.log('Order before save:', order);

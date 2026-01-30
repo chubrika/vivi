@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { categoriesService, Category } from '../services/categoriesService';
+import { useCategories } from '../hooks/useCategories';
+import type { Category } from '../types/category';
 import { useAuth } from '../utils/authContext';
 import { useRouter } from 'next/navigation';
 
@@ -11,9 +12,7 @@ interface CategoryMenuProps {
 const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
   const { token } = useAuth();
   const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { categories, error, isLoading } = useCategories();
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -37,26 +36,13 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen, shouldRender]);
 
+  // Trigger mount animation when categories are ready and menu is open
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await categoriesService.getAllCategories();
-        setCategories(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-        // Trigger animation after content is loaded
-        if (isOpen && !isClosing) {
-          setTimeout(() => setIsMounted(true), 10);
-        }
-      }
-    };
-
-    if (isOpen && shouldRender) {
-      fetchCategories();
+    if (!isLoading && isOpen && shouldRender && !isClosing) {
+      const timer = setTimeout(() => setIsMounted(true), 10);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, shouldRender, isClosing]);
+  }, [isLoading, isOpen, shouldRender, isClosing]);
 
   const handleCategoryClick = (category: Category) => {
     if (category.children && category.children.length > 0) {
@@ -91,10 +77,10 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="absolute top-0 md:top-[80px] inset-0 z-50 bg-white border-t border-gray-200 w-full">
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-8">Loading...</div>
       ) : error ? (
-        <div className="text-red-500 text-center py-8">{error}</div>
+        <div className="text-red-500 text-center py-8">{error.message}</div>
       ) : (
         <div className={`container md:h-auto h-[100vh] mx-auto px-4 py-8 border border-gray-200 border-t-0 bg-white shadow-sm rounded-[10px] transition-all duration-500 ease-out ${
           isMounted && !isClosing

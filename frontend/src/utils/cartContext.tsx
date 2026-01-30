@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { useAuth, getToken } from './authContext';
 import { API_BASE_URL } from './api';
 
@@ -48,6 +48,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const cartLoadFetchedForRef = useRef<string | null>(null);
+  const skipNextSaveRef = useRef(false);
 
   // Calculate total items and price
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
@@ -56,8 +58,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return total + itemPrice * item.quantity;
   }, 0);
 
-  // Load cart data from localStorage or API when component mounts
+  // Load cart data from localStorage or API when component mounts (once per auth state)
   useEffect(() => {
+    const authKey = isAuthenticated && user && token ? token : 'guest';
+    if (cartLoadFetchedForRef.current === authKey) return;
+    cartLoadFetchedForRef.current = authKey;
+
     const loadCart = async () => {
       setIsLoading(true);
       
@@ -84,6 +90,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           });
           
           if (response.status === 401 && !isRefreshing) {
+            cartLoadFetchedForRef.current = null;
             // Token expired, try to refresh
             setIsRefreshing(true);
             const refreshed = await refreshToken();
@@ -94,63 +101,44 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               const newToken = getToken();
               if (!newToken) {
                 console.error('Invalid token received after refresh');
-                // Fallback to localStorage
                 const localCart = localStorage.getItem('cart');
-                if (localCart) {
-                  setItems(JSON.parse(localCart));
-                }
+                if (localCart) setItems(JSON.parse(localCart));
                 setIsLoading(false);
                 return;
               }
               
-              // Retry the fetch with the new token
               const newResponse = await fetch(`${API_BASE_URL}/api/cart`, {
-                headers: {
-                  'Authorization': `Bearer ${newToken}`
-                }
+                headers: { 'Authorization': `Bearer ${newToken}` }
               });
               
               if (newResponse.ok) {
                 const data = await newResponse.json();
+                skipNextSaveRef.current = true;
                 setItems(data.items || []);
               } else {
-                // If API call fails, try to load from localStorage as fallback
                 const localCart = localStorage.getItem('cart');
-                if (localCart) {
-                  setItems(JSON.parse(localCart));
-                }
+                if (localCart) setItems(JSON.parse(localCart));
               }
             } else {
-              // If refresh failed, load from localStorage
               const localCart = localStorage.getItem('cart');
-              if (localCart) {
-                setItems(JSON.parse(localCart));
-              }
+              if (localCart) setItems(JSON.parse(localCart));
             }
           } else if (response.ok) {
             const data = await response.json();
+            skipNextSaveRef.current = true;
             setItems(data.items || []);
           } else {
-            // If API call fails, try to load from localStorage as fallback
             const localCart = localStorage.getItem('cart');
-            if (localCart) {
-              setItems(JSON.parse(localCart));
-            }
+            if (localCart) setItems(JSON.parse(localCart));
           }
         } catch (error) {
           console.error('Error loading cart from API:', error);
-          // Fallback to localStorage
           const localCart = localStorage.getItem('cart');
-          if (localCart) {
-            setItems(JSON.parse(localCart));
-          }
+          if (localCart) setItems(JSON.parse(localCart));
         }
       } else {
-        // For guest users, load from localStorage
         const localCart = localStorage.getItem('cart');
-        if (localCart) {
-          setItems(JSON.parse(localCart));
-        }
+        if (localCart) setItems(JSON.parse(localCart));
       }
       
       setIsLoading(false);
@@ -159,22 +147,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     loadCart();
   }, [isAuthenticated, user, token, refreshToken, isRefreshing]);
 
-  // Save cart to localStorage or API when items change
+  // Save cart to localStorage or API when items change (skip right after load from API)
   useEffect(() => {
     if (!isLoading) {
-      // Always save to localStorage for guest users and as a fallback
       localStorage.setItem('cart', JSON.stringify(items));
       
-      // For logged-in users, also save to API
+      if (skipNextSaveRef.current) {
+        skipNextSaveRef.current = false;
+        return;
+      }
+      
       if (isAuthenticated && user) {
         const saveCartToAPI = async () => {
           try {
-            // Get a validated token
             const validToken = getToken();
-            if (!validToken) {
-              console.error('Invalid token detected when saving cart');
-              return;
-            }
+            if (!validToken) return;
             
             const response = await fetch(`${API_BASE_URL}/api/cart`, {
               method: 'PUT',
@@ -186,28 +173,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             });
             
             if (response.status === 401 && !isRefreshing) {
-              // Token expired, try to refresh
               setIsRefreshing(true);
               const refreshed = await refreshToken();
               setIsRefreshing(false);
-              
               if (refreshed) {
-                // Get the new token after refresh
                 const newToken = getToken();
-                if (!newToken) {
-                  console.error('Invalid token received after refresh when saving cart');
-                  return;
+                if (newToken) {
+                  await fetch(`${API_BASE_URL}/api/cart`, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${newToken}`
+                    },
+                    body: JSON.stringify({ items })
+                  });
                 }
-                
-                // Retry the save with the new token
-                await fetch(`${API_BASE_URL}/api/cart`, {
-                  method: 'PUT',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${newToken}`
-                  },
-                  body: JSON.stringify({ items })
-                });
               }
             }
           } catch (error) {
