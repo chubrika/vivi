@@ -196,6 +196,20 @@ export default function Navbar() {
                     >
                       პროფილი
                     </Link>
+                    <Link
+                      href="/profile?section=orders"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      შეკვეთები
+                    </Link>
+                    <Link
+                      href="/profile?section=addresses"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition duration-300"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      მისამართები
+                    </Link>
                     <button
                       onClick={() => {
                         setDropdownOpen(false);

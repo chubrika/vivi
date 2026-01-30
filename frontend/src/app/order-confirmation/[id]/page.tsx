@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { API_BASE_URL } from '../../../utils/api';
 import Link from 'next/link';
+import { ArrowLeftIcon, ListOrdered, ShoppingBag } from 'lucide-react';
 
 interface OrderItem {
     id: string;
@@ -136,12 +137,20 @@ export default function OrderConfirmationPage() {
                         </div>
                     </div>
 
-                    <div className="text-center">
+                    <div className="flex justify-between items-center md:flex-row flex-col">
+                        <Link href="/profile?section=orders"
+                            className="flex items-center justify-center border border-sky-600 text-sky-600 py-3 px-6 rounded-lg hover:bg-sky-500 hover:text-white transition-colors duration-200 w-full md:w-[50%] mb-4 md:mb-0"
+                            >
+                            <ListOrdered className="w-4 h-4 mr-2" />
+                            <span className="text-[14px] md:text-base">ჩემი შეკვეთები</span>
+                        </Link>
+                        <div className="w-[10px] md:block hidden"></div>
                         <Link 
                             href="/products"
-                            className="inline-block bg-sky-600 text-white py-3 px-6 rounded-lg hover:bg-sky-700 transition-colors duration-200"
+                            className="flex items-center justify-center border border-sky-600 text-sky-600 py-3 px-6 rounded-lg hover:bg-sky-500 hover:text-white transition-colors duration-200 w-full md:w-[50%] mb-4 md:mb-0"
                         >
-                            გაგრძელება შოპინგი
+                            <ShoppingBag className="w-4 h-4 mr-2" />
+                            <span className="text-[14px] md:text-base">ყიდვის გაგრძელება</span>
                         </Link>
                     </div>
                 </div>

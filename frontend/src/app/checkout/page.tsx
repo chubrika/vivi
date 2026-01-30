@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '../../utils/authContext';
@@ -35,6 +35,7 @@ interface CheckoutForm {
     address: string;
     comment: string;
     paymentMethod: string;
+    bankType: string;
 }
 
 export default function CheckoutPage() {
@@ -46,7 +47,6 @@ export default function CheckoutPage() {
     const { user, isAuthenticated } = useAuth();
     const { items: cartItems, totalPrice: cartTotalPrice, isLoading: cartLoading } = useCart();
     const { openLoginSidebar } = useLoginSidebar();
-    
     const [product, setProduct] = useState<Product | null>(null);
     const [cartItemsToCheckout, setCartItemsToCheckout] = useState<CartItem[]>([]);
     const [isCartCheckout, setIsCartCheckout] = useState(false);
@@ -57,7 +57,8 @@ export default function CheckoutPage() {
         personalNumber: '',
         address: '',
         comment: '',
-        paymentMethod: 'card'
+        paymentMethod: 'card',
+        bankType: ''
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -67,7 +68,8 @@ export default function CheckoutPage() {
     const [showAddressFormModal, setShowAddressFormModal] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [userBalance, setUserBalance] = useState<number>(0);
-
+    const profileAddressesFetchedRef = useRef(false);
+    const shippingPrice = 5;
     // Determine if we're doing a cart checkout or direct product checkout
     useEffect(() => {
         if (productId) {
@@ -95,143 +97,85 @@ export default function CheckoutPage() {
         }
     }, [productId, cartItems, router]);
 
-    // Automatically fill user profile data when component mounts
-    useEffect(() => {
-        const fillUserInfo = async () => {
-            if (!isAuthenticated) {
-                return;
-            }
-
-            try {
-                setLoading(true);
-                const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch user profile');
-                }
-
-                const userData = await response.json();
-                
-                // Split the name into first and last name if it exists
-                let firstName = userData.firstName || '';
-                let lastName = userData.lastName || '';
-                
-                if (firstName.includes(' ')) {
-                    const nameParts = firstName.split(' ');
-                    firstName = nameParts[0];
-                    lastName = nameParts.slice(1).join(' ');
-                }
-
-                // Fetch user's default address
-                const addressResponse = await fetch(`${API_BASE_URL}/api/addresses`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                let address = '';
-                let defaultAddressId = null;
-                
-                if (addressResponse.ok) {
-                    const addresses = await addressResponse.json();
-                    const defaultAddress = addresses.find((addr: any) => addr.isDefault);
-                    if (defaultAddress) {
-                        address = defaultAddress.address;
-                        defaultAddressId = defaultAddress._id;
-                        setSelectedAddressId(defaultAddressId);
-                    }
-                }
-
-                // Update form with user data
-                setFormData(prev => ({
-                    ...prev,
-                    firstName: firstName,
-                    lastName: lastName,
-                    phoneNumber: userData.phoneNumber || '',
-                    personalNumber: userData.personalNumber || '',
-                    address: address,
-                    // Keep other fields as they are
-                }));
-            } catch (err) {
-                console.error('Error fetching user data:', err);
-                setError('Failed to load user information');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fillUserInfo();
-    }, [isAuthenticated]);
-
-    // Function to fetch addresses
-    const fetchAddresses = async () => {
-        if (!isAuthenticated) {
-            return;
-        }
-
+    // Fetch profile + addresses once when authenticated (no duplicate profile/address calls)
+    const fetchProfileAndAddresses = async () => {
+        if (!isAuthenticated) return;
         try {
+            setLoading(true);
+            const userData = await userService.getCurrentUser();
+            setUserBalance(userData.balance ?? 0);
+
+            let firstName = userData.firstName ?? '';
+            let lastName = userData.lastName ?? '';
+            if (firstName.includes(' ') && !lastName) {
+                const parts = firstName.split(' ');
+                firstName = parts[0];
+                lastName = parts.slice(1).join(' ');
+            }
+
             const addressData = await addressService.getAddresses();
-            
-            // Sort addresses to put default address first
             const sortedAddresses = [...addressData].sort((a, b) => {
                 if (a.isDefault) return -1;
                 if (b.isDefault) return 1;
                 return 0;
             });
-            
             setAddresses(sortedAddresses);
-            
-            // Find the default address
-            const defaultAddress = sortedAddresses.find(addr => addr.isDefault);
+
+            const defaultAddress = sortedAddresses.find((addr) => addr.isDefault) ?? sortedAddresses[0];
+            const address = defaultAddress?.address ?? '';
             if (defaultAddress) {
-                // Use _id for MongoDB documents
-                setSelectedAddressId(defaultAddress._id || null);
-                setFormData(prev => ({
-                    ...prev,
-                    address: defaultAddress.address
-                }));
-            } else if (sortedAddresses.length > 0) {
-                // If no default address but addresses exist, select the first one
-                setSelectedAddressId(sortedAddresses[0]._id || null);
-                setFormData(prev => ({
-                    ...prev,
-                    address: sortedAddresses[0].address
-                }));
+                setSelectedAddressId(defaultAddress._id ?? null);
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                firstName,
+                lastName,
+                phoneNumber: userData.phoneNumber ?? '',
+                personalNumber: userData.personalNumber ?? '',
+                address,
+            }));
+        } catch (err) {
+            console.error('Error fetching user data:', err);
+            setError('Failed to load user information');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setUserBalance(0);
+            profileAddressesFetchedRef.current = false;
+            return;
+        }
+        if (profileAddressesFetchedRef.current) return;
+        profileAddressesFetchedRef.current = true;
+        fetchProfileAndAddresses();
+    }, [isAuthenticated]);
+
+    const fetchAddresses = async () => {
+        if (!isAuthenticated) return;
+        try {
+            const addressData = await addressService.getAddresses();
+            const sorted = [...addressData].sort((a, b) => {
+                if (a.isDefault) return -1;
+                if (b.isDefault) return 1;
+                return 0;
+            });
+            setAddresses(sorted);
+            const defaultAddr = sorted.find((addr) => addr.isDefault) ?? sorted[0];
+            if (defaultAddr) {
+                setSelectedAddressId(defaultAddr._id ?? null);
+                setFormData(prev => ({ ...prev, address: defaultAddr.address }));
+            } else if (sorted.length > 0) {
+                setSelectedAddressId(sorted[0]._id ?? null);
+                setFormData(prev => ({ ...prev, address: sorted[0].address }));
             }
         } catch (err) {
             console.error('Error fetching addresses:', err);
         }
     };
-
-    // Fetch addresses when the address modal is opened
-    useEffect(() => {
-        if (showAddressModal) {
-            fetchAddresses();
-        }
-    }, [showAddressModal]);
-
-    // Fetch user balance when authenticated
-    useEffect(() => {
-        const fetchUserBalance = async () => {
-            if (isAuthenticated) {
-                try {
-                    const userData = await userService.getCurrentUser();
-                    setUserBalance(userData.balance || 0);
-                } catch (err) {
-                    console.error('Error fetching user balance:', err);
-                    setUserBalance(0);
-                }
-            } else {
-                setUserBalance(0);
-            }
-        };
-
-        fetchUserBalance();
-    }, [isAuthenticated]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -244,7 +188,6 @@ export default function CheckoutPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-
         // Check if user is authenticated
         if (!isAuthenticated) {
             openLoginSidebar();
@@ -258,6 +201,9 @@ export default function CheckoutPage() {
         if (!formData.phoneNumber) errors.phoneNumber = 'მობილური ნომერი სავალდებულოა';
         if (!formData.personalNumber) errors.personalNumber = 'პირადი ნომერი სავალდებულოა';
         if (!formData.address) errors.address = 'მისამართი სავალდებულოა';
+        if (formData.paymentMethod === 'card' && !['tbc', 'bog'].includes(formData.bankType)) {
+            errors.bankType = 'გთხოვთ აირჩიოთ ბანკი';
+        }
 
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);
@@ -327,69 +273,13 @@ export default function CheckoutPage() {
         }
     };
 
-    // Manual fill function for the button (as a fallback)
     const handleFillUserInfo = async () => {
         if (!isAuthenticated) {
             alert('Please log in to use this feature');
             return;
         }
-
-        try {
-            setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch user profile');
-            }
-
-            const userData = await response.json();
-            
-            // Split the name into first and last name if it exists
-            let firstName = userData.firstName || '';
-            let lastName = '';
-            
-            if (firstName.includes(' ')) {
-                const nameParts = firstName.split(' ');
-                firstName = nameParts[0];
-                lastName = nameParts.slice(1).join(' ');
-            }
-
-            // Fetch user's default address
-            const addressResponse = await fetch(`${API_BASE_URL}/api/addresses`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-
-            let address = '';
-            if (addressResponse.ok) {
-                const addresses = await addressResponse.json();
-                const defaultAddress = addresses.find((addr: any) => addr.isDefault);
-                if (defaultAddress) {
-                    address = defaultAddress.address;
-                }
-            }
-
-            // Update form with user data
-            setFormData(prev => ({
-                ...prev,
-                firstName: firstName,
-                lastName: lastName,
-                phoneNumber: userData.phoneNumber || '',
-                personalNumber: userData.personalNumber || '',
-                address: address,
-                // Keep other fields as they are
-            }));
-        } catch (err) {
-            console.error('Error fetching user data:', err);
-            setError('Failed to load user information');
-        } finally {
-            setLoading(false);
-        }
+        setError('');
+        await fetchProfileAndAddresses();
     };
 
     const handleAddressSelect = (address: Address) => {
@@ -435,6 +325,17 @@ export default function CheckoutPage() {
 
     if (!isCartCheckout && !product) return <div>Product not found</div>;
     if (isCartCheckout && cartItemsToCheckout.length === 0) return <div>Cart is empty</div>;
+
+    const isFormValid = Boolean(
+        formData.firstName?.trim() &&
+        formData.lastName?.trim() &&
+        formData.phoneNumber?.trim() &&
+        formData.personalNumber?.trim() &&
+        formData.address?.trim()
+    );
+    const isBankSelected = formData.bankType === 'tbc' || formData.bankType === 'bog';
+    const isCardPaymentValid = formData.paymentMethod !== 'card' || isBankSelected;
+    const buttonDisabled = !isFormValid || !isCardPaymentValid;
 
     return (
         <div className="container mx-auto px-4 py-3">
@@ -631,6 +532,8 @@ export default function CheckoutPage() {
                                                                 id="tbc"
                                                                 name="bankType"
                                                                 value="tbc"
+                                                                checked={formData.bankType === 'tbc'}
+                                                                onChange={handleInputChange}
                                                                 className="h-4 w-4 text-sky-600 focus:ring-sky-500"
                                                             />
                                                             <label htmlFor="tbc" className="text-gray-800">თიბისი ბანკი</label>
@@ -644,6 +547,8 @@ export default function CheckoutPage() {
                                                                 id="bog"
                                                                 name="bankType"
                                                                 value="bog"
+                                                                checked={formData.bankType === 'bog'}
+                                                                onChange={handleInputChange}
                                                                 className="h-4 w-4 text-sky-600 focus:ring-sky-500"
                                                             />
                                                             <label htmlFor="bog" className="text-gray-800">საქართველოს ბანკი</label>
@@ -669,10 +574,10 @@ export default function CheckoutPage() {
                                         <button
                                             type="button"
                                             onClick={() => isAuthenticated && setFormData(prev => ({ ...prev, paymentMethod: 'balance' }))}
-                                            disabled={!isAuthenticated}
+                                            disabled={true}
                                             className={`w-full flex items-center justify-between p-4 ${
                                                 formData.paymentMethod === 'balance' ? 'bg-sky-50' : 'bg-white'
-                                            } ${isAuthenticated ? 'hover:bg-sky-50' : 'cursor-not-allowed opacity-60'} transition-all duration-200`}
+                                            } cursor-not-allowed opacity-60 transition-all duration-200`}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -680,11 +585,12 @@ export default function CheckoutPage() {
                                                 </svg>
                                                 <div className="flex items-center">
                                                     <span className="text-gray-800">ბალანსით გადახდა</span>
-                                                    {isAuthenticated && (
+                                                    <span className="text-sm ml-2 font-bold text-red-500">მალე</span>
+                                                    {/* {isAuthenticated && (
                                                         <span className="text-sm ml-2 font-bold text-gray-900 bg-sky-200 rounded-full px-2 py-1">
                                                             {userBalance.toFixed(2)} ₾
                                                         </span>
-                                                    )}
+                                                    )} */}
                                                 </div>
                                             </div>
                                             {formData.paymentMethod === 'balance' && (
@@ -700,16 +606,17 @@ export default function CheckoutPage() {
                                         <button
                                             type="button"
                                             onClick={() => isAuthenticated && setFormData(prev => ({ ...prev, paymentMethod: 'cash' }))}
-                                            disabled={!isAuthenticated}
+                                            disabled={true}
                                             className={`w-full flex items-center justify-between p-4 ${
                                                 formData.paymentMethod === 'cash' ? 'bg-sky-50' : 'bg-white'
-                                            } ${isAuthenticated ? 'hover:bg-sky-50' : 'cursor-not-allowed opacity-60'} transition-all duration-200`}
+                                            } cursor-not-allowed opacity-60 transition-all duration-200`}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                                                 </svg>
                                                 <span className="text-gray-800">კურიერთან გადახდა</span>
+                                                <span className="text-sm ml-2 font-bold text-red-500">მალე</span>
                                             </div>
                                             {formData.paymentMethod === 'cash' && (
                                                 <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -727,31 +634,36 @@ export default function CheckoutPage() {
                 {/* Right side - Order Details */}
                 <div className="lg:col-span-1">
                     <div className="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 className="text-xl font-semibold mb-6 text-gray-600">შეკვეთის დეტალები</h2>
-                        <div className="space-y-6">
-                            <div className="space-y-3 border-t pt-4">
+                        <h2 className="text-md font-bold mb-2 text-gray-600">შეკვეთის დეტალები</h2>
+                        <div className="space-y-3">
+                            <div className="space-y-2 border-t pt-2">
                                 <div className="flex justify-between text-gray-600">
-                                    <span>პროდუქტი</span>
-                                    <span>{isCartCheckout ? cartItemsToCheckout.reduce((sum, item) => sum + item.quantity, 0) : quantity}</span>
+                                    <span className="text-[14px] font-semibold">პროდუქტი</span>
+                                    <span className="text-black font-bold">{isCartCheckout ? cartItemsToCheckout.reduce((sum, item) => sum + item.quantity, 0) : quantity}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
-                                    <span>ფასი</span>
-                                    <span>{isCartCheckout ? cartTotalPrice.toFixed(2) : (product?.price ? product.price * quantity : 0).toFixed(2)} ₾</span>
+                                    <span className="text-[14px] font-semibold">ფასი</span>
+                                    <span className="text-black font-bold">{isCartCheckout ? cartTotalPrice.toFixed(2) : (product?.price ? product.price * quantity : 0).toFixed(2)} ₾</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
-                                    <span>მიტანა</span>
-                                    <span className="text-green-600">Free</span>
+                                    <span className="text-[14px] font-semibold">მიტანა</span>
+                                    <span className="text-black font-bold">5 ₾</span>
                                 </div>
-                                <div className="flex justify-between font-semibold text-lg border-t text-gray-600 pt-4">
-                                    <span>სულ თანხა</span>
-                                    <span className="text-sky-600">{isCartCheckout ? cartTotalPrice.toFixed(2) : (product?.price ? product.price * quantity : 0).toFixed(2)} ₾</span>
+                                <div className="flex justify-between border-t text-gray-600 pt-2">
+                                    <span className="text-[14px] font-semibold">სულ თანხა</span>
+                                    <span className="text-black font-bold">{((isCartCheckout ? cartTotalPrice : (product?.price ? product.price * quantity : 0)) + shippingPrice).toFixed(2)} ₾</span>
                                 </div>
                             </div>
 
                             {isAuthenticated ? (
                                 <button
                                     onClick={handleSubmit}
-                                    className="w-full bg-sky-600 text-white py-4 px-6 rounded-lg hover:bg-sky-700 transition-colors duration-200 font-medium text-sm shadow-md hover:shadow-lg"
+                                    className={`w-full py-4 px-6 rounded-lg transition-colors duration-200 font-medium text-sm shadow-md hover:shadow-lg ${
+                                        buttonDisabled
+                                            ? 'bg-white text-gray-400 cursor-not-allowed'
+                                            : 'bg-green-600 text-white hover:bg-green-700'
+                                    }`}
+                                    disabled={buttonDisabled}
                                 >
                                     შეკვეთის დასრულება
                                 </button>

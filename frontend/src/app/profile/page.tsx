@@ -735,7 +735,7 @@ export default function ProfilePage() {
                       <div className="text-sm text-gray-600">
                         <span className="font-medium">{order.totalAmount.toFixed(2)} ₾</span>
                         <span className="mx-2">•</span>
-                        <span>{order.items.length} ნაწილი</span>
+                        <span>{order.items.length} ცალი</span>
                       </div>
                       <Link
                         href={`/order-confirmation/${order._id}`}

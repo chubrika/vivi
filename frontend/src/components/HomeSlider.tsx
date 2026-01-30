@@ -75,7 +75,7 @@ const customSliderStyles = `
   @media (max-width: 768px) {
     .rakuten-swiper .swiper-slide {
       width: 85% !important;
-      margin-right: 20px !important;
+      margin-right: 5px !important;
     }
     
     .swiper-pagination {
@@ -86,7 +86,7 @@ const customSliderStyles = `
   @media (max-width: 480px) {
     .rakuten-swiper .swiper-slide {
       width: 85% !important;
-      margin-right: 20px !important;
+      margin-right: 5px !important;
     }
     
     .swiper-pagination {
