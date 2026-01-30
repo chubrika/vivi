@@ -174,6 +174,33 @@ export const filtersService = {
   },
 
   /**
+   * Get active filters, optionally scoped to a category. Single request.
+   * @param categorySlug Optional category slug; when provided returns only filters for that category
+   * @returns Promise<Filter[]> Array of active filters
+   */
+  async getFiltersForProducts(categorySlug: string | null): Promise<Filter[]> {
+    const params = new URLSearchParams();
+    params.set('isActive', 'true');
+    if (categorySlug) {
+      params.set('category', categorySlug);
+    }
+    const response = await fetch(`${API_BASE_URL}/api/filters?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch filters');
+    }
+
+    return data;
+  },
+
+  /**
    * Create a new filter
    * @param filterData Filter data
    * @returns Promise<Filter> Created filter

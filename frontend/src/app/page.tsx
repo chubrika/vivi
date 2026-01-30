@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { ShoppingCart, Search, Package, Truck, Shield, Mail } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ShoppingCart, Search, Package, Truck, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
+import { useWidgetGroups } from '@/src/hooks/useWidgetGroups';
 
 // Dynamically import the ProductSlider component with no SSR
 const ProductSlider = dynamic(() => import('../components/ProductSlider'), {
@@ -26,54 +26,15 @@ const HomeSlider = dynamic(() => import('../components/HomeSlider'), {
   ),
 });
 
-interface Category {
-  categoryId: string;
-  name: string;
-  image: string;
-  mobileImage: string;
-  slug: string;
-}
-
-interface WidgetGroup {
-  _id: string;
-  groupNumber: number;
-  widgetName: string;
-  categories: Category[];
-}
-
-// Note: Since this is a client component, we'll export metadata from a separate file
-// For Next.js 14, we need to create a metadata export in a server component wrapper
-// or use generateMetadata in a parent layout
-
 export default function Home() {
   const router = useRouter();
-  const [widgetGroups, setWidgetGroups] = useState<WidgetGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchWidgetGroups = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/widget-groups`);
-        const data = await response.json();
-        
-        if (data.success) {
-          setWidgetGroups(data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching widget groups:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWidgetGroups();
-  }, []);
+  const { widgetGroups, isLoading } = useWidgetGroups();
 
   const handleCategoryClick = (slug: string) => {
     router.push(`/products?category=${slug}`);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-[400px]">

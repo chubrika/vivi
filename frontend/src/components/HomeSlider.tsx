@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Swiper as SwiperType } from 'swiper';
-import { homeSliderService, type HomeSlider } from '../services/homeSliderService';
 import { useRouter } from 'next/navigation';
+import { useHomeSliders, type HomeSlider } from '../hooks/useHomeSliders';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
@@ -99,32 +99,9 @@ const customSliderStyles = `
 const HomeSlider = () => {
   const router = useRouter();
   const swiperRef = useRef<SwiperType>();
-  const [sliders, setSliders] = useState<HomeSlider[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { sliders, isLoading, error } = useHomeSliders();
 
-  useEffect(() => {
-    const fetchSliders = async () => {
-      try {
-        setLoading(true);
-        const data = await homeSliderService.getHomeSliders();
-        // Filter only active sliders and sort by order
-        const activeSliders = data
-          .filter(slider => slider.isActive)
-          .sort((a, b) => a.order - b.order);
-        setSliders(activeSliders);
-      } catch (err) {
-        console.error('Error fetching home sliders:', err);
-        setError('Failed to load sliders');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSliders();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="w-full h-[200px] sm:h-[180px] md:h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
