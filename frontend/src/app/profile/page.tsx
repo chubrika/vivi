@@ -25,6 +25,8 @@ export default function ProfilePage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [selectedBank, setSelectedBank] = useState<'tbc' | 'bog' | 'other'>('tbc');
   const [newAddress, setNewAddress] = useState<Partial<Address>>({
     title: '',
     address: '',
@@ -615,7 +617,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={handleChangePassword}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+                className="inline-flex items-center px-4 py-2 border border-sky-600 text-sm font-medium rounded-md text-sky-600 hover:bg-sky-500 hover:text-white transition duration-300"
               >
                 პაროლის ცვლილება
               </button>
@@ -635,11 +637,11 @@ export default function ProfilePage() {
               </div>
               <button
                 onClick={() => setShowAddAddress(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border  border-sky-600 text-sm font-medium rounded-md text-sky-600 hover:bg-sky-500 hover:text-white transition duration-300"
               >
                 მისამართის დამატება
               </button>
-            </div>
+            </div>  
 
             {addressError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -682,12 +684,6 @@ export default function ProfilePage() {
             ) : (
               <div className="text-center py-8">
                 <p className="text-gray-500">მისამართი ვერ მოიძებნა.</p>
-                <button
-                  onClick={() => setShowAddAddress(true)}
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
-                >
-                  პირველი მისამართის დამატება
-                </button>
               </div>
             )}
           </div>
@@ -769,7 +765,9 @@ export default function ProfilePage() {
                 <h2 className="text-lg font-medium text-gray-900">ჩემი ბარათები</h2>
               </div>
               <button
-                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
+                type="button"
+                onClick={() => setShowAddCardModal(true)}
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-sky-600 text-sm font-medium rounded-md text-sky-600 hover:bg-sky-500 hover:text-white transition duration-300"
               >
                 ბარათის დამატება
               </button>
@@ -782,7 +780,7 @@ export default function ProfilePage() {
                 </svg>
               </div>
               <p className="text-gray-500 mb-4">ბარათი ვერ მოიძებნა</p>
-              <p className="text-sm text-gray-400">დაამატეთ საკრედიტო ან დებეტური ბარათი უსაფრთხო გადახდებისთვის</p>
+              <p className="text-sm text-gray-400">დაამატეთ ბარათი უსაფრთხო გადახდებისთვის</p>
             </div>
           </div>
         );
@@ -800,7 +798,7 @@ export default function ProfilePage() {
             <div className="bg-white shadow rounded-lg p-4 md:p-6">
               {/* User Profile Summary */}
               <div className="mb-6 pb-6 border-b border-gray-200">
-                <div className="flex flex-col items-center mb-4">
+                <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full bg-sky-600 flex items-center justify-center text-white mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -813,9 +811,9 @@ export default function ProfilePage() {
                   </h2>
                 </div>
 
-                {isCustomer() && (
+                {/* {isCustomer() && (
                   <>
-                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4 border border-gray-200 mx-auto" style={{ maxWidth: '180px' }}>
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-4 border border-gray-200 mx-auto " style={{ maxWidth: '180px' }}>
                       <div className="flex items-center">
                         <span className="font-medium text-gray-700 text-xs">ბალანსი</span>
                       </div>
@@ -832,7 +830,7 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   </>
-                )}
+                )} */}
               </div>
 
               <nav className="space-y-1">
@@ -936,6 +934,71 @@ export default function ProfilePage() {
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
       />
+
+      {/* Add Card – Bank Selection Modal */}
+      <Modal
+        isOpen={showAddCardModal}
+        onClose={() => setShowAddCardModal(false)}
+        title="ბანკის არჩევა"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <fieldset className="space-y-3">
+            <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg border border-gray-200 hover:bg-gray-50 has-[:checked]:border-sky-600 has-[:checked]:bg-sky-50">
+              <input
+                type="radio"
+                name="bank"
+                value="tbc"
+                checked={selectedBank === 'tbc'}
+                onChange={() => setSelectedBank('tbc')}
+                className="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500"
+              />
+              <span className="text-sm font-medium text-gray-900">TBC – თიბისი ბანკი</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg border border-gray-200 hover:bg-gray-50 has-[:checked]:border-sky-600 has-[:checked]:bg-sky-50">
+              <input
+                type="radio"
+                name="bank"
+                value="bog"
+                checked={selectedBank === 'bog'}
+                onChange={() => setSelectedBank('bog')}
+                className="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500"
+              />
+              <span className="text-sm font-medium text-gray-900">BOG – საქართველოს ბანკი</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg border border-gray-200 hover:bg-gray-50 has-[:checked]:border-sky-600 has-[:checked]:bg-sky-50">
+              <input
+                type="radio"
+                name="bank"
+                value="other"
+                checked={selectedBank === 'other'}
+                onChange={() => setSelectedBank('other')}
+                className="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500"
+              />
+              <span className="text-sm font-medium text-gray-900">სხვა ბანკი</span>
+            </label>
+          </fieldset>
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowAddCardModal(false)}
+              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition"
+            >
+              გაუქმება
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                // TODO: continue flow (e.g. redirect to payment provider or next step)
+                setShowAddCardModal(false);
+              }}
+              className="flex-1 px-4 py-2 text-sm font-medium text-sky-600 border border-sky-600 rounded-md hover:bg-sky-500 hover:text-white transition duration-300"
+            >
+              გაგრძელება
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 } 

@@ -1,6 +1,17 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
+interface ICourierProfile {
+  totalEarnings: number;
+  pendingWithdrawal: boolean;
+  deliveryHistory: mongoose.Types.ObjectId[];
+  payoutHistory: Array<{
+    amount: number;
+    date: Date;
+    status: 'paid' | 'rejected';
+  }>;
+}
+
 interface IUser {
   email: string;
   password: string;
@@ -11,11 +22,45 @@ interface IUser {
   balance?: number; // Wallet balance for role 'user' (pay with balance at checkout)
   roles?: string[]; // Array of roles: ['user'], ['user', 'seller'], ['admin'], etc.
   role?: string; // Legacy field for backward compatibility
+  courierProfile?: ICourierProfile;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
   getRoles(): string[]; // Helper method to normalize roles
 }
+
+// Courier Profile Schema
+const courierProfileSchema = new mongoose.Schema<ICourierProfile>({
+  totalEarnings: {
+    type: Number,
+    default: 0
+  },
+  pendingWithdrawal: {
+    type: Boolean,
+    default: false
+  },
+  deliveryHistory: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Order'
+  }],
+  payoutHistory: [{
+    amount: {
+      type: Number,
+      required: true
+    },
+    date: {
+      type: Date,
+      default: Date.now
+    },
+    status: {
+      type: String,
+      enum: ['paid', 'rejected'],
+      required: true
+    }
+  }]
+}, {
+  _id: false // No separate _id for subdocument
+});
 
 const userSchema = new mongoose.Schema<IUser>({
   email: {
@@ -52,6 +97,10 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     required: false, // Legacy field for backward compatibility
     enum: ['user', 'admin', 'seller', 'courier']
+  },
+  courierProfile: {
+    type: courierProfileSchema,
+    required: false
   }
 }, {
   timestamps: true // This automatically adds createdAt and updatedAt
@@ -67,6 +116,17 @@ userSchema.pre('save', function(next) {
   // Normalize roles array: convert 'customer' to 'user'
   if (this.roles && Array.isArray(this.roles)) {
     this.roles = this.roles.map(role => role === 'customer' ? 'user' : role);
+  }
+  
+  // Initialize courierProfile if user has courier role and profile doesn't exist
+  const hasCourierRole = this.roles?.includes('courier') || (this as any).role === 'courier';
+  if (hasCourierRole && !this.courierProfile) {
+    this.courierProfile = {
+      totalEarnings: 0,
+      pendingWithdrawal: false,
+      deliveryHistory: [],
+      payoutHistory: []
+    };
   }
   
   next();

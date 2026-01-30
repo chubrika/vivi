@@ -242,7 +242,7 @@ export default function Home() {
                 placeholder="შეიყვანეთ თქვენი ელ-ფოსტა"
                 className="flex-1 px-4 py-3 md:py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm md:text-base"
               />
-              <button className="bg-sky-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-sky-700 transition duration-300 text-sm md:text-base whitespace-nowrap">
+              <button className="border border-sky-600 text-sky-600 px-6 py-3 rounded-full font-semibold hover:bg-sky-500 hover:text-white transition duration-300 text-sm md:text-base whitespace-nowrap">
                 გამოწერა
               </button>
             </div>

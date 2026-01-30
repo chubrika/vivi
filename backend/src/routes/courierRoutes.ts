@@ -97,25 +97,35 @@ router.patch('/orders/:id/status', auth, requireCourier, async (req, res) => {
     if (!wasDelivered && isNowDelivered) {
       const courier = await User.findById(req.user?.userId);
       if (courier) {
+        // Ensure courierProfile exists
+        if (!courier.courierProfile) {
+          courier.courierProfile = {
+            totalEarnings: 0,
+            pendingWithdrawal: false,
+            deliveryHistory: [],
+            payoutHistory: []
+          };
+        }
+
         // Check if this order is already in delivery history
-        const isAlreadyCounted = courier.deliveryHistory?.includes(order._id);
+        const isAlreadyCounted = courier.courierProfile.deliveryHistory?.includes(order._id);
         
-                 if (!isAlreadyCounted) {
-           // Add order to delivery history
-           if (!courier.deliveryHistory) {
-             courier.deliveryHistory = [];
-           }
-           courier.deliveryHistory.push(order._id);
-           
-           // Calculate earnings based on total deliveries
-           const deliveryEarnings = 5; // ₾ per delivery
-           const totalDeliveries = courier.deliveryHistory.length;
-           courier.totalEarnings = totalDeliveries * deliveryEarnings;
-           
-           await courier.save();
-           
-           console.log(`Courier ${courier.email} earned ${deliveryEarnings} ₾ for delivery ${order.orderId}. Total earnings: ${courier.totalEarnings} ₾`);
-         }
+        if (!isAlreadyCounted) {
+          // Add order to delivery history
+          if (!courier.courierProfile.deliveryHistory) {
+            courier.courierProfile.deliveryHistory = [];
+          }
+          courier.courierProfile.deliveryHistory.push(order._id);
+          
+          // Calculate earnings based on total deliveries
+          const deliveryEarnings = 5; // ₾ per delivery
+          const totalDeliveries = courier.courierProfile.deliveryHistory.length;
+          courier.courierProfile.totalEarnings = totalDeliveries * deliveryEarnings;
+          
+          await courier.save();
+          
+          console.log(`Courier ${courier.email} earned ${deliveryEarnings} ₾ for delivery ${order.orderId}. Total earnings: ${courier.courierProfile.totalEarnings} ₾`);
+        }
       }
     }
 
@@ -202,12 +212,12 @@ router.get('/stats', auth, requireCourier, async (req, res) => {
     // Get courier earnings info
     const courier = await User.findById(req.user?.userId);
     const deliveryEarnings = 5; // ₾ per delivery
-    const totalDeliveries = courier?.deliveryHistory?.length || 0;
+    const totalDeliveries = courier?.courierProfile?.deliveryHistory?.length || 0;
     const calculatedTotalEarnings = totalDeliveries * deliveryEarnings;
     
     const earningsInfo = {
       totalEarnings: calculatedTotalEarnings,
-      pendingWithdrawal: courier?.pendingWithdrawal || false,
+      pendingWithdrawal: courier?.courierProfile?.pendingWithdrawal || false,
       totalDeliveries: totalDeliveries
     };
 
@@ -237,20 +247,31 @@ router.get('/earnings', auth, requireCourier, async (req, res) => {
       return res.status(404).json({ message: 'Courier not found' });
     }
 
+    // Ensure courierProfile exists
+    if (!courier.courierProfile) {
+      courier.courierProfile = {
+        totalEarnings: 0,
+        pendingWithdrawal: false,
+        deliveryHistory: [],
+        payoutHistory: []
+      };
+      await courier.save();
+    }
+
     // Get delivery history with order details
     const deliveryHistory = await Order.find({
-      _id: { $in: courier.deliveryHistory || [] }
+      _id: { $in: courier.courierProfile.deliveryHistory || [] }
     }).select('orderId totalAmount status createdAt');
 
     // Calculate earnings dynamically based on total deliveries
     const deliveryEarnings = 5; // ₾ per delivery
-    const totalDeliveries = courier.deliveryHistory?.length || 0;
+    const totalDeliveries = courier.courierProfile.deliveryHistory?.length || 0;
     const calculatedTotalEarnings = totalDeliveries * deliveryEarnings;
 
     res.json({
       totalEarnings: calculatedTotalEarnings,
-      pendingWithdrawal: courier.pendingWithdrawal || false,
-      payoutHistory: courier.payoutHistory || [],
+      pendingWithdrawal: courier.courierProfile.pendingWithdrawal || false,
+      payoutHistory: courier.courierProfile.payoutHistory || [],
       deliveryHistory: deliveryHistory,
       totalDeliveries: totalDeliveries
     });
@@ -268,21 +289,31 @@ router.post('/withdraw', auth, requireCourier, async (req, res) => {
       return res.status(404).json({ message: 'Courier not found' });
     }
 
-    if (courier.pendingWithdrawal) {
+    // Ensure courierProfile exists
+    if (!courier.courierProfile) {
+      courier.courierProfile = {
+        totalEarnings: 0,
+        pendingWithdrawal: false,
+        deliveryHistory: [],
+        payoutHistory: []
+      };
+    }
+
+    if (courier.courierProfile.pendingWithdrawal) {
       return res.status(400).json({ message: 'You already have a pending withdrawal request' });
     }
 
-    if (!courier.totalEarnings || courier.totalEarnings <= 0) {
+    if (!courier.courierProfile.totalEarnings || courier.courierProfile.totalEarnings <= 0) {
       return res.status(400).json({ message: 'No earnings available for withdrawal' });
     }
 
     // Set pending withdrawal flag
-    courier.pendingWithdrawal = true;
+    courier.courierProfile.pendingWithdrawal = true;
     await courier.save();
 
     res.json({ 
       message: 'Withdrawal request submitted successfully',
-      pendingAmount: courier.totalEarnings
+      pendingAmount: courier.courierProfile.totalEarnings
     });
   } catch (error: any) {
     console.error('Error requesting withdrawal:', error);
@@ -294,11 +325,24 @@ router.post('/withdraw', auth, requireCourier, async (req, res) => {
 router.get('/pending-withdrawals', auth, requireAdmin, async (req, res) => {
   try {
     const couriers = await User.find({
-      role: 'courier',
-      pendingWithdrawal: true
-    }).select('firstName lastName email totalEarnings pendingWithdrawal');
+      $or: [
+        { roles: { $in: ['courier'] } },
+        { role: 'courier' }
+      ],
+      'courierProfile.pendingWithdrawal': true
+    }).select('firstName lastName email courierProfile');
 
-    res.json(couriers);
+    // Format response to include earnings info
+    const formattedCouriers = couriers.map(courier => ({
+      _id: courier._id,
+      firstName: courier.firstName,
+      lastName: courier.lastName,
+      email: courier.email,
+      totalEarnings: courier.courierProfile?.totalEarnings || 0,
+      pendingWithdrawal: courier.courierProfile?.pendingWithdrawal || false
+    }));
+
+    res.json(formattedCouriers);
   } catch (error: any) {
     console.error('Error fetching pending withdrawals:', error);
     res.status(500).json({ message: error.message || 'Error fetching pending withdrawals' });
@@ -317,31 +361,47 @@ router.post('/payout/:courierId', auth, requireAdmin, async (req, res) => {
     }
 
     const courier = await User.findById(courierId);
-    if (!courier || !courier.roles || !courier.roles.includes('courier')) {
+    if (!courier) {
       return res.status(404).json({ message: 'Courier not found' });
     }
 
-    if (!courier.pendingWithdrawal) {
+    // Check if user has courier role
+    const hasCourierRole = courier.roles?.includes('courier') || (courier as any).role === 'courier';
+    if (!hasCourierRole) {
+      return res.status(404).json({ message: 'Courier not found' });
+    }
+
+    // Ensure courierProfile exists
+    if (!courier.courierProfile) {
+      courier.courierProfile = {
+        totalEarnings: 0,
+        pendingWithdrawal: false,
+        deliveryHistory: [],
+        payoutHistory: []
+      };
+    }
+
+    if (!courier.courierProfile.pendingWithdrawal) {
       return res.status(400).json({ message: 'No pending withdrawal request' });
     }
 
     // Add to payout history
     const payoutRecord = {
-      amount: courier.totalEarnings || 0,
+      amount: courier.courierProfile.totalEarnings || 0,
       date: new Date(),
       status: status as 'paid' | 'rejected'
     };
 
-    if (!courier.payoutHistory) {
-      courier.payoutHistory = [];
+    if (!courier.courierProfile.payoutHistory) {
+      courier.courierProfile.payoutHistory = [];
     }
-    courier.payoutHistory.push(payoutRecord);
+    courier.courierProfile.payoutHistory.push(payoutRecord);
 
     // Reset pending withdrawal and total earnings if paid
     if (status === 'paid') {
-      courier.totalEarnings = 0;
+      courier.courierProfile.totalEarnings = 0;
     }
-    courier.pendingWithdrawal = false;
+    courier.courierProfile.pendingWithdrawal = false;
 
     await courier.save();
 
