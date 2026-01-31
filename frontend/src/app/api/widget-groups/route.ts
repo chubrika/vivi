@@ -1,28 +1,22 @@
 import { NextResponse } from 'next/server';
-import {
-  getRedisClient,
-  HOME_WIDGET_GROUPS_CACHE_KEY,
-  HOME_WIDGET_GROUPS_CACHE_TTL,
-} from '@/src/lib/redis';
 
 const BACKEND_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4800';
 
+export const dynamic = 'force-dynamic';
+
 /**
- * GET /api/widget-groups
- * Returns widget groups for the home page. Uses Redis cache with 24h TTL;
- * on cache miss, fetches from the backend API and stores in Redis.
+ * Next.js API Route (App Router): GET /api/widget-groups
+ *
+ * Proxies to backend Express GET /api/widget-groups. Caching lives only on the backend
+ * (Redis key "widget-groups:all"); this route does not cache so that when the backend
+ * invalidates Redis after a write, the next request here hits the backend and gets fresh data.
+ *
+ * - next: { revalidate: 0 } — do not use Next.js fetch cache for the backend call.
+ * - Cache-Control / Pragma — tell the browser not to cache this response (no disk cache).
+ * - Error handling: forward backend status and message; 500 on network/server errors.
  */
 export async function GET() {
   try {
-    const redis = await getRedisClient();
-    if (redis) {
-      const cached = await redis.get(HOME_WIDGET_GROUPS_CACHE_KEY);
-      if (cached) {
-        const data = JSON.parse(cached) as unknown;
-        return NextResponse.json(data);
-      }
-    }
-
     const response = await fetch(`${BACKEND_URL}/api/widget-groups`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -45,16 +39,12 @@ export async function GET() {
     }
 
     const data = await response.json();
-
-    if (redis && data && typeof data === 'object') {
-      await redis.setex(
-        HOME_WIDGET_GROUPS_CACHE_KEY,
-        HOME_WIDGET_GROUPS_CACHE_TTL,
-        JSON.stringify(data)
-      );
-    }
-
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+      },
+    });
   } catch (error) {
     console.error('[API /api/widget-groups] Error:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';

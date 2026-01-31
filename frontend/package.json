@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
-    "ioredis": "^5.4.1",
     "@types/google.maps": "^3.58.1",
     "cloudinary": "^2.6.0",
     "lucide-react": "^0.503.0",

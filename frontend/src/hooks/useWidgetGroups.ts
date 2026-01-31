@@ -21,7 +21,7 @@ interface WidgetGroupsApiResponse {
 }
 
 async function fetcher(url: string): Promise<WidgetGroup[]> {
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
   const data: WidgetGroupsApiResponse = await res.json();
   if (!res.ok) {
     throw new Error(
@@ -34,21 +34,33 @@ async function fetcher(url: string): Promise<WidgetGroup[]> {
   return data.data;
 }
 
-const WIDGET_GROUPS_KEY = '/api/widget-groups';
+/** SWR key for widget groups. Use this with mutate() to revalidate after updates. */
+export const WIDGET_GROUPS_KEY = '/api/widget-groups';
 
 /**
- * Fetches widget groups from the cached API using SWR.
- * - First load: GET /api/widget-groups (cache miss → backend → Redis → response).
- * - Subsequent: served from SWR cache; revalidates in background per SWR config.
+ * useWidgetGroups — SWR hook for GET /api/widget-groups
+ *
+ * Returns: { widgetGroups, error, isLoading, isValidating, mutate }.
+ * Data shape: { success, data: WidgetGroup[] } from API; hook exposes data as WidgetGroup[].
+ *
+ * Trigger revalidation after create/update/delete (e.g. in admin):
+ *   import { mutate } from 'swr';
+ *   import { WIDGET_GROUPS_KEY } from '@/hooks/useWidgetGroups';
+ *   // After successful PUT/POST/DELETE:
+ *   await mutate(WIDGET_GROUPS_KEY);
+ *
+ * Or use the mutate returned from the hook on a page that already uses useWidgetGroups:
+ *   const { mutate } = useWidgetGroups();
+ *   await saveGroup(...); then mutate();
  */
 export function useWidgetGroups() {
   const { data, error, isLoading, isValidating, mutate } = useSWR<WidgetGroup[]>(
     WIDGET_GROUPS_KEY,
     fetcher,
     {
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
       revalidateOnReconnect: true,
-      dedupingInterval: 60 * 1000,
+      dedupingInterval: 5 * 1000,
     }
   );
 

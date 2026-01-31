@@ -5,6 +5,14 @@ import Category from '../models/Category';
 import Filter from '../models/Filter';
 import SellerProfile from '../models/SellerProfile';
 import mongoose from 'mongoose';
+import {
+  getRedisClient,
+  invalidateFeaturedProductsCache,
+  PRODUCTS_FEATURED_CACHE_KEY,
+  PRODUCTS_FEATURED_CACHE_TTL_SECONDS,
+} from '../lib/redis';
+
+const FEATURED_PRODUCTS_LIMIT = 6;
 
 // Get all products
 export const getAllProducts = async (req: Request, res: Response) => {
@@ -147,6 +155,63 @@ export const getAllProducts = async (req: Request, res: Response) => {
   }
 };
 
+// Get featured products (first N) — cached in Redis; invalidate on product create/update/delete
+export const getFeaturedProducts = async (req: Request, res: Response) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || FEATURED_PRODUCTS_LIMIT, 20);
+
+    const redis = await getRedisClient();
+    if (redis) {
+      const cached = await redis.get(PRODUCTS_FEATURED_CACHE_KEY);
+      if (cached) {
+        const data = JSON.parse(cached) as unknown[];
+        return res.json(data);
+      }
+    }
+
+    let products = await Product.find({})
+      .populate('seller', 'email')
+      .populate('category', 'name slug parentId')
+      .populate('filters', 'name description type config')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const sellerIds = [...new Set(products.map((p: { seller?: { _id?: unknown } }) => p.seller?._id).filter(Boolean))];
+    if (sellerIds.length > 0) {
+      const profiles = await SellerProfile.find({ userId: { $in: sellerIds } })
+        .select('userId storeName phone')
+        .lean();
+      const profileByUserId = new Map(
+        profiles.map((p: { userId: { toString: () => string }; storeName?: string; phone?: string }) => [
+          p.userId.toString(),
+          { storeName: p.storeName, phone: p.phone },
+        ])
+      );
+      for (const product of products) {
+        if (product.seller?._id) {
+          const profile = profileByUserId.get(String(product.seller._id));
+          const s = product.seller as unknown as Record<string, unknown>;
+          s.storeName = profile?.storeName;
+          s.phone = profile?.phone;
+        }
+      }
+    }
+
+    if (redis) {
+      await redis.setex(
+        PRODUCTS_FEATURED_CACHE_KEY,
+        PRODUCTS_FEATURED_CACHE_TTL_SECONDS,
+        JSON.stringify(products)
+      );
+    }
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching featured products', error });
+  }
+};
+
 // Get product by ID
 export const getProductById = async (req: Request, res: Response) => {
   try {
@@ -257,6 +322,7 @@ export const createProduct = async (req: Request, res: Response) => {
       .populate('seller', 'storeName email')
       .populate('category', 'name')
       .populate('filters', 'name description');
+    await invalidateFeaturedProductsCache();
     res.status(201).json(populatedProduct);
   } catch (error) {
     if (error instanceof Error) {
@@ -395,6 +461,7 @@ export const updateProduct = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     
+    await invalidateFeaturedProductsCache();
     res.json(product);
   } catch (error) {
     if (error instanceof Error) {
@@ -423,6 +490,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
+    await invalidateFeaturedProductsCache();
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting product', error });

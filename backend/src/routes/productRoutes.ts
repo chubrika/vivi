@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticateToken } from '../middleware/auth';
 import {
   getAllProducts,
+  getFeaturedProducts,
   getProductById,
   createProduct,
   updateProduct,
@@ -16,6 +17,7 @@ const router = express.Router();
 
 // Public routes (no authentication required)
 router.get('/', getAllProducts);
+router.get('/featured', getFeaturedProducts);
 router.get('/search', searchProducts);
 router.get('/category/:categoryId', getProductsByCategory);
 

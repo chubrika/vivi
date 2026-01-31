@@ -19,7 +19,7 @@ interface HomeSlidersApiResponse {
 }
 
 async function fetcher(url: string): Promise<HomeSlider[]> {
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
   const data: HomeSlidersApiResponse = await res.json();
   if (!res.ok) {
     throw new Error(

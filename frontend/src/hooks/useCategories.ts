@@ -6,7 +6,7 @@ import type { Category } from '@/src/types/category';
  * Uses relative URL so it hits the same origin (Next.js /api/categories).
  */
 async function fetcher(url: string): Promise<Category[]> {
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.message || 'Failed to fetch categories');
