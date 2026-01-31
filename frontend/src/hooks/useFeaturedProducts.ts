@@ -2,7 +2,7 @@ import useSWR from 'swr';
 import type { Product } from '@/src/types/product';
 
 async function fetcher(url: string): Promise<Product[]> {
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
   const data = await res.json();
   if (!res.ok) {
     throw new Error(

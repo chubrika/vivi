@@ -1,19 +1,22 @@
 import express from 'express';
-import { createWidgetGroup, getWidgetGroups, updateWidgetGroup, deleteWidgetGroup } from '../controllers/widgetGroup.controller';
+import {
+  createWidgetGroup,
+  getWidgetGroups,
+  updateWidgetGroup,
+  deleteWidgetGroup,
+  reorderWidgetGroups,
+} from '../controllers/widgetGroup.controller';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
-// Create a new widget group
-router.post('/', authenticateToken, createWidgetGroup);
-
-// Get all widget groups
+// GET: Redis cache "widget-groups:all"; miss → MongoDB (.lean()), then cache 1h
 router.get('/', getWidgetGroups);
 
-// Update a widget group
+// Writes: update MongoDB, invalidate "widget-groups:all"; do not cache responses
+router.post('/', authenticateToken, createWidgetGroup);
+router.patch('/reorder', authenticateToken, reorderWidgetGroups);
 router.put('/:id', authenticateToken, updateWidgetGroup);
-
-// Delete a widget group
 router.delete('/:id', authenticateToken, deleteWidgetGroup);
 
 export default router; 

@@ -1,5 +1,11 @@
 import { Request, Response } from 'express';
 import { HomeSlider } from '../models/HomeSlider';
+import {
+  getRedisClient,
+  invalidateHomeSlidersCache,
+  HOME_SLIDERS_CACHE_KEY,
+  HOME_SLIDERS_CACHE_TTL_SECONDS,
+} from '../lib/redis';
 
 export const createHomeSlider = async (req: Request, res: Response) => {
   try {
@@ -43,6 +49,7 @@ export const createHomeSlider = async (req: Request, res: Response) => {
     });
 
     await homeSlider.save();
+    await invalidateHomeSlidersCache();
 
     res.status(201).json({
       success: true,
@@ -71,13 +78,29 @@ export const createHomeSlider = async (req: Request, res: Response) => {
 
 export const getHomeSliders = async (req: Request, res: Response) => {
   try {
-    const homeSliders = await HomeSlider.find()
-      .sort({ order: 1, createdAt: -1 });
+    const redis = await getRedisClient();
+    if (redis) {
+      const cached = await redis.get(HOME_SLIDERS_CACHE_KEY);
+      if (cached) {
+        const data = JSON.parse(cached) as { success: boolean; data: unknown[] };
+        return res.status(200).json(data);
+      }
+    }
 
-    res.status(200).json({
-      success: true,
-      data: homeSliders
-    });
+    const homeSliders = await HomeSlider.find()
+      .sort({ order: 1, createdAt: -1 })
+      .lean();
+
+    const payload = { success: true, data: homeSliders };
+    if (redis) {
+      await redis.setex(
+        HOME_SLIDERS_CACHE_KEY,
+        HOME_SLIDERS_CACHE_TTL_SECONDS,
+        JSON.stringify(payload)
+      );
+    }
+
+    res.status(200).json(payload);
   } catch (error) {
     console.error('Error fetching home sliders:', error);
     res.status(500).json({
@@ -154,6 +177,7 @@ export const updateHomeSlider = async (req: Request, res: Response) => {
       { new: true }
     );
 
+    await invalidateHomeSlidersCache();
     res.status(200).json({
       success: true,
       data: updatedSlider
@@ -179,6 +203,7 @@ export const deleteHomeSlider = async (req: Request, res: Response) => {
       });
     }
 
+    await invalidateHomeSlidersCache();
     res.status(200).json({
       success: true,
       message: 'Home slider deleted successfully'

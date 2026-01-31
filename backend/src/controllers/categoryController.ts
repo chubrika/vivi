@@ -1,6 +1,12 @@
 import { Request, Response } from 'express';
 import Category from '../models/Category';
 import mongoose from 'mongoose';
+import {
+  getRedisClient,
+  invalidateCategoriesCache,
+  CATEGORIES_CACHE_KEY,
+  CATEGORIES_CACHE_TTL_SECONDS,
+} from '../lib/redis';
 
 interface CategoryWithChildren {
   _id: mongoose.Types.ObjectId;
@@ -13,45 +19,54 @@ interface CategoryWithChildren {
   children?: CategoryWithChildren[];
 }
 
-// Get all categories
+// Get all categories — cache in Redis; invalidate on category create/update/delete
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
-    // Get all categories
-    const categories = await Category.find().sort({ name: 1 });
+    const redis = await getRedisClient();
+    if (redis) {
+      const cached = await redis.get(CATEGORIES_CACHE_KEY);
+      if (cached) {
+        const data = JSON.parse(cached) as CategoryWithChildren[];
+        return res.json(data);
+      }
+    }
 
-    // Recursive function to get all nested children
+    const categories = await Category.find().sort({ name: 1 }).lean();
+
     const getNestedChildren = async (parentId: mongoose.Types.ObjectId): Promise<CategoryWithChildren[]> => {
-      const children = await Category.find({ parentId }).sort({ name: 1 });
-      
-      // For each child, recursively get its children if it has any
-      const childrenWithNested = await Promise.all(children.map(async (child) => {
-        if (child.hasChildren) {
-          const nestedChildren = await getNestedChildren(child._id);
-          return {
-            ...child.toObject(),
-            children: nestedChildren
-          } as CategoryWithChildren;
-        }
-        return child.toObject() as CategoryWithChildren;
-      }));
-
+      const children = await Category.find({ parentId }).sort({ name: 1 }).lean();
+      const childrenWithNested = await Promise.all(
+        children.map(async (child) => {
+          const plain = child as unknown as CategoryWithChildren;
+          if (plain.hasChildren) {
+            const nested = await getNestedChildren(plain._id);
+            return { ...plain, children: nested };
+          }
+          return plain;
+        })
+      );
       return childrenWithNested;
     };
 
-    // For each category, get all nested children
-    const categoriesWithChildren = await Promise.all(categories.map(async (category) => {
-      if (category.hasChildren) {
-        const children = await getNestedChildren(category._id);
-        return {
-          ...category.toObject(),
-          children
-        } as CategoryWithChildren;
-      }
-      return category.toObject() as CategoryWithChildren;
-    }));
+    const categoriesWithChildren = await Promise.all(
+      (categories as unknown as CategoryWithChildren[]).map(async (cat) => {
+        if (cat.hasChildren) {
+          const children = await getNestedChildren(cat._id);
+          return { ...cat, children };
+        }
+        return cat;
+      })
+    );
 
-    // Filter to get only root categories (no parent)
-    const rootCategories = categoriesWithChildren.filter(cat => !cat.parentId);
+    const rootCategories = categoriesWithChildren.filter((cat) => !cat.parentId);
+
+    if (redis) {
+      await redis.setex(
+        CATEGORIES_CACHE_KEY,
+        CATEGORIES_CACHE_TTL_SECONDS,
+        JSON.stringify(rootCategories)
+      );
+    }
 
     res.json(rootCategories);
   } catch (error) {
@@ -111,6 +126,7 @@ export const createCategory = async (req: Request, res: Response) => {
     });
 
     await category.save();
+    await invalidateCategoriesCache();
     res.status(201).json(category);
   } catch (error) {
     console.error('Error creating category:', error);
@@ -174,6 +190,7 @@ export const updateCategory = async (req: Request, res: Response) => {
       { new: true, runValidators: true }
     );
 
+    await invalidateCategoriesCache();
     res.json(updatedCategory);
   } catch (error) {
     if (error instanceof Error && error.name === 'ValidationError') {
@@ -207,6 +224,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
     }
 
     await Category.findByIdAndDelete(req.params.id);
+    await invalidateCategoriesCache();
     res.json({ message: 'Category deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting category', error });
