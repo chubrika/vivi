@@ -36,6 +36,8 @@ export interface ProductsLayoutClientProps {
   initialFilters: Filter[] | FilterLike[];
   categorySlug: string | null;
   categoryName?: string;
+  /** When set (e.g. after refresh on /products/product/slug), open the panel with this product */
+  initialSelectedProduct?: Product | null;
 }
 
 export default function ProductsLayoutClient({
@@ -44,6 +46,7 @@ export default function ProductsLayoutClient({
   initialFilters,
   categorySlug,
   categoryName,
+  initialSelectedProduct = null,
 }: ProductsLayoutClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -74,7 +77,7 @@ export default function ProductsLayoutClient({
   const [maxPriceInput, setMaxPriceInput] = useState('1000');
   const [selectedColors, setSelectedColors] = useState<Record<string, string[]>>({});
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(initialSelectedProduct ?? null);
 
   const lastParamsRef = useRef<string | null>(null);
   const allProductsFetchedRef = useRef(false);
