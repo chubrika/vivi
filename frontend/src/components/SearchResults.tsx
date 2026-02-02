@@ -1,18 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  images: string[];
-  category: {
-    _id: string;
-    name: string;
-  };
-}
+import type { Product } from '@/src/types/product';
 
 interface SearchResultsProps {
   searchTerm: string;
@@ -119,7 +108,9 @@ export default function SearchResults({ searchTerm, onClose }: SearchResultsProp
                     {product.name}
                   </h3>
                   <p className="text-sm text-gray-500 truncate">
-                    {product.category?.name}
+                    {typeof product.category === 'object' && product.category !== null
+                      ? product.category.name
+                      : ''}
                   </p>
                   <p className="text-sm font-medium text-sky-600">
                     ${product.price.toFixed(2)}
