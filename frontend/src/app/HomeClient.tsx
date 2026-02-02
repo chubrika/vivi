@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { ShoppingCart, Search, Package, Truck, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import type { WidgetGroup, WidgetGroupCategory } from '@/src/types/widgetGroup';
 
 const ProductSlider = dynamic(() => import('@/src/components/ProductSlider'), {
   ssr: false,
@@ -21,21 +22,6 @@ const HomeSlider = dynamic(() => import('@/src/components/HomeSlider'), {
     </div>
   ),
 });
-
-export interface WidgetGroupCategory {
-  categoryId: string;
-  name: string;
-  image: string;
-  mobileImage: string;
-  slug: string;
-}
-
-export interface WidgetGroup {
-  _id: string;
-  groupNumber: number;
-  widgetName: string;
-  categories: WidgetGroupCategory[];
-}
 
 interface HomeClientProps {
   initialWidgetGroups: WidgetGroup[];

@@ -5,6 +5,7 @@
 
 import type { Product } from '@/src/types/product';
 import type { Category } from '@/src/types/category';
+import type { WidgetGroup } from '@/src/types/widgetGroup';
 
 const getBaseUrl = () =>
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4800';
@@ -203,13 +204,13 @@ export async function fetchHomeSliders(
 
 export async function fetchWidgetGroups(
   revalidate = defaultRevalidate
-): Promise<unknown[]> {
+): Promise<WidgetGroup[]> {
   try {
-    const raw = await fetchApi<unknown[] | { success?: boolean; data?: unknown[] }>(
+    const raw = await fetchApi<WidgetGroup[] | { success?: boolean; data?: WidgetGroup[] }>(
       '/api/widget-groups',
       { next: { revalidate } }
     );
-    const data = Array.isArray(raw) ? raw : (raw as { data?: unknown[] })?.data;
+    const data = Array.isArray(raw) ? raw : (raw as { data?: WidgetGroup[] })?.data;
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
