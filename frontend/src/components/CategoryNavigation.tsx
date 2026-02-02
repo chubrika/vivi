@@ -6,9 +6,10 @@ import { ChevronRight } from 'lucide-react';
 interface CategoryNavigationProps {
   categories: Category[];
   selectedCategorySlug: string | null;
+  onCategorySelect?: (slug: string | null) => void;
 }
 
-export default function CategoryNavigation({ categories, selectedCategorySlug }: CategoryNavigationProps) {
+export default function CategoryNavigation({ categories, selectedCategorySlug, onCategorySelect }: CategoryNavigationProps) {
   const router = useRouter();
   const [categoryPath, setCategoryPath] = useState<Category[]>([]);
   const [currentChildren, setCurrentChildren] = useState<Category[]>([]);
@@ -41,7 +42,11 @@ export default function CategoryNavigation({ categories, selectedCategorySlug }:
   }, [selectedCategorySlug, categories]);
 
   const handleCategoryClick = (category: Category) => {
-    router.push(`/products?category=${category.slug}`);
+    if (onCategorySelect) {
+      onCategorySelect(category.slug);
+    } else {
+      router.push(`/products/${category.slug}`);
+    }
   };
 
   if (currentChildren.length === 0) {

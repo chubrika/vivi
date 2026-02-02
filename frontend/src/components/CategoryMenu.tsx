@@ -49,7 +49,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
       setSelectedCategory(category);
     } else {
       // Navigate to products page with category filter
-      router.push(`/products?category=${category.slug}`);
+      router.push(`/products/${category.slug}`);
       onClose();
     }
   };
@@ -132,7 +132,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                             if (child.children && child.children.length > 0) {
                               setSelectedCategory(child);
                             } else {
-                              router.push(`/products?category=${child.slug}`);
+                              router.push(`/products/${child.slug}`);
                               onClose();
                             }
                           }}
@@ -150,7 +150,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                                 key={grandchild._id}
                                 className="flex items-center p-2 rounded cursor-pointer text-gray-600 hover:bg-gray-50 hover:text-sky-600 transition-colors duration-200"
                                 onClick={() => {
-                                  router.push(`/products?category=${grandchild.slug}`);
+                                  router.push(`/products/${grandchild.slug}`);
                                   onClose();
                                 }}
                               >
@@ -220,7 +220,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                           if (child.children && child.children.length > 0) {
                             setSelectedCategory(child);
                           } else {
-                            router.push(`/products?category=${child.slug}`);
+                            router.push(`/products/${child.slug}`);
                             onClose();
                           }
                         }}
@@ -243,7 +243,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                               key={grandchild._id}
                               className="flex items-center p-2 rounded cursor-pointer text-gray-600 hover:bg-gray-50 transition-colors duration-200"
                               onClick={() => {
-                                router.push(`/products?category=${grandchild.slug}`);
+                                router.push(`/products/${grandchild.slug}`);
                                 onClose();
                               }}
                             >

@@ -1,30 +1,21 @@
 import { Metadata } from 'next';
 import Script from 'next/script';
-import { generateMetadata as generateSEOMetadata, generateProductStructuredData, generateBreadcrumbStructuredData } from '../../../utils/seo';
+import {
+  generateMetadata as generateSEOMetadata,
+  generateProductStructuredData,
+  generateBreadcrumbStructuredData,
+} from '@/src/utils/seo';
+import { fetchProductById } from '@/src/lib/api';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vivi.ge';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4800';
 
-async function getProduct(id: string) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
-    });
-    
-    if (!response.ok) {
-      return null;
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    return null;
-  }
-}
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const product = await fetchProductById(params.slug);
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const product = await getProduct(params.id);
-  
   if (!product) {
     return generateSEOMetadata({
       title: 'პროდუქტი ვერ მოიძებნა',
@@ -32,15 +23,13 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     });
   }
 
-  const productImage = product.images && product.images.length > 0 
-    ? product.images[0] 
-    : `${siteUrl}/img/logo.png`;
-  
-  const categoryName = typeof product.category === 'object' && product.category !== null
-    ? product.category.name
-    : '';
-  
-  const description = product.description 
+  const productImage =
+    product.images?.length > 0 ? product.images[0] : `${siteUrl}/img/logo.png`;
+  const categoryName =
+    typeof product.category === 'object' && product.category !== null
+      ? product.category.name
+      : '';
+  const description = product.description
     ? product.description.replace(/<[^>]*>/g, '').substring(0, 160)
     : `${product.name} - იყიდე ${siteUrl}-ზე საუკეთესო ფასებით`;
 
@@ -48,7 +37,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     title: product.name,
     description,
     image: productImage,
-    url: `${siteUrl}/products/${params.id}`,
+    url: `${siteUrl}/products/product/${params.slug}`,
     type: 'product',
     category: categoryName,
     price: product.discountedPrice || product.price,
@@ -62,40 +51,59 @@ export default async function ProductLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { id: string };
+  params: { slug: string };
 }) {
-  const product = await getProduct(params.id);
-  
+  const product = await fetchProductById(params.slug);
+
   let structuredData = null;
   let breadcrumbData = null;
 
   if (product) {
-    const productImage = product.images && product.images.length > 0 
-      ? product.images[0] 
-      : `${siteUrl}/img/logo.png`;
-    
-    const categoryName = typeof product.category === 'object' && product.category !== null
-      ? product.category.name
-      : '';
+    const productImage =
+      product.images?.length > 0 ? product.images[0] : `${siteUrl}/img/logo.png`;
+    const categoryName =
+      typeof product.category === 'object' && product.category !== null
+        ? product.category.name
+        : '';
+    const categorySlug =
+      typeof product.category === 'object' &&
+      product.category !== null &&
+      'slug' in product.category
+        ? (product.category as { slug?: string }).slug
+        : '';
 
     structuredData = generateProductStructuredData({
       name: product.name,
-      description: product.description?.replace(/<[^>]*>/g, '') || product.name,
-      image: product.images && product.images.length > 0 ? product.images : [productImage],
+      description:
+        product.description?.replace(/<[^>]*>/g, '') || product.name,
+      image:
+        product.images?.length > 0 ? product.images : [productImage],
       price: product.discountedPrice || product.price,
       currency: 'GEL',
       availability: product.stock > 0 ? 'in stock' : 'out of stock',
       brand: 'vivi.ge',
       category: categoryName,
       sku: product._id,
-      url: `${siteUrl}/products/${params.id}`,
+      url: `${siteUrl}/products/product/${params.slug}`,
     });
 
     breadcrumbData = generateBreadcrumbStructuredData([
       { name: 'მთავარი', url: siteUrl },
       { name: 'პროდუქტები', url: `${siteUrl}/products` },
-      ...(categoryName ? [{ name: categoryName, url: `${siteUrl}/products?category=${categoryName}` }] : []),
-      { name: product.name, url: `${siteUrl}/products/${params.id}` },
+      ...(categoryName
+        ? [
+            {
+              name: categoryName,
+              url: categorySlug
+                ? `${siteUrl}/products/${categorySlug}`
+                : `${siteUrl}/products`,
+            },
+          ]
+        : []),
+      {
+        name: product.name,
+        url: `${siteUrl}/products/product/${params.slug}`,
+      },
     ]);
   }
 
@@ -125,4 +133,3 @@ export default async function ProductLayout({
     </>
   );
 }
-

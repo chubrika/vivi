@@ -70,7 +70,7 @@ export default function SearchResults({ searchTerm, onClose }: SearchResultsProp
 
   const handleProductClick = (product: Product) => {
     // Navigate to products page with the product ID as a query parameter
-    router.push(`/products?product=${product._id}`);
+    router.push(`/products/product/${product._id}`);
     onClose();
   };
 

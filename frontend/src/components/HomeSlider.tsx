@@ -99,7 +99,7 @@ const HomeSlider = () => {
       router.push(`/${slider.slug}`);
     } else if (slider.categorySlug) {
       // If categorySlug exists, navigate to the category route
-      router.push(`/products?category=${slider.categorySlug}`);
+      router.push(`/products/${slider.categorySlug}`);
     }
     // If neither exists, do nothing (slider is not clickable)
   };
