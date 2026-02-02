@@ -4,6 +4,7 @@ import { getToken } from '../utils/authContext';
 export interface Product {
   _id: string;
   name: string;
+  productSlug?: string;
   description: string;
   price: number;
   stock: number;
@@ -34,6 +35,7 @@ export interface SearchProductsResponse {
 
 export interface CreateProductData {
   name: string;
+  productSlug?: string;
   description: string;
   price: number;
   stock: number;
@@ -47,6 +49,7 @@ export interface CreateProductData {
 
 export interface UpdateProductData {
   name?: string;
+  productSlug?: string;
   description?: string;
   price?: number;
   stock?: number;

@@ -20,6 +20,7 @@ router.get('/', getAllProducts);
 router.get('/featured', getFeaturedProducts);
 router.get('/search', searchProducts);
 router.get('/category/:categoryId', getProductsByCategory);
+router.get('/:id', getProductById); // Public: product detail by id or productSlug
 
 // Public route to get products by seller ID (no authentication required)
 router.get('/seller/:sellerId/public', async (req, res) => {
@@ -43,7 +44,6 @@ router.get('/seller/:sellerId/public', async (req, res) => {
 router.use(authenticateToken);
 
 router.get('/seller/:sellerId', getProductsBySeller);
-router.get('/:id', getProductById);
 router.post('/', createProduct);
 router.put('/:id', updateProduct);
 router.delete('/:id', deleteProduct);

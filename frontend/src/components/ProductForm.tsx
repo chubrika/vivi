@@ -38,6 +38,7 @@ interface ProductFormProps {
   product?: {
     _id: string;
     name: string;
+    productSlug?: string;
     description: string;
     price: number;
     stock: number;
@@ -128,6 +129,7 @@ const FilterInput: React.FC<{
 export default function ProductForm({ product, categories, sellers, onClose, onSuccess, isSellerContext = false }: ProductFormProps) {
   const { user } = useAuth();
   const [name, setName] = useState(product?.name || '');
+  const [productSlug, setProductSlug] = useState(product?.productSlug || '');
   const [description, setDescription] = useState(product?.description || '');
   const [price, setPrice] = useState<number>(product?.price || 0);
   const [images, setImages] = useState<string[]>(product?.images || []);
@@ -305,6 +307,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   useEffect(() => {
     if (product) {
       setName(product.name);
+      setProductSlug(product.productSlug || '');
       setDescription(product.description);
       setPrice(product.price);
       setStock(product.stock);
@@ -442,6 +445,9 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         discountStartDate: discountStartDate || undefined,
         discountEndDate: discountEndDate || undefined
       };
+      if (productSlug.trim() !== '') {
+        productData.productSlug = productSlug.trim();
+      }
 
       if (product?._id) {
         await productsService.updateProduct(product._id, productData);
@@ -558,6 +564,23 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
           required
         />
+      </div>
+
+      <div>
+        <label htmlFor="productSlug" className="block text-sm font-medium text-gray-700 mb-1">
+          Product Slug (unique URL segment)
+        </label>
+        <input
+          type="text"
+          id="productSlug"
+          value={productSlug}
+          onChange={(e) => setProductSlug(e.target.value)}
+          placeholder="e.g. my-product-name"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out text-gray-600"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Saved as lowercase, strict slug. Must be unique. Used in URL: /products/product/[slug]
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

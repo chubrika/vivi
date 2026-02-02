@@ -1,29 +1,28 @@
+import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { Metadata } from 'next';
 import {
+  fetchProductById,
   fetchProducts,
   fetchCategories,
   fetchFiltersForCategory,
 } from '@/src/lib/api';
-import ProductsLayoutClient from '../products/ProductsLayoutClient';
+import ProductsLayoutClient from '../../ProductsLayoutClient';
 
-export const metadata: Metadata = {
-  title: 'პროდუქტები',
-  description:
-    'იპოვეთ ყველაზე კარგი პროდუქტები vivi.ge-ზე. ფართო არჩევანი, საუკეთესო ფასები და სწრაფი მიტანა.',
-  robots: {
-    index: false,
-    follow: false,
-    googleBot: { index: false, follow: false },
-  },
-};
-
-export default async function ProductsPage() {
-  const [products, categories, filters] = await Promise.all([
+export default async function ProductDetailPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const [product, products, categories, filters] = await Promise.all([
+    fetchProductById(params.slug),
     fetchProducts({}),
     fetchCategories(),
     fetchFiltersForCategory(null),
   ]);
+
+  if (!product) {
+    notFound();
+  }
 
   return (
     <Suspense
@@ -38,6 +37,7 @@ export default async function ProductsPage() {
         initialCategories={categories}
         initialFilters={filters}
         categorySlug={null}
+        initialSelectedProduct={product}
       />
     </Suspense>
   );

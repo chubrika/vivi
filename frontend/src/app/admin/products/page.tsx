@@ -33,6 +33,7 @@ interface Filter {
 
 interface ProductFormData {
   name: string;
+  productSlug?: string;
   description: string;
   price: number;
   stock: number;
@@ -55,6 +56,7 @@ export default function AdminProductsPage() {
   const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
+    productSlug: '',
     description: '',
     price: 0,
     stock: 0,
@@ -141,6 +143,7 @@ export default function AdminProductsPage() {
     setSelectedProduct(product);
     setFormData({
       name: product.name,
+      productSlug: product.productSlug || '',
       description: product.description,
       price: product.price,
       stock: product.stock,

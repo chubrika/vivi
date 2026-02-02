@@ -1,46 +1,37 @@
 import { Metadata } from 'next';
 import Script from 'next/script';
-import { generateMetadata as generateSEOMetadata, generateBreadcrumbStructuredData } from '../../../utils/seo';
+import { generateBreadcrumbStructuredData } from '@/src/utils/seo';
+import { fetchSellerPublicBySlug } from '@/src/lib/api';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vivi.ge';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4800';
 
-async function getSeller(id: string) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/sellers/public/${id}`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
-    });
-    
-    if (!response.ok) {
-      return null;
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching seller:', error);
-    return null;
-  }
-}
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const seller = await fetchSellerPublicBySlug(params.slug);
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const seller = await getSeller(params.id);
-  
   if (!seller) {
-    return generateSEOMetadata({
+    return {
       title: 'მაღაზია ვერ მოიძებნა',
       description: 'მაღაზია ვერ მოიძებნა',
-    });
+      robots: { index: false, follow: false },
+    };
   }
 
-  const sellerName = seller.storeName || `მაღაზიებიდან`;
+  const sellerName = seller.sellerProfile?.storeName || 'მაღაზია';
   const description = `${sellerName} - გაეცანით პროდუქტებს ${sellerName}-დან vivi.ge-ზე. ხარისხიანი პროდუქტები და საიმედო მომსახურება.`;
 
-  return generateSEOMetadata({
+  return {
     title: `${sellerName} - vivi.ge`,
     description,
-    url: `${siteUrl}/shops/${params.id}`,
-    type: 'website',
-  });
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: { index: false, follow: false },
+    },
+  };
 }
 
 export default async function ShopLayout({
@@ -48,19 +39,19 @@ export default async function ShopLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { id: string };
+  params: { slug: string };
 }) {
-  const seller = await getSeller(params.id);
-  
+  const seller = await fetchSellerPublicBySlug(params.slug);
+
   let breadcrumbData = null;
 
   if (seller) {
-    const sellerName = seller.storeName || `მაღაზიებიდან`;
-    
+    const sellerName = seller.sellerProfile?.storeName || 'მაღაზია';
+
     breadcrumbData = generateBreadcrumbStructuredData([
       { name: 'მთავარი', url: siteUrl },
       { name: 'მაღაზიები', url: `${siteUrl}/shops` },
-      { name: sellerName, url: `${siteUrl}/shops/${params.id}` },
+      { name: sellerName, url: `${siteUrl}/shops/${params.slug}` },
     ]);
   }
 
@@ -80,4 +71,3 @@ export default async function ShopLayout({
     </>
   );
 }
-

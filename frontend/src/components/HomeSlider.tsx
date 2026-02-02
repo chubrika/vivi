@@ -13,22 +13,7 @@ import 'swiper/css/navigation';
 
 // Custom styles for Rakuten-style slider
 const customSliderStyles = `
-  .rakuten-swiper {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    overflow: hidden !important;
-  }
   
-  .rakuten-swiper .swiper-wrapper {
-    align-items: flex-start !important;
-  }
-  
-  .rakuten-swiper .swiper-slide {
-    width: 85% !important;
-    margin-right: 20px !important;
-    transition: all 0.3s ease !important;
-    overflow: hidden !important;
-  }
   
   .rakuten-swiper .swiper-slide:first-child {
     margin-left: 0 !important;
@@ -73,25 +58,8 @@ const customSliderStyles = `
   }
   
   @media (max-width: 768px) {
-    .rakuten-swiper .swiper-slide {
-      width: 85% !important;
-      margin-right: 5px !important;
-    }
-    
     .swiper-pagination {
       display: none !important;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .rakuten-swiper .swiper-slide {
-      width: 85% !important;
-      margin-right: 5px !important;
-    }
-    
-    .swiper-pagination {
-      bottom: 10px !important;
-      padding: 4px 10px !important;
     }
   }
 `;
@@ -131,7 +99,7 @@ const HomeSlider = () => {
       router.push(`/${slider.slug}`);
     } else if (slider.categorySlug) {
       // If categorySlug exists, navigate to the category route
-      router.push(`/products?category=${slider.categorySlug}`);
+      router.push(`/products/${slider.categorySlug}`);
     }
     // If neither exists, do nothing (slider is not clickable)
   };
@@ -141,9 +109,9 @@ const HomeSlider = () => {
       <style jsx>{customSliderStyles}</style>
       <Swiper
         modules={[Autoplay, Pagination, Navigation]}
-        spaceBetween={0}
-        slidesPerView="auto"
-        centeredSlides={false}
+        spaceBetween={10}
+        slidesPerView={1}
+        centeredSlides={true}
         loop={sliders.length > 1}
         autoplay={{
           delay: 4000,
@@ -159,19 +127,19 @@ const HomeSlider = () => {
         className="rakuten-swiper h-[200px] sm:h-[180px] md:h-[300px]"
         breakpoints={{
           320: {
-            slidesPerView: 'auto',
+            slidesPerView: 1.2,
             spaceBetween: 10,
             centeredSlides: false,
           },
           768: {
-            slidesPerView: 'auto',
-            spaceBetween: 20,
+            slidesPerView: 1.2,
+            spaceBetween: 10,
             centeredSlides: false,
           },
           1024: {
-            slidesPerView: 'auto',
-            spaceBetween: 20,
-            centeredSlides: false,
+            slidesPerView: 1,
+            spaceBetween: 0,
+            centeredSlides: true,
           },
         }}
       >
