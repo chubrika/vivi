@@ -30,8 +30,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const productRoutes: MetadataRoute.Sitemap = products
     .filter((p: { isActive?: boolean; stock?: number }) => p.isActive && (p.stock ?? 0) > 0)
-    .map((product: { _id: string; updatedAt?: string; createdAt?: string }) => ({
-      url: `${siteUrl}/products/product/${product._id}`,
+    .map((product: { _id: string; productSlug?: string; updatedAt?: string; createdAt?: string }) => ({
+      url: `${siteUrl}/products/product/${product.productSlug || product._id}`,
       lastModified: product.updatedAt
         ? new Date(product.updatedAt)
         : product.createdAt

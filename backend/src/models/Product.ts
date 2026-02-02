@@ -22,6 +22,7 @@ export interface IFeatureGroup {
 
 export interface IProduct extends Document {
   name: string;
+  productSlug?: string;
   description: string;
   price: number;
   stock: number;
@@ -80,6 +81,12 @@ const productSchema = new Schema({
     type: String,
     required: [true, 'Product name is required'],
     trim: true
+  },
+  productSlug: {
+    type: String,
+    trim: true,
+    sparse: true,
+    unique: true
   },
   description: {
     type: String,
@@ -181,6 +188,7 @@ productSchema.pre('findOneAndUpdate', function(this: any, next: any) {
 
 // Create indexes for better query performance
 productSchema.index({ name: 1 });
+productSchema.index({ productSlug: 1 }, { unique: true, sparse: true });
 productSchema.index({ category: 1 });
 productSchema.index({ seller: 1 });
 productSchema.index({ filters: 1 });

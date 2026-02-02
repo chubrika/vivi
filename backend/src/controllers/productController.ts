@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import slugify from 'slugify';
 import Product from '../models/Product';
 import User from '../models/User';
 import Category from '../models/Category';
@@ -212,19 +213,24 @@ export const getFeaturedProducts = async (req: Request, res: Response) => {
   }
 };
 
-// Get product by ID
+// Get product by ID or productSlug
 export const getProductById = async (req: Request, res: Response) => {
   try {
-    const product = await Product.findById(req.params.id)
-      .populate('seller', 'storeName email')
-      .populate('category', 'name')
-      .populate('filters', 'name description');
-      
-    if (!product) {
+    const { id } = req.params;
+    const isObjectId = mongoose.Types.ObjectId.isValid(id) && String(new mongoose.Types.ObjectId(id)) === id;
+    const product = isObjectId
+      ? await Product.findById(id)
+      : await Product.findOne({ productSlug: id });
+    const populated = product
+      ? await Product.findById(product._id)
+          .populate('seller', 'storeName email')
+          .populate('category', 'name slug')
+          .populate('filters', 'name description')
+      : null;
+    if (!populated) {
       return res.status(404).json({ message: 'Product not found' });
     }
-    
-    res.json(product);
+    res.json(populated);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching product', error });
   }
@@ -253,6 +259,19 @@ export const createProduct = async (req: Request, res: Response) => {
     
     if (seller.roles && !seller.roles.includes('seller')) {
       return res.status(400).json({ message: 'The specified user is not a seller' });
+    }
+
+    // Slugify and validate unique productSlug if provided
+    if (req.body.productSlug != null && String(req.body.productSlug).trim() !== '') {
+      const slug = slugify(String(req.body.productSlug).trim(), { lower: true, strict: true });
+      if (!slug) {
+        return res.status(400).json({ message: 'Product slug is required and must contain at least one alphanumeric character' });
+      }
+      const existing = await Product.findOne({ productSlug: slug });
+      if (existing) {
+        return res.status(400).json({ message: 'A product with this slug already exists' });
+      }
+      req.body.productSlug = slug;
     }
 
     // Process filters - accept new format { id, value } where id can be filter ID or slug
@@ -369,6 +388,19 @@ export const updateProduct = async (req: Request, res: Response) => {
       if (seller.roles && !seller.roles.includes('seller')) {
         return res.status(400).json({ message: 'The specified user is not a seller' });
       }
+    }
+
+    // Slugify and validate unique productSlug if provided
+    if (req.body.productSlug != null && String(req.body.productSlug).trim() !== '') {
+      const slug = slugify(String(req.body.productSlug).trim(), { lower: true, strict: true });
+      if (!slug) {
+        return res.status(400).json({ message: 'Product slug is required and must contain at least one alphanumeric character' });
+      }
+      const existing = await Product.findOne({ productSlug: slug, _id: { $ne: req.params.id } });
+      if (existing) {
+        return res.status(400).json({ message: 'A product with this slug already exists' });
+      }
+      req.body.productSlug = slug;
     }
 
     // Process filters - accept new format { id, slug, value } where id can be filter ID or slug

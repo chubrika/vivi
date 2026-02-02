@@ -74,7 +74,7 @@ export default async function ShopDetailPage({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {products.map((product: Product) => (
               <Link
-                href={`/products/product/${product._id}`}
+                href={`/products/product/${product.productSlug || product._id}`}
                 key={product._id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
               >

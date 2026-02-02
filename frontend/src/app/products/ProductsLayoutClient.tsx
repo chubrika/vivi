@@ -243,11 +243,11 @@ export default function ProductsLayoutClient({
     router.push(path, { scroll: false });
   };
 
-  // Handle opening product detail panel
+  // Open product detail panel and set URL to product slug (reload will open full product page)
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
-    // Update URL without full navigation (for browser history and sharing)
-    window.history.pushState(null, '', `/products/product/${product._id}`);
+    const slug = product.productSlug || product._id;
+    window.history.pushState(null, '', `/products/product/${slug}`);
   };
 
   // Handle closing product detail panel
@@ -259,20 +259,19 @@ export default function ProductsLayoutClient({
     window.history.pushState(null, '', q ? `${path}?${q}` : path);
   };
 
-  // Handle browser back/forward buttons
+  // Handle browser back/forward buttons (URL segment can be productSlug or _id)
   useEffect(() => {
     const handlePopState = () => {
-      // Check if current URL is a product detail page
       const productMatch = window.location.pathname.match(/\/products\/product\/([^/]+)/);
       if (productMatch) {
-        // Find and show the product
-        const productId = productMatch[1];
-        const product = products.find(p => p._id === productId) || allProducts.find(p => p._id === productId);
+        const identifier = productMatch[1];
+        const product =
+          products.find(p => p.productSlug === identifier || p._id === identifier) ||
+          allProducts.find(p => p.productSlug === identifier || p._id === identifier);
         if (product) {
           setSelectedProduct(product);
         } else {
-          // Fetch the product if not in current lists
-          api.get(`/api/products/${productId}`, undefined, false)
+          api.get(`/api/products/${identifier}`, undefined, false)
             .then(data => setSelectedProduct(data))
             .catch(() => setSelectedProduct(null));
         }

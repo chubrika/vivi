@@ -69,8 +69,8 @@ export default function SearchResults({ searchTerm, onClose }: SearchResultsProp
   }, [onClose]);
 
   const handleProductClick = (product: Product) => {
-    // Navigate to products page with the product ID as a query parameter
-    router.push(`/products/product/${product._id}`);
+    const slug = product.productSlug || product._id;
+    router.push(`/products/product/${slug}`);
     onClose();
   };
 
