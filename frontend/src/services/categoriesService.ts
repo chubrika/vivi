@@ -9,6 +9,7 @@ export interface Category {
   parentId?: string;
   hasChildren: boolean;
   isActive: boolean;
+  icon?: string;
   children?: Category[];
   createdAt: string;
   updatedAt: string;
@@ -20,6 +21,7 @@ export interface CreateCategoryData {
   slug: string;
   parentId?: string;
   isActive?: boolean;
+  icon?: string;
 }
 
 export interface UpdateCategoryData {
@@ -28,6 +30,7 @@ export interface UpdateCategoryData {
   slug?: string;
   parentId?: string;
   isActive?: boolean;
+  icon?: string;
 }
 
 /**
