@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import * as FaIcons from 'react-icons/fa';
 import { useAuth } from '../../../utils/authContext';
 import Modal from '../../../components/Modal';
 import HierarchicalCategoryForm from '../../../components/HierarchicalCategoryForm';
@@ -103,6 +104,10 @@ const CategoriesPage = () => {
               </button>
             )}
             {!category.hasChildren && <span className="w-4 text-gray-400">•</span>}
+            {category.icon && (() => {
+              const IconComponent = (FaIcons as Record<string, React.ComponentType<{ className?: string }>>)[category.icon!];
+              return IconComponent ? <span className="ml-2 flex items-center text-gray-500"><IconComponent className="w-4 h-4" /></span> : null;
+            })()}
             <span className="ml-2 text-gray-600">{category.name}</span>
             {!category.isActive && (
               <span className="ml-2 text-xs text-red-500">(Inactive)</span>

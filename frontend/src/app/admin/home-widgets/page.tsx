@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Modal from '../../../components/Modal';
 import CloudinaryUploadWidget from '../../../components/CloudinaryUploadWidget';
+import { deleteCloudinaryImage } from '../../../utils/cloudinaryUrl';
 import { categoriesService, Category } from '../../../services/categoriesService';
 
 interface CategoryWithImage extends Category {
@@ -295,6 +296,14 @@ export default function HomeWidgetsPage() {
                     </label>
                     <CloudinaryUploadWidget
                       onUploadSuccess={(urls) => handleImageUpload(category._id, urls)}
+                      onRemoveImage={async (url) => {
+                        try {
+                          await deleteCloudinaryImage(url);
+                        } catch (e) {
+                          alert(e instanceof Error ? e.message : 'Failed to delete image');
+                          throw e;
+                        }
+                      }}
                       multiple={false}
                       maxFiles={1}
                       initialImages={category.image ? [category.image] : []}
@@ -308,6 +317,14 @@ export default function HomeWidgetsPage() {
                     </label>
                     <CloudinaryUploadWidget
                       onUploadSuccess={(urls) => handleMobileImageUpload(category._id, urls)}
+                      onRemoveImage={async (url) => {
+                        try {
+                          await deleteCloudinaryImage(url);
+                        } catch (e) {
+                          alert(e instanceof Error ? e.message : 'Failed to delete image');
+                          throw e;
+                        }
+                      }}
                       multiple={false}
                       maxFiles={1}
                       initialImages={category.mobileImage ? [category.mobileImage] : []}

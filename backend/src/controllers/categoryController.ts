@@ -16,6 +16,7 @@ interface CategoryWithChildren {
   parentId?: mongoose.Types.ObjectId;
   hasChildren: boolean;
   isActive: boolean;
+  icon?: string;
   children?: CategoryWithChildren[];
 }
 
@@ -91,7 +92,7 @@ export const getCategoryById = async (req: Request, res: Response) => {
 // Create new category
 export const createCategory = async (req: Request, res: Response) => {
   try {
-    const { parentId, name, description, slug, isActive } = req.body;
+    const { parentId, name, description, slug, isActive, icon } = req.body;
     
     // Validate required fields
     if (!name) {
@@ -122,7 +123,8 @@ export const createCategory = async (req: Request, res: Response) => {
       slug,
       parentId,
       isActive: isActive !== undefined ? isActive : true,
-      hasChildren: false
+      hasChildren: false,
+      icon: icon || ''
     });
 
     await category.save();

@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import * as FaIcons from 'react-icons/fa';
 import { useCategories } from '../hooks/useCategories';
 import type { Category } from '../types/category';
 import { useAuth } from '../utils/authContext';
 import { useRouter } from 'next/navigation';
+
+function CategoryIcon({ iconName }: { iconName: string }) {
+  const IconComponent = (FaIcons as Record<string, React.ComponentType<{ className?: string }>>)[iconName];
+  if (!IconComponent) return null;
+  return <IconComponent className="w-5 h-5 shrink-0" />;
+}
 
 interface CategoryMenuProps {
   isOpen: boolean;
@@ -104,9 +111,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                       }`}
                       onClick={() => setSelectedCategory(category)}
                     >
-                      <svg className="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
+                      {category.icon && <span className="mr-2 text-gray-500"><CategoryIcon iconName={category.icon} /></span>}
                       <span className="text-sm font-medium">{category.name}</span>
                       {/* {category.children && category.children.length > 0 && (
                         <span className="ml-auto text-xs text-gray-500">({category.children.length})</span>
@@ -120,9 +125,6 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
             <div className="flex-1 pl-4">
               {selectedCategory && selectedCategory.children && selectedCategory.children.length > 0 ? (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    {selectedCategory.name}
-                  </h3>
                   <div className="space-y-1">
                     {selectedCategory.children.map(child => (
                       <div key={child._id}>
@@ -148,7 +150,7 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                             {child.children.map(grandchild => (
                               <div
                                 key={grandchild._id}
-                                className="flex items-center p-2 rounded cursor-pointer text-gray-600 hover:bg-gray-50 hover:text-sky-600 transition-colors duration-200"
+                                className="flex items-center p-1 rounded cursor-pointer text-gray-600 hover:bg-gray-50 hover:text-sky-600 transition-colors duration-200"
                                 onClick={() => {
                                   router.push(`/products/${grandchild.slug}`);
                                   onClose();
@@ -182,9 +184,13 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                       className="flex items-center p-3 rounded-lg border border-gray-200 cursor-pointer transition-colors duration-200 hover:bg-gray-50"
                       onClick={() => setSelectedCategory(category)}
                     >
-                      <svg className="w-5 h-5 mr-3 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
+                      {category.icon ? (
+                        <span className="mr-3 text-sky-600"><CategoryIcon iconName={category.icon} /></span>
+                      ) : (
+                        <svg className="w-5 h-5 mr-3 text-sky-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                      )}
                       <span className="text-base font-medium text-gray-700">{category.name}</span>
                       {category.children && category.children.length > 0 && (
                         <span className="ml-auto text-sm text-gray-500">({category.children.length})</span>
@@ -208,7 +214,10 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({ isOpen, onClose }) => {
                     </svg>
                     Back
                   </button>
-                  <h3 className="text-base font-semibold text-gray-900">{selectedCategory.name}</h3>
+                  <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                   {selectedCategory.icon && <span className="text-sky-600"><CategoryIcon iconName={selectedCategory.icon} /></span>}
+                    {selectedCategory.name}
+                  </h3>
                 </div>
                 
                 <div className="space-y-2">

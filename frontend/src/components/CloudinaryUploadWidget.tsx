@@ -5,6 +5,8 @@ import { CldUploadWidget } from 'next-cloudinary';
 
 interface CloudinaryUploadWidgetProps {
   onUploadSuccess: (urls: string[]) => void;
+  /** Called when user removes an image (e.g. to delete from Cloudinary). Optional. */
+  onRemoveImage?: (url: string) => void | Promise<void>;
   multiple?: boolean;
   maxFiles?: number;
   initialImages?: string[];
@@ -12,6 +14,7 @@ interface CloudinaryUploadWidgetProps {
 
 export default function CloudinaryUploadWidget({
   onUploadSuccess,
+  onRemoveImage,
   multiple = true,
   maxFiles = 5,
   initialImages = []
@@ -53,12 +56,19 @@ export default function CloudinaryUploadWidget({
     setIsUploading(false);
   };
 
-  // Remove an image
-  const handleRemoveImage = (index: number) => {
+  // Remove an image (optionally notify parent to e.g. delete from Cloudinary)
+  const handleRemoveImage = async (index: number) => {
+    const url = images[index];
+    if (onRemoveImage) {
+      try {
+        await Promise.resolve(onRemoveImage(url));
+      } catch {
+        return; // Parent failed (e.g. delete from Cloudinary), keep image
+      }
+    }
     setImages(prevImages => {
       const newImages = [...prevImages];
       newImages.splice(index, 1);
-      // Notify parent component
       onUploadSuccess(newImages);
       return newImages;
     });

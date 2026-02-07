@@ -2,11 +2,14 @@ import { NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4800';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/products/featured
  * Proxies to the backend GET /api/products/featured. Caching and invalidation
  * are handled by the backend (Redis key "products:featured", invalidated on
- * product create/update/delete).
+ * product create/update/delete). This route does not cache so the next request
+ * hits the backend and gets fresh data.
  */
 export async function GET() {
   try {
@@ -32,7 +35,12 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+      },
+    });
   } catch (error) {
     console.error('[API /api/products/featured] Error:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';

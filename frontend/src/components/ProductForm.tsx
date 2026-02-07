@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import CloudinaryUploadWidget from './CloudinaryUploadWidget';
+import { deleteCloudinaryImage } from '../utils/cloudinaryUrl';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
 import { filtersService, Filter } from '../services/filtersService';
@@ -464,13 +465,20 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
   };
 
   const handleImageUpload = (urls: string[]) => {
-    // If we're editing an existing product, append new images to existing ones
-    if (product) {
-      setImages(prevImages => [...prevImages, ...urls]);
-    } else {
-      // For new products, just set the new images
-      setImages(urls);
+    // Widget sends the full list (after add or remove), so always set to that list
+    setImages(urls);
+  };
+
+  /** Remove an image from state and delete from Cloudinary if it's a Cloudinary URL. Throws on delete failure so widget can abort. */
+  const handleRemoveProductImage = async (url: string) => {
+    try {
+      await deleteCloudinaryImage(url);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete image from storage';
+      setError(msg);
+      throw err;
     }
+    setImages(prev => prev.filter(u => u !== url));
   };
 
   // Feature group management functions
@@ -701,6 +709,7 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
         </label>
         <CloudinaryUploadWidget
           onUploadSuccess={handleImageUpload}
+          onRemoveImage={handleRemoveProductImage}
           initialImages={images}
           maxFiles={5}
         />
@@ -715,7 +724,13 @@ export default function ProductForm({ product, categories, sellers, onClose, onS
                 />
                 <button
                   type="button"
-                  onClick={() => setImages(images.filter((_, i) => i !== index))}
+                  onClick={async () => {
+                    try {
+                      await handleRemoveProductImage(image);
+                    } catch {
+                      // Error already set in handleRemoveProductImage
+                    }
+                  }}
                   className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition duration-200"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

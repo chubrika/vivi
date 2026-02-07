@@ -7,6 +7,7 @@ export interface ICategory extends Document {
   parentId?: mongoose.Types.ObjectId;
   hasChildren: boolean;
   isActive: boolean;
+  icon?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +41,11 @@ const categorySchema = new Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  icon: {
+    type: String,
+    trim: true,
+    default: ''
   }
 }, {
   timestamps: true
