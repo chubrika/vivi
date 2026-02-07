@@ -1,9 +1,9 @@
 'use client';
-'use client';
 
 import { useState, useEffect } from 'react';
 import Modal from '../../../components/Modal';
 import CloudinaryUploadWidget from '../../../components/CloudinaryUploadWidget';
+import { deleteCloudinaryImage } from '../../../utils/cloudinaryUrl';
 import { homeSliderService, HomeSlider, CreateHomeSliderData } from '../../../services/homeSliderService';
 import { categoriesService, Category } from '../../../services/categoriesService';
 
@@ -313,6 +313,14 @@ export default function HomeSlidersPage() {
             </label>
             <CloudinaryUploadWidget
               onUploadSuccess={handleDesktopImageUpload}
+              onRemoveImage={async (url) => {
+                try {
+                  await deleteCloudinaryImage(url);
+                } catch (e) {
+                  alert(e instanceof Error ? e.message : 'Failed to delete image');
+                  throw e;
+                }
+              }}
               multiple={false}
               maxFiles={1}
               initialImages={formData.desktopImage ? [formData.desktopImage] : []}
@@ -326,6 +334,14 @@ export default function HomeSlidersPage() {
             </label>
             <CloudinaryUploadWidget
               onUploadSuccess={handleMobileImageUpload}
+              onRemoveImage={async (url) => {
+                try {
+                  await deleteCloudinaryImage(url);
+                } catch (e) {
+                  alert(e instanceof Error ? e.message : 'Failed to delete image');
+                  throw e;
+                }
+              }}
               multiple={false}
               maxFiles={1}
               initialImages={formData.mobileImage ? [formData.mobileImage] : []}
