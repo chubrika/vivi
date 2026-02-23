@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { ShoppingCart, Search, Package, Truck, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { WidgetGroup, WidgetGroupCategory } from '@/src/types/widgetGroup';
+import { useWidgetGroups } from '@/src/hooks/useWidgetGroups';
 
 const ProductSlider = dynamic(() => import('@/src/components/ProductSlider'), {
   ssr: false,
@@ -33,7 +34,8 @@ export default function HomeClient({
   initialWidgetGroups,
 }: HomeClientProps) {
   const router = useRouter();
-  const widgetGroups = initialWidgetGroups ?? [];
+  const { widgetGroups: clientWidgetGroups, isLoading } = useWidgetGroups();
+  const widgetGroups = (!isLoading ? clientWidgetGroups : initialWidgetGroups) ?? [];
 
   const handleCategoryClick = (slug: string) => {
     router.push(`/products/${slug}`);
