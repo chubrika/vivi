@@ -14,7 +14,7 @@ export const metadata: Metadata = generateSEOMetadata({
 
 export default async function Home() {
   const [widgetGroupsRaw, ,] = await Promise.all([
-    fetchWidgetGroups(),
+    fetchWidgetGroups(0),
     fetchHomeSliders(),
     fetchFeaturedProducts(),
   ]);
